@@ -172,7 +172,7 @@ Swagger UI disponible : [http://localhost:3000/api-docs](http://localhost:3000/a
 ## 💡 Conseils & astuces
 
 - Toutes les routes (hors login/register/refresh) sont protégées par token (Bearer dans l'Authorization header).
-- Les IDs sont en UUID (format string).
+- Les IDs sont en INT auto increment.
 - Si tu veux reset la base, relance le seed : `node config/database/seed.js`
 - Swagger UI te permet de tester tous les endpoints facilement.
 

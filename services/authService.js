@@ -1,32 +1,41 @@
 const UserModel = require('../models/userModel');
-const {generateId} = require('../utils/idHelper');
 const {comparePasswords, hashPassword} = require('../utils/passwordUtils');
 const {generateAccessToken, generateRefreshToken, verifyRefreshToken} = require("../config/tokens/jwt");
 
 exports.register = async ({email, password, role}) => {
     console.log('📝 [AuthService] Register user:', {email});
     const hashed = await hashPassword(password);
-    const id = generateId();
-    const refreshToken = generateRefreshToken({uid: id});
-    const decodedRefresh = require('jsonwebtoken').decode(refreshToken);
-    console.log(`🎫 [Auth Service] refreshToken: ${refreshToken}`);
-    console.log(`🎫 [Auth Service] refreshToken exp: ${decodedRefresh.exp} (${new Date(decodedRefresh.exp * 1000)})`);
     const user = {
-        id,
         role,
         email,
-        password: hashed,
-        refreshToken: refreshToken
+        password: hashed
     };
 
     try {
-        await UserModel.create(user);
-        const accessToken = generateAccessToken({uid: user.id});
+        // Crée l'utilisateur et récupère l'id auto-increment
+        const createdUser = await UserModel.create(user);
+        const userId = createdUser.id;
+
+        const refreshToken = generateRefreshToken({userId});
+        const decodedRefresh = require('jsonwebtoken').decode(refreshToken);
+        console.log(`🎫 [Auth Service] refreshToken: ${refreshToken}`);
+        console.log(`🎫 [Auth Service] refreshToken exp: ${decodedRefresh.exp} (${new Date(decodedRefresh.exp * 1000)})`);
+
+        // Stocke le refreshToken en base
+        await UserModel.updateRefreshToken(userId, refreshToken);
+
+        const accessToken = generateAccessToken({userId});
         const decodedAccess = require('jsonwebtoken').decode(accessToken);
         console.log(`🎟 [Auth Service] accessToken: ${accessToken}`);
         console.log(`🎟 [Auth Service] accessToken exp: ${decodedAccess.exp} (${new Date(decodedAccess.exp * 1000)})`);
-        console.log('✅ [AuthService] User registered:', user.id);
-        return {user, accessToken, refreshToken};
+        console.log('✅ [AuthService] User registered:', userId);
+
+        // Retourne l'utilisateur avec les tokens
+        return {
+            user: {...createdUser, refreshToken},
+            accessToken,
+            refreshToken
+        };
     } catch (err) {
         console.log('❌ [AuthService] Error registering user:', err);
         throw err;
@@ -40,8 +49,8 @@ exports.login = async ({email, password}) => {
     if (!password || !user.password) throw new Error("Mot de passe manquant ou invalide");
     if (!(await comparePasswords(password, user.password))) throw new Error("Identifiants invalides");
     try {
-        const accessToken = generateAccessToken({uid: user.id});
-        const refreshToken = generateRefreshToken({uid: user.id});
+        const accessToken = generateAccessToken({userId: user.id});
+        const refreshToken = generateRefreshToken({userId: user.id});
 
         const decodedRefresh = require('jsonwebtoken').decode(refreshToken);
         const decodedAccess = require('jsonwebtoken').decode(accessToken);
@@ -50,7 +59,7 @@ exports.login = async ({email, password}) => {
         console.log(`✨🎟 [Auth Service] accessToken: ${accessToken}`);
         console.log(`[Auth Service] accessToken exp: ${decodedAccess.exp} (${new Date(decodedAccess.exp * 1000)})`);
 
-        await UserModel.storeRefreshToken(user.id, refreshToken);
+        await UserModel.updateRefreshToken(user.id, refreshToken);
 
         console.log('✅ [AuthService] User logged in:', user.id);
         return {user, accessToken, refreshToken};
@@ -73,7 +82,7 @@ exports.refreshAccessToken = async (oldRefreshToken) => {
         throw new Error('Refresh token expired or invalid');
     }
 
-    const user = await UserModel.findById(decoded.uid);
+    const user = await UserModel.findById(decoded.userId);
 
     console.log(`📥 [AuthService] Token reçu: ${oldRefreshToken}`);
     console.log(`💾 [AuthService] Token en base: ${user ? user.refreshToken : 'Utilisateur non trouvé'}`);
@@ -81,8 +90,8 @@ exports.refreshAccessToken = async (oldRefreshToken) => {
     if (!user || user.refreshToken !== oldRefreshToken) throw new Error("Invalid or expired refresh token");
 
     //Rotation du refresh token
-    const newRefreshToken = generateRefreshToken({uid: user.id});
-    const newAccessToken = generateAccessToken({uid: user.id});
+    const newRefreshToken = generateRefreshToken({userId: user.id});
+    const newAccessToken = generateAccessToken({userId: user.id});
     const decodedNewRefresh = require('jsonwebtoken').decode(newRefreshToken);
     const decodedNewAccess = require('jsonwebtoken').decode(newAccessToken);
     console.log(`✨🎫 [Auth Service] newRefreshToken: ${newRefreshToken}`);

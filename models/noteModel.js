@@ -1,5 +1,4 @@
 const db = require('../config/database/db');
-const {v4: uuidv4} = require('uuid');
 
 const NoteModel = {
     table: 'notes',

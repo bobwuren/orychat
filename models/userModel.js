@@ -31,7 +31,7 @@ const UserModel = {
         return this.toObject(rows[0]);
     },
 
-    async create(user) {
+async create(user) {
         const entity = this.toEntity(user);
         // Validation du format d'email
         if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(entity.email)) {
@@ -41,12 +41,19 @@ const UserModel = {
         if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(entity.password)) {
             throw new Error('Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre');
         }
+        const refreshTokenValue = typeof entity.refresh_token === 'undefined' ? null : entity.refresh_token;
         const [result] = await db.execute(
             `INSERT INTO ${this.table} (role, email, password, refresh_token)
              VALUES (?, ?, ?, ?)`,
-            [entity.role, entity.email, entity.password, entity.refresh_token]
+            [entity.role, entity.email, entity.password, refreshTokenValue]
         );
-        return result.insertId;
+        // Retourner l'objet complet pour le service
+        return {
+            id: result.insertId,
+            role: entity.role,
+            email: entity.email,
+            refreshToken: refreshTokenValue
+        };
     },
 
     async findByEmail(email) {

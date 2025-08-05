@@ -67,10 +67,7 @@ const RecommendationModel = {
                                          WHERE id = ?`, [id]);
         if (rows.length === 0) return null;
         const row = rows[0];
-        return {
-            ...row,
-            orientations: typeof row.orientations === 'string' ? JSON.parse(row.orientations) : row.orientations
-        };
+        return this.toObject(row);
     },
 
     async delete(id) {
