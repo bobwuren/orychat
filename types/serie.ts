@@ -1,7 +1,7 @@
 import {Subject} from "@/types/subject";
 
 export  interface Serie {
-    id: string;
+    id: number;
     code: string;
     description: string;
     subjects: Subject[];

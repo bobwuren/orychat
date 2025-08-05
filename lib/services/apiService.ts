@@ -62,7 +62,7 @@ const processQueue = (error: any, token: string | null) => {
 export const setSession = (session: {
     accessToken: string;
     refreshToken: string;
-    userId?: string;
+    userId?: number;
 }) => {
     accessToken = session.accessToken;
     refreshToken = session.refreshToken;
@@ -72,14 +72,14 @@ export const setSession = (session: {
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
         if (session.userId) {
-            localStorage.setItem("userId", session.userId);
+            localStorage.setItem("userId", String(session.userId));
         }
 
         // Stocker dans les cookies pour le middleware
         setCookie('accessToken', accessToken);
         setCookie('refreshToken', refreshToken);
         if (session.userId) {
-            setCookie('userId', session.userId);
+            setCookie('userId', String(session.userId));
         }
     }
 };
@@ -141,8 +141,9 @@ export const getCurrentUser = async (): Promise<any> => {
         }
 
         // Récupérer l'ID utilisateur depuis localStorage ou cookies
-        const userId = localStorage.getItem("userId") || getCookie("userId");
-        
+        const userIdStr = localStorage.getItem('userId') || getCookie('userId');
+        const userId = userIdStr ? Number(userIdStr) : null;
+
         if (!userId) {
             throw new Error('Aucun utilisateur connecté - ID utilisateur manquant');
         }
@@ -193,6 +194,7 @@ _axios.interceptors.request.use((config) => {
     }
     return config;
 });
+
 // 🔁 Gestion automatique du refresh et des erreurs - Version simple
 _axios.interceptors.response.use(
     (response) => {
@@ -245,15 +247,16 @@ _axios.interceptors.response.use(
 
                 const newAccess = res.data.accessToken;
                 const newRefresh = res.data.refreshToken;
-                const userId = localStorage.getItem("userId") || getCookie("userId");
-                
+                const userIdStr = localStorage.getItem('userId') || getCookie('userId');
+                const userId = userIdStr ? Number(userIdStr) : undefined;
+
                 console.log('🔓 [API] Token refresh réussi !');
 
                 // Mettre à jour les tokens
                 setSession({
                     accessToken: newAccess,
                     refreshToken: newRefresh,
-                    userId: userId || ""
+                    userId: userId
                 });
 
                 // Traiter la queue des requêtes échouées

@@ -1,7 +1,7 @@
 export interface Note {
-    id?: string;
-    userId: string;
-    subjectId: string;
-    serieId: string;
+    id?: number;
+    userId: number;
+    subjectId: number;
+    serieId: number;
     value: number;
 }

@@ -1,5 +1,5 @@
 export interface Subject {
-    id: string;
+    id: number;
     name: string;
     coefficient: number;
 }

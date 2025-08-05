@@ -7,11 +7,11 @@ export interface Orientation {
 }
 
 export type Recommendation = {
-    id: string;
-    userId: string;
-    serieId: string;
+    id: number;
+    userId: number;
+    serieId: number;
     serieCode?: string;
     orientations: Orientation[];
-    noteIds: string[];
+    noteIds: number[];
     createdAt: Date;
 }
