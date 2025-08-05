@@ -457,6 +457,7 @@ router.get('/admin/users/:id', authMiddleware, requireRole('admin'), authControl
  *         description: Erreur serveur interne
  */
 router.put('/admin/users/:id', authMiddleware, requireRole('admin'), authController.updateUserById);
+
 router.delete('/admin/users/:id', authMiddleware, requireRole('admin'), authController.deleteUserById);
 /**
  * @swagger
@@ -888,7 +889,7 @@ router.get('/users', authMiddleware, requireRole('admin'), authController.getAll
  *                   type: string
  *                   example: "Erreur lors de la récupération de l'utilisateur"
  */
-router.get('/users/:id', authMiddleware, requireRole('admin'), authController.getUserById);
+router.get('/users/:id', authMiddleware, authController.getUserById);
 
 /**
  * @swagger
