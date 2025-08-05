@@ -1,0 +1,134 @@
+const db = require('../config/database/db');
+
+const UserModel = {
+    table: 'users',
+
+    toObject(row) {
+        if (!row) return null;
+        return {
+            id: row.id,
+            role: row.role,
+            email: row.email,
+            refreshToken: row.refresh_token
+        };
+    },
+
+    toEntity(user) {
+        if (!user) return null;
+        return {
+            id: user.id,
+            role: user.role,
+            email: user.email,
+            password: user.password,
+            refresh_token: user.refreshToken
+        };
+    },
+
+    async findById(userId) {
+        const [rows] = await db.execute(`SELECT *
+                                         FROM ${this.table}
+                                         WHERE id = ?
+                                         LIMIT 1`, [userId]);
+        return this.toObject(rows[0]);
+    },
+
+    async create(user) {
+        const entity = this.toEntity(user);
+        // Validation du format d'email
+        if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(entity.email)) {
+            throw new Error('Format d\'email invalide');
+        }
+        // Validation du mot de passe (au moins 8 caractères, une majuscule, une minuscule, un chiffre)
+        if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(entity.password)) {
+            throw new Error('Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre');
+        }
+        await db.execute(
+            `INSERT INTO ${this.table} (id, role, email, password, refresh_token)
+             VALUES (?, ?, ?, ?, ?)`,
+            [entity.id, entity.role, entity.email, entity.password, entity.refresh_token]
+        );
+    },
+
+    async findByEmail(email) {
+        const [rows] = await db.execute(`SELECT *
+                                         FROM ${this.table}
+                                         WHERE email = ?
+                                         LIMIT 1`,
+            [email]
+        );
+        return rows[0];
+    },
+
+    async storeRefreshToken(userId, token) {
+        await db.execute(
+            `UPDATE ${this.table}
+             SET refresh_token = ?
+             WHERE id = ?`,
+            [token, userId]
+        );
+    },
+
+    async updateRefreshToken(userId, newRefreshToken) {
+        await db.execute(
+            `UPDATE ${this.table}
+             SET refresh_token = ?
+             WHERE id = ?`,
+            [newRefreshToken, userId],
+        );
+    },
+
+    async getAll() {
+        const [rows] = await db.execute(`SELECT *
+                                         FROM ${this.table}
+                                         ORDER BY email ASC`);
+        return rows.map(this.toObject);
+    },
+
+    async updateById(userId, {email, role, password}) {
+        const fields = [];
+        const values = [];
+        if (email) {
+            fields.push('email = ?');
+            values.push(email);
+        }
+        if (role) {
+            fields.push('role = ?');
+            values.push(role);
+        }
+        if (password) {
+            fields.push('password = ?');
+            values.push(password);
+        }
+        if (fields.length === 0) return false;
+        values.push(userId);
+        const [result] = await db.execute(
+            `UPDATE ${this.table}
+             SET ${fields.join(', ')}
+             WHERE id = ?`,
+            values
+        );
+        return result.affectedRows > 0;
+    },
+
+    async deleteById(userId) {
+        const [result] = await db.execute(
+            `DELETE
+             FROM ${this.table}
+             WHERE id = ?`,
+            [userId]
+        );
+        return result.affectedRows > 0;
+    },
+
+    async updateRole(userId, role) {
+        const [result] = await db.execute(
+            `UPDATE ${this.table}
+             SET role = ?
+             WHERE id = ?`,
+            [role, userId]
+        );
+        return result.affectedRows > 0;
+    }
+};
+
+module.exports = UserModel;
