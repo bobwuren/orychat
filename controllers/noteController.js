@@ -26,32 +26,15 @@ exports.saveNotes = async (req, res) => {
                 return res.status(400).json({'error': 'Note value must be between 0 and 20.'});
             }
 
-            const id = require('../utils/idHelper').generateId();
-            const noteId = await NoteModel.save({id, userId, subjectId, serieId, value});
+            const noteId = await NoteModel.save({userId, subjectId, serieId, value});
             savedNotes.push(noteId);
         }
 
-        for (const note of notes) {
-            const {id, userId, subjectId, serieId, value} = note;
-
-            if (!userId || !subjectId || !serieId || value == null) {
-                console.log('⚠️ [Notes] Invalid note format:', note);
-                return res.status(400).json({'error': 'Invalid note format. Each note must have userId, subjectId, serieId, and value.'});
-            }
-
-            if (value < 0 || value > 20) {
-                console.log('⚠️ [Notes] Note value out of bounds:', value);
-                return res.status(400).json({'error': 'Note value must be between 0 and 20.'})
-            }
-
-            const noteId = await NoteModel.save({id, userId, subjectId, serieId, value});
-            savedNotes.push(noteId);
-        }
         console.log('✅ [Notes] Notes saved:', savedNotes);
         return res.status(201).json({
             "message": "Notes saved successfully.",
             "noteIds": savedNotes
-        })
+        });
     } catch (error) {
         console.error('❌ [Notes] Error saving notes:', error);
         return res.status(500).json({'error': `An error occurred while saving notes: ${error.message}`});
@@ -123,8 +106,7 @@ exports.createNote = async (req, res) => {
             console.log('⚠️ [Notes] Valeur hors bornes à la création');
             return res.status(400).json({error: 'La note doit être comprise entre 0 et 20'});
         }
-        const id = require('../utils/idHelper').generateId();
-        const noteId = await NoteModel.save({id, userId, subjectId, serieId, value});
+        const noteId = await NoteModel.save({userId, subjectId, serieId, value});
         console.log('✅ [Notes] Note créée avec succès');
         return res.status(201).json({message: 'Note créée', noteId});
     } catch (error) {

@@ -95,7 +95,7 @@ exports.logout = async (req, res) => {
 
     try {
         const decoded = require('../config/tokens/jwt').verifyRefreshToken(refreshToken);
-        const user = await UserModel.findById(decoded.uid);
+        const user = await UserModel.findById(decoded.userId);
         console.log('🔍 [Auth] Vérification token:', user && user.refreshToken === refreshToken ? '✅ Les tokens concordent' : '❌ Les tokens ne concordent pas 💀');
         if (!user || user.refreshToken !== refreshToken) {
             console.log('⚠️ [Auth] Déconnexion: utilisateur introuvable ou token non concordant');

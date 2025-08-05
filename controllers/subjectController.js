@@ -153,8 +153,7 @@ exports.exportSubjects = async (req, res) => {
 exports.createSubject = async (req, res) => {
     try {
         const {name, seriesCoefficients} = req.body;
-        const id = require('../utils/idHelper').generateId();
-        console.log('📝 [Subjects] Tentative de création de matière:', {id, name, seriesCoefficients});
+        console.log('📝 [Subjects] Tentative de création de matière:', {name, seriesCoefficients});
         
         if (!name || !name.trim() || name.length > 255) {
             console.log('⚠️ [Subjects] Champs manquants ou invalides à la création');
@@ -173,19 +172,23 @@ exports.createSubject = async (req, res) => {
         
         // Créer la matière avec ou sans coefficients
         if (seriesCoefficients && Array.isArray(seriesCoefficients) && seriesCoefficients.length > 0) {
-            await SubjectModel.createWithCoefficients(
-                {id, name: name.trim()}, 
+            const subjectId = await SubjectModel.createWithCoefficients(
+                {name: name.trim()}, 
                 seriesCoefficients
             );
+            console.log('✅ [Subjects] Matière créée avec succès');
+            return res.status(201).json({
+                message: 'Matière créée avec succès',
+                subject: {id: subjectId, name: name.trim(), seriesCoefficients: seriesCoefficients || []}
+            });
         } else {
-            await SubjectModel.create({id, name: name.trim()});
+            const subjectId = await SubjectModel.create({name: name.trim()});
+            console.log('✅ [Subjects] Matière créée avec succès');
+            return res.status(201).json({
+                message: 'Matière créée avec succès',
+                subject: {id: subjectId, name: name.trim(), seriesCoefficients: []}
+            });
         }
-        
-        console.log('✅ [Subjects] Matière créée avec succès');
-        return res.status(201).json({
-            message: 'Matière créée avec succès',
-            subject: {id, name: name.trim(), seriesCoefficients: seriesCoefficients || []}
-        });
     } catch (error) {
         if (error.status === 409) {
             console.log('🚫 [Subjects] Nom déjà utilisé à la création');

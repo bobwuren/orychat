@@ -19,7 +19,7 @@ exports.generateRecommendation = async (req, res) => {
       notes,
     });
 
-    const saved = await RecommendationModel.save({
+    const recommendationId = await RecommendationModel.save({
       userId: recommendation.userId,
       serieId: recommendation.serieId,
       orientations: recommendation.orientations,
@@ -29,19 +29,22 @@ exports.generateRecommendation = async (req, res) => {
     const allSeries = await require("../models/serieModel").getAll();
     const serieCode = allSeries.find(
       (s) => s.id === recommendation.serieId
-    ).code;
+    )?.code;
 
-    console.warn("\n💾💾Saved Recommendation: ", saved);
+    console.warn("\n💾💾Saved Recommendation: ", recommendationId);
+
+    // On récupère la recommandation complète pour la réponse
+    const savedReco = await RecommendationModel.getById(recommendationId);
 
     console.log(
       "✅ [Reco] Recommendation generated & saved:",
-      saved.id || saved
+      recommendationId
     );
 
     return res.status(200).json({
       message: "Recommendation generated successfully",
       recommendation: {
-        ...saved,
+        ...savedReco,
         serieCode,
       },
     });
@@ -92,7 +95,6 @@ exports.getUserRecommendations = async (req, res) => {
     const userId = req.user.id;
     console.log("🔎 [Reco] Get recommendations for user:", userId);
     const recommendations = await RecommendationModel.getByUserId(userId);
-    // Ajout enrichissement avec le code de série, mais sans mapping manuel inutile
     const SerieModel = require("../models/serieModel");
     const allSeries = await SerieModel.getAll();
     const mapped = recommendations.map((r) => {

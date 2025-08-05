@@ -5,7 +5,6 @@ exports.getAll = async (req, res) => {
     console.log('📚 [Degree] Récupération de tous les diplômes avec universités');
     try {
         const degrees = await DegreeModel.getAllWithUniversities();
-        console.log(`✅ [Degree] ${degrees.length} diplômes récupérés avec succès`);
         return res.status(200).json(degrees);
     } catch (error) {
         console.error('❌ [Degree] Erreur récupération diplômes:', error);
@@ -35,8 +34,6 @@ exports.create = async (req, res) => {
     console.log('🆕 [Degree] Création diplôme:', req.body);
     try {
         const degreeData = {...req.body};
-        const id = require('../utils/idHelper').generateId();
-        degreeData.id = id;
         const savedId = await DegreeModel.save(degreeData);
         const degree = await DegreeModel.getById(savedId);
         console.log(`✅ [Degree] Diplôme créé avec succès ID: ${savedId}`);
@@ -53,11 +50,11 @@ exports.update = async (req, res) => {
     try {
         const updated = await DegreeModel.update(req.params.id, req.body);
         if (!updated) {
-            console.warn('⚠️ [Degree] Diplôme non trouvé ou aucune modification:', req.params.id);
-            return res.status(404).json({error: 'Diplôme non trouvé ou aucune modification.'});
+            console.warn('⚠️ [Degree] Diplôme non trouvé ou rien à mettre à jour:', req.params.id);
+            return res.status(404).json({error: 'Diplôme non trouvé ou aucun champ à mettre à jour'});
         }
         const degree = await DegreeModel.getById(req.params.id);
-        console.log('✅ [Degree] Diplôme mis à jour avec succès:', req.params.id);
+        console.log('✅ [Degree] Diplôme mis à jour:', degree);
         return res.status(200).json(degree);
     } catch (error) {
         console.error('❌ [Degree] Erreur mise à jour diplôme:', error);
@@ -72,10 +69,10 @@ exports.delete = async (req, res) => {
         const deleted = await DegreeModel.delete(req.params.id);
         if (!deleted) {
             console.warn('⚠️ [Degree] Diplôme non trouvé pour suppression:', req.params.id);
-            return res.status(404).json({error: 'Diplôme non trouvé.'});
+            return res.status(404).json({error: 'Diplôme non trouvé'});
         }
-        console.log('✅ [Degree] Diplôme supprimé avec succès:', req.params.id);
-        return res.status(204).send();
+        console.log('✅ [Degree] Diplôme supprimé:', req.params.id);
+        return res.status(200).json({message: 'Diplôme supprimé'});
     } catch (error) {
         console.error('❌ [Degree] Erreur suppression diplôme:', error);
         return res.status(500).json({error: 'Erreur lors de la suppression du diplôme.'});
@@ -84,10 +81,8 @@ exports.delete = async (req, res) => {
 
 // Récupérer les diplômes d'une université
 exports.getByUniversityId = async (req, res) => {
-    console.log(`🏫 [Degree] Récupération diplômes université ID: ${req.params.universityId}`);
     try {
         const degrees = await DegreeModel.getByUniversityId(req.params.universityId);
-        console.log(`✅ [Degree] ${degrees.length} diplômes récupérés pour l'université ID: ${req.params.universityId}`);
         return res.status(200).json(degrees);
     } catch (error) {
         console.error('❌ [Degree] Erreur récupération diplômes université:', error);
@@ -97,18 +92,15 @@ exports.getByUniversityId = async (req, res) => {
 
 // Exporter tous les diplômes (CSV ou JSON)
 exports.exportAll = async (req, res) => {
-    const format = req.query.format === 'csv' ? 'csv' : 'json';
-    console.log(`📤 [Degree] Export diplômes format: ${format}`);
     try {
+        const format = req.query.format || 'json';
         const data = await DegreeModel.exportAll(format);
         if (format === 'csv') {
             res.header('Content-Type', 'text/csv');
             res.attachment('degrees.csv');
-            console.log('✅ [Degree] Diplômes exportés avec succès au format CSV');
             return res.send(data);
         }
-        console.log('✅ [Degree] Diplômes exportés avec succès au format JSON');
-        return res.status(200).json({degrees: data});
+        return res.status(200).json(data);
     } catch (error) {
         console.error('❌ [Degree] Erreur export diplômes:', error);
         return res.status(500).json({error: 'Erreur lors de l\'export des diplômes.'});
@@ -117,13 +109,11 @@ exports.exportAll = async (req, res) => {
 
 // Récupérer toutes les universités qui proposent ce diplôme
 exports.getUniversities = async (req, res) => {
-    console.log(`🏫 [Degree] Récupération universités pour diplôme ID: ${req.params.id}`);
     try {
         const universities = await DegreeModel.getUniversities(req.params.id);
-        console.log(`✅ [Degree] ${universities.length} universités récupérées pour le diplôme ID: ${req.params.id}`);
         return res.status(200).json(universities);
     } catch (error) {
-        console.error('❌ [Degree] Erreur récupération universités pour diplôme:', error);
-        return res.status(500).json({error: 'Erreur lors de la récupération des universités pour ce diplôme.'});
+        console.error('❌ [Degree] Erreur récupération universités du diplôme:', error);
+        return res.status(500).json({error: 'Erreur lors de la récupération des universités du diplôme.'});
     }
 };

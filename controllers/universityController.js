@@ -51,18 +51,17 @@ exports.getDegrees = async (req, res) => {
 exports.createUniversity = async (req, res) => {
     try {
         const {name, webSite, description, isSponsor, degrees} = req.body;
-        const id = require('../utils/idHelper').generateId();
-        console.log('🏫 [Universities] Tentative de création université:', {id, name, webSite, description, isSponsor, degrees});
+        console.log('🏫 [Universities] Tentative de création université:', {name, webSite, description, isSponsor, degrees});
         if (!name || !name.trim() || name.length > 255 || !Array.isArray(degrees) || degrees.length === 0) {
             console.log('⚠️ [Universities] Champs manquants ou invalides à la création (ou aucune formation fournie)');
             return res.status(400).json({error: 'Requête invalide : name et au moins une formation sont requis'});
         }
         // Utilisation du modèle pour la création et l'association
-        await UniversityModel.createWithDegrees({id, name: name.trim(), webSite, description, isSponsor: Boolean(isSponsor), degrees});
+        const universityId = await UniversityModel.createWithDegrees({name: name.trim(), webSite, description, isSponsor: Boolean(isSponsor), degrees});
         console.log('✅ [Universities] Université créée et liée à des formations avec succès');
         return res.status(201).json({
             message: 'Université créée et liée à des formations',
-            university: {id, name: name.trim(), webSite, description, isSponsor: Boolean(isSponsor), degrees}
+            university: {id: universityId, name: name.trim(), webSite, description, isSponsor: Boolean(isSponsor), degrees}
         });
     } catch (error) {
         if (error.status === 409) {

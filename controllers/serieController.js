@@ -60,19 +60,16 @@ exports.createSerie = async (req, res) => {
             return res.status(400).json({error: 'Le champ subjects doit être un tableau'});
         }
         
-        const id = require('../utils/idHelper').generateId();
-        
-        // Créer la série
-        await SerieModel.create({id, code: code.trim(), description: description.trim()});
+        const serieId = await SerieModel.create({code: code.trim(), description: description.trim()});
         
         // Ajouter les matières si fournies (la méthode addSubjects gère la validation)
         if (subjects && Array.isArray(subjects) && subjects.length > 0) {
-            await SerieModel.addSubjects(id, subjects);
+            await SerieModel.addSubjects(serieId, subjects);
         }
         
         // Récupérer la série créée avec ses matières
-        const createdSerie = await SerieModel.getById(id);
-        const serieSubjects = await SerieModel.getSubjects(id);
+        const createdSerie = await SerieModel.getById(serieId);
+        const serieSubjects = await SerieModel.getSubjects(serieId);
         
         console.log('✅ [Series] Serie créée avec succès');
         res.status(201).json({
