@@ -1,5 +1,4 @@
 const db = require("./db");
-const {v4: uuidv4} = require("uuid");
 
 async function seed() {
     try {
@@ -25,12 +24,11 @@ async function seed() {
         const seriesMap = new Map();
 
         for (const s of series) {
-            const id = uuidv4();
-            await db.execute(
-                "INSERT INTO series (id, code, description) VALUES (?, ?, ?)",
-                [id, s.code, s.description]
+            const [result] = await db.execute(
+                "INSERT INTO series (code, description) VALUES (?, ?)",
+                [s.code, s.description]
             );
-            seriesMap.set(s.code, id);
+            seriesMap.set(s.code, result.insertId);
         }
 
         console.log("✅ Séries créées avec succès");
@@ -44,12 +42,10 @@ async function seed() {
             {name: "Philosophie", coeff: {A4: 4, B: 3, C: 2, D: 2, E: 2, F1: 2, F2: 2, F3: 2, F4: 2, G1: 2, G2: 2, G3: 2, Ti: 2}},
             {name: "Histoire-Géographie", coeff: {A4: 4, B: 4, C: 2, D: 2, E: 2, F1: 2, F2: 2, F3: 2, F4: 2, G1: 2, G2: 2, G3: 2, Ti: 2}},
             {name: "Education Civique et Morale", coeff: {A4: 1, B: 1, C: 1, D: 1, E: 1, F1: 1, F2: 1, F3: 1, F4: 1, G1: 1, G2: 1, G3: 1, Ti: 1}},
-            
             // Matières scientifiques
             {name: "Physique-Chimie", coeff: {C: 6, D: 3, E: 4, F1: 3, F2: 3, F3: 3, F4: 3, Ti: 4}},
             {name: "Sciences de la Vie et de la Terre", coeff: {D: 6, C: 2}},
             {name: "Sciences Physiques", coeff: {E: 5, Ti: 5}},
-            
             // Matières techniques
             {name: "Technologie", coeff: {E: 6, F1: 8, F2: 8, F3: 8, F4: 8, Ti: 8}},
             {name: "Dessin Technique", coeff: {E: 3, F1: 4, F2: 4, F3: 4, F4: 4, Ti: 4}},
@@ -58,7 +54,6 @@ async function seed() {
             {name: "Électronique", coeff: {F3: 8}},
             {name: "Génie Civil", coeff: {F4: 8}},
             {name: "Construction Mécanique", coeff: {F2: 4, Ti: 4}},
-            
             // Matières économiques et gestion
             {name: "Sciences Économiques et Sociales", coeff: {B: 6}},
             {name: "Comptabilité", coeff: {G2: 8, G1: 2, G3: 3}},
@@ -68,26 +63,23 @@ async function seed() {
             {name: "Techniques Commerciales", coeff: {G3: 8}},
             {name: "Marketing", coeff: {G3: 4}},
             {name: "Communication", coeff: {G1: 4, G3: 3}},
-            
             // Matières littéraires
             {name: "Littérature", coeff: {A4: 4}},
             {name: "Latin", coeff: {A4: 2}},
             {name: "Grec", coeff: {A4: 2}},
-            
             // Langues
             {name: "Allemand", coeff: {A4: 2, B: 2, C: 2, D: 2}},
             {name: "Espagnol", coeff: {A4: 2, B: 2, C: 2, D: 2}},
-            
             // Informatique (matière moderne ajoutée)
             {name: "Informatique", coeff: {A4: 1, B: 2, C: 2, D: 2, E: 3, F1: 3, F2: 3, F3: 4, F4: 3, G1: 4, G2: 3, G3: 3, Ti: 4}}
         ];
 
         for (const subj of subjects) {
-            const subjectId = uuidv4();
-            await db.execute(
-                "INSERT INTO subjects (id, name) VALUES (?, ?)",
-                [subjectId, subj.name]
+            const [result] = await db.execute(
+                "INSERT INTO subjects (name) VALUES (?)",
+                [subj.name]
             );
+            const subjectId = result.insertId;
 
             if (subj.coeff) {
                 for (const [code, coeff] of Object.entries(subj.coeff)) {
@@ -119,12 +111,10 @@ async function seed() {
             "Licence Professionnelle en E-commerce",
             "Licence Professionnelle en Infographie et Multimédia",
             "Licence Professionnelle en Télécommunications",
-            
             // Licences académiques
             "Licence en Informatique",
             "Licence en Mathématiques-Informatique",
             "Licence en Télécommunications",
-            
             // Masters
             "Master en Informatique",
             "Master en Génie Logiciel",
@@ -133,13 +123,11 @@ async function seed() {
             "Master en Intelligence Artificielle",
             "Master en Data Science et Big Data",
             "Master en Télécommunications",
-            
             // BTS
             "BTS Informatique de Gestion",
             "BTS Maintenance Informatique",
             "BTS Électronique",
             "BTS Télécommunications",
-            
             // Autres formations
             "Ingénieur en Informatique",
             "Ingénieur en Télécommunications",
@@ -149,12 +137,11 @@ async function seed() {
         // Insérer les diplômes
         const degreeMap = new Map();
         for (const degreeName of allDegrees) {
-            const degreeId = uuidv4();
-            await db.execute(
-                "INSERT INTO degrees (id, name) VALUES (?, ?)",
-                [degreeId, degreeName]
+            const [result] = await db.execute(
+                "INSERT INTO degrees (name) VALUES (?)",
+                [degreeName]
             );
-            degreeMap.set(degreeName, degreeId);
+            degreeMap.set(degreeName, result.insertId);
         }
 
         console.log("✅ Formations créées avec succès");
@@ -162,7 +149,6 @@ async function seed() {
         // Vraies universités et instituts togolais du numérique
         const universities = [
             {
-                id: uuidv4(),
                 name: "Institut Africain d'Informatique (IAI-TOGO)",
                 web_site: "https://iai.tg",
                 description: "Institut de référence en informatique en Afrique de l'Ouest, formations de qualité en informatique et télécommunications.",
@@ -177,7 +163,6 @@ async function seed() {
                 ]
             },
             {
-                id: uuidv4(),
                 name: "Université de Lomé (UL)",
                 web_site: "https://univ-lome.tg",
                 description: "Université publique du Togo, Faculté des Sciences et École Supérieure d'Informatique.",
@@ -191,7 +176,6 @@ async function seed() {
                 ]
             },
             {
-                id: uuidv4(),
                 name: "École Supérieure d'Informatique et de Gestion (ESIG)",
                 web_site: "https://esig.tg",
                 description: "École privée spécialisée en informatique et gestion, formations professionnalisantes.",
@@ -205,7 +189,6 @@ async function seed() {
                 ]
             },
             {
-                id: uuidv4(),
                 name: "Institut Supérieur des Sciences et Techniques (ISST)",
                 web_site: "https://isst.tg",
                 description: "Institut technique supérieur offrant des formations en informatique et électronique.",
@@ -218,7 +201,6 @@ async function seed() {
                 ]
             },
             {
-                id: uuidv4(),
                 name: "École Supérieure de Commerce et de Gestion (ESCG)",
                 web_site: "https://escg.tg",
                 description: "École de commerce avec spécialisation en systèmes d'information et e-commerce.",
@@ -230,7 +212,6 @@ async function seed() {
                 ]
             },
             {
-                id: uuidv4(),
                 name: "Institut des Sciences et Techniques de l'Information (ISTI)",
                 web_site: "https://isti.tg",
                 description: "Institut spécialisé dans les nouvelles technologies et l'intelligence artificielle.",
@@ -243,7 +224,6 @@ async function seed() {
                 ]
             },
             {
-                id: uuidv4(),
                 name: "École Supérieure des Télécommunications (EST)",
                 web_site: "https://est.tg",
                 description: "École spécialisée en télécommunications et réseaux.",
@@ -256,7 +236,6 @@ async function seed() {
                 ]
             },
             {
-                id: uuidv4(),
                 name: "Institut Supérieur de Communication Numérique (ISCN)",
                 web_site: "https://iscn.tg",
                 description: "Institut moderne axé sur la communication numérique et le multimédia.",
@@ -268,7 +247,6 @@ async function seed() {
                 ]
             },
             {
-                id: uuidv4(),
                 name: "Université de Kara (UK)",
                 web_site: "https://univ-kara.tg",
                 description: "Université publique du Nord-Togo avec département informatique.",
@@ -280,7 +258,6 @@ async function seed() {
                 ]
             },
             {
-                id: uuidv4(),
                 name: "École Africaine de Développement (EAD-Togo)",
                 web_site: "https://ead.tg",
                 description: "École privée proposant des formations en développement informatique et gestion de projet.",
@@ -294,17 +271,18 @@ async function seed() {
         ];
 
         for (const u of universities) {
-            await db.execute(
-                "INSERT INTO universities (id, name, web_site, description, is_sponsor, created_at) VALUES (?, ?, ?, ?, ?, NOW())",
-                [u.id, u.name, u.web_site, u.description, u.is_sponsor]
+            const [result] = await db.execute(
+                "INSERT INTO universities (name, web_site, description, is_sponsor, created_at) VALUES (?, ?, ?, ?, NOW())",
+                [u.name, u.web_site, u.description, u.is_sponsor]
             );
-            
+            const universityId = result.insertId;
+
             for (const degreeName of u.degrees) {
                 const degreeId = degreeMap.get(degreeName);
                 if (degreeId) {
                     await db.execute(
                         "INSERT INTO university_degrees (university_id, degree_id) VALUES (?, ?)",
-                        [u.id, degreeId]
+                        [universityId, degreeId]
                     );
                 }
             }
