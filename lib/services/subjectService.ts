@@ -1,7 +1,7 @@
 import apiService from '@/lib/services/apiService';
 import {Subject} from '@/types/subject';
 
-export const getSubjectsySerie = async (serieId: string): Promise<Subject[]> => {
+export const getSubjectsySerie = async (serieId: number): Promise<Subject[]> => {
     try {
         const response = await apiService.get(`/api/subjects/serie/${serieId}`);
         console.log('📜 Réponse brute matières:\n', response.data);

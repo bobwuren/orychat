@@ -2,7 +2,7 @@ import {Recommendation} from '@/types/recommendation';
 import apiService from '@/lib/services/apiService';
 import {Note} from '@/types/note';
 
-export const getARecommendation = async (userId: string, serieId: string, notes: Note[]): Promise<Recommendation> => {
+export const getARecommendation = async (userId: number, serieId: number, notes: Note[]): Promise<Recommendation> => {
     try {
         console.log('🔍 Récupération de la recommandation pour l\'utilisateur:', userId, ' série:', serieId);
 
@@ -22,7 +22,7 @@ export const getARecommendation = async (userId: string, serieId: string, notes:
     }
 }
 
-    export const getUserRecommendationsHistory = async (userId: string): Promise<Recommendation[]> => {
+    export const getUserRecommendationsHistory = async (userId: number): Promise<Recommendation[]> => {
         try {
             console.log('🔍 Récupération de l\'historique des recommandations pour l\'utilisateur:', userId);
 
