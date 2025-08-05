@@ -208,7 +208,7 @@ export default function DashboardPage() {
                                 {series.map((serie) => {
                                     const Icon = getSerieIcon(serie.code)
                                     return (
-                                        <SelectItem key={serie.id} value={serie.id} className="py-3 sm:py-4 lg:py-5 rounded-lg hover:bg-primary/5 transition-colors">
+                                        <SelectItem key={serie.id} value={String(serie.id)} className="py-3 sm:py-4 lg:py-5 rounded-lg hover:bg-primary/5 transition-colors">
                                             <div className="flex items-center gap-3 lg:gap-4 w-full">
                                                 <div className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 bg-primary/15 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                                                     <Icon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-primary"/>
@@ -234,7 +234,7 @@ export default function DashboardPage() {
                             <Card
                                 key={serie.id}
                                 className="group cursor-pointer hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 hover:scale-[1.02] border-0 shadow-lg bg-card/50 backdrop-blur-sm overflow-hidden active:scale-95"
-                                onClick={() => handleSerieSelect(serie.id)}
+                                onClick={() => handleSerieSelect(String(serie.id))}
                             >
                                 <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-secondary/8 opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
                                 <CardContent className="p-3 sm:p-4 lg:p-5 relative">

@@ -69,8 +69,8 @@ const RecommendationPage = () => {
 
     useEffect(() => {
         const fetchOrLoadRecommendation = async () => {
-            const userId = localStorage.getItem('userId');
-            const serieId = localStorage.getItem('selectedSerieId');
+            const userId = Number(localStorage.getItem('userId'));
+            const serieId = Number(localStorage.getItem('selectedSerieId'));
             const notesStr = localStorage.getItem('notes');
             
             // Vérifier d'abord si les données requises sont disponibles
@@ -103,7 +103,7 @@ const RecommendationPage = () => {
             try {
 
                 const notesArr = Object.entries(JSON.parse(notesStr)).map(([subjectId, value]) => ({
-                    subjectId,
+                    subjectId: Number(subjectId),
                     value: Number(value),
                     userId,
                     serieId

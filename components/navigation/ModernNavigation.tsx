@@ -36,7 +36,7 @@ interface ModernNavigationProps {
 }
 
 interface UserInfo {
-    id: string;
+    id: number;
     email: string;
     name?: string;
     role: string;

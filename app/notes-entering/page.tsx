@@ -45,7 +45,7 @@ function getScoreBackground(note: number) {
 export default function NotesEnteringPage() {
   const router = useRouter();
   const [series, setSeries] = useState<Serie[]>([]);
-  const [selectedSerie, setSelectedSerie] = useState<string>("");
+  const [selectedSerie, setSelectedSerie] = useState<number>(0);
   const [notes, setNotes] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
   const [errorKey, setErrorKey] = useState(0);
@@ -59,7 +59,8 @@ export default function NotesEnteringPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const serieId = localStorage.getItem("selectedSerieId") || "";
+      const serieIdStr = localStorage.getItem("selectedSerieId") || "";
+      const serieId = Number(serieIdStr);
       setSelectedSerie(serieId);
 
       if (!serieId) {
@@ -124,7 +125,7 @@ export default function NotesEnteringPage() {
   const progress =
     subjects.length > 0 ? (filledSubjectsCount / subjects.length) * 100 : 0;
 
-  const handleNoteChange = (subjectId: string, value: string) => {
+  const handleNoteChange = (subjectId: number, value: string) => {
     const numValue = parseFloat(value);
     if (isNaN(numValue) || numValue < 0 || numValue > 20) return;
     const newNotes = {

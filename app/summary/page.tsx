@@ -32,7 +32,7 @@ function getSubjectIcon(name: string) {
 export default function SummaryPage() {
     const router = useRouter()
     const [series, setSeries] = useState<Serie[]>([])
-    const [selectedSerie, setSelectedSerie] = useState<string>("")
+    const [selectedSerie, setSelectedSerie] = useState<number | null>(null)
     const [notes, setNotes] = useState<Record<string, number>>({})
     const [loading, setLoading] = useState(true)
 
@@ -48,7 +48,7 @@ export default function SummaryPage() {
             const serieId = localStorage.getItem("selectedSerieId") || ""
             const notesStr = localStorage.getItem("notes")
             
-            setSelectedSerie(serieId)
+            setSelectedSerie(serieId ? Number(serieId) : null)
             
             if (!serieId) {
                 router.push("/dashboard")

@@ -66,7 +66,7 @@ const RecommendationHistory = () => {
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const userId = localStorage.getItem("userId");
+                const userId = Number(localStorage.getItem("userId"));
                 if (!userId) {
                     setError("Utilisateur non connecté");
                     setTimeout(() => router.push("/login"), 2000);

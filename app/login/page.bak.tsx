@@ -1,4 +1,3 @@
-// Backup of previous login page before refactor
 "use client";
 
 import { useEffect, useState } from "react";
@@ -39,7 +38,8 @@ export default function Page() {
 
   // Affiche le formulaire immédiatement, puis redirige si déjà authentifié
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
+    const userIdStr = localStorage.getItem("userId");
+    const userId = userIdStr ? Number(userIdStr) : null;
     if (userId) {
       router.push("/dashboard");
     }
