@@ -15,12 +15,12 @@ module.exports = async (req, res, next) => {
     try {
         const decoded = verifyAccessToken(token);
         //On recupere le role de l'utilisateur
-        const user = await UserModel.findById(decoded.uid);
+        const user = await UserModel.findById(decoded.userId);
         if (!user) return res.status(401).json({
             error: 'Unauthorized access: User not found'
         })
-        req.user = {id: decoded.uid, role: user.role};
-        console.log(`✅ [Auth Middleware] Token OK for user: ${decoded.uid}`);
+        req.user = {id: decoded.userId, role: user.role};
+        console.log(`✅ [Auth Middleware] Token OK for user: ${decoded.userId}`);
         next();
     } catch (error) {
         console.log('[Auth Middleware Error]:', error);
