@@ -20,7 +20,6 @@ const DegreeModel = {
     toEntity(degree) {
         if (!degree) return null;
         return {
-            id: degree.id,
             name: degree.name,
             description: degree.description
         };
@@ -28,13 +27,12 @@ const DegreeModel = {
 
     async save(degreeData) {
         let entity = this.toEntity(degreeData);
-        if (!entity.id) entity.id = require('uuid').v4();
-        await db.execute(
-            `INSERT INTO ${this.table} (id, name, description)
-             VALUES (?, ?, ?)`,
-            [entity.id, entity.name, entity.description || null]
+        const [result] = await db.execute(
+            `INSERT INTO ${this.table} (name, description)
+             VALUES (?, ?)`,
+            [entity.name, entity.description || null]
         );
-        return entity.id;
+        return result.insertId;
     },
 
     async getAll() {
@@ -67,7 +65,6 @@ const DegreeModel = {
             WHERE ud.degree_id IN (${placeholders})
         `, degreeIds);
         
-        console.log('🎓 [DegreeModel] Relations trouvées:', relations.length);
         console.log('🎓 [DegreeModel] Relations trouvées:', relations.length);
         
         // Créer un map pour associer rapidement les universités à chaque diplôme

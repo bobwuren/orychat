@@ -1,5 +1,4 @@
 const db = require('../config/database/db');
-const {v4: uuidv4} = require('uuid');
 
 const RecommendationModel = {
     table: 'recommendations',
@@ -27,34 +26,21 @@ const RecommendationModel = {
     toEntity(recommendation) {
         if (!recommendation) return null;
         return {
-            id: recommendation.id,
             user_id: recommendation.userId,
             serie_id: recommendation.serieId,
             orientations: JSON.stringify(recommendation.orientations),
-            note_ids: recommendation.noteIds ? JSON.stringify(recommendation.noteIds) : null,
-            created_at: recommendation.createdAt
+            note_ids: recommendation.noteIds ? JSON.stringify(recommendation.noteIds) : null
         };
     },
 
     async save(recommendationData) {
-        const entity = this.toEntity({
-            ...recommendationData,
-            createdAt: new Date().toISOString().slice(0, 19).replace('T', ' ')
-        });
-        if (!entity.id) entity.id = uuidv4();
-        await db.execute(
-            `INSERT INTO ${this.table} (id, user_id, serie_id, orientations, note_ids, created_at)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [entity.id, entity.user_id, entity.serie_id, entity.orientations, entity.note_ids, entity.created_at]
+        const entity = this.toEntity(recommendationData);
+        const [result] = await db.execute(
+            `INSERT INTO ${this.table} (user_id, serie_id, orientations, note_ids, created_at)
+             VALUES (?, ?, ?, ?, NOW())`,
+            [entity.user_id, entity.serie_id, entity.orientations, entity.note_ids]
         );
-        return this.toObject({
-            id: entity.id,
-            user_id: entity.user_id,
-            serie_id: entity.serie_id,
-            orientations: entity.orientations,
-            note_ids: entity.note_ids,
-            created_at: entity.created_at
-        });
+        return result.insertId;
     },
 
     async getByUserId(userId) {

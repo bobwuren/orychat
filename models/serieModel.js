@@ -15,7 +15,6 @@ const SerieModel = {
     toEntity(serie) {
         if (!serie) return null;
         return {
-            id: serie.id,
             code: serie.code,
             description: serie.description
         };
@@ -49,12 +48,12 @@ const SerieModel = {
             err.status = 409;
             throw err;
         }
-        await db.execute(
-            `INSERT INTO ${this.table} (id, code, description)
-             VALUES (?, ?, ?)`,
-            [entity.id, entity.code, entity.description]
+        const [result] = await db.execute(
+            `INSERT INTO ${this.table} (code, description)
+             VALUES (?, ?)`,
+            [entity.code, entity.description]
         );
-        return entity.id;
+        return result.insertId;
     },
 
     async update(id, serieData) {

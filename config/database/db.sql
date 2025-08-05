@@ -5,7 +5,7 @@ USE orientys_db;
 -- Table des utilisateurs
 CREATE TABLE IF NOT EXISTS users
 (
-    id            VARCHAR(36) PRIMARY KEY,
+    id            INT AUTO_INCREMENT PRIMARY KEY,
     role          VARCHAR(20)  NOT NULL DEFAULT 'client',
     email         VARCHAR(255) NOT NULL UNIQUE,
     CHECK (email REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'),
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users
 -- Table des séries
 CREATE TABLE IF NOT EXISTS series
 (
-    id          VARCHAR(36) PRIMARY KEY,
+    id          INT AUTO_INCREMENT PRIMARY KEY,
     code        VARCHAR(10) NOT NULL UNIQUE,
     description TEXT        NOT NULL
 );
@@ -25,15 +25,15 @@ CREATE TABLE IF NOT EXISTS series
 -- Table des matières
 CREATE TABLE IF NOT EXISTS subjects
 (
-    id   VARCHAR(36) PRIMARY KEY,
+    id   INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE
 );
 
 -- Table pivot : coefficients des matières selon la série
 CREATE TABLE IF NOT EXISTS subject_coefficients
 (
-    subject_id  VARCHAR(36),
-    serie_id    VARCHAR(36),
+    subject_id  INT,
+    serie_id    INT,
     coefficient INT NOT NULL DEFAULT 1,
     PRIMARY KEY (subject_id, serie_id),
     FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE,
@@ -43,10 +43,10 @@ CREATE TABLE IF NOT EXISTS subject_coefficients
 -- Table des notes
 CREATE TABLE IF NOT EXISTS notes
 (
-    id         VARCHAR(36) PRIMARY KEY,
-    user_id    VARCHAR(36),
-    subject_id VARCHAR(36),
-    serie_id   VARCHAR(36),
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT,
+    subject_id INT,
+    serie_id   INT,
     value      DECIMAL(5, 2) CHECK (value >= 0 AND value <= 20),
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE,
@@ -56,9 +56,9 @@ CREATE TABLE IF NOT EXISTS notes
 -- Table des recommandations
 CREATE TABLE IF NOT EXISTS recommendations
 (
-    id           VARCHAR(36) PRIMARY KEY,
-    user_id      VARCHAR(36),
-    serie_id     VARCHAR(36),
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    user_id      INT,
+    serie_id     INT,
     orientations JSON NOT NULL,
     note_ids     JSON,
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS recommendations
 -- Table des universités
 CREATE TABLE IF NOT EXISTS universities
 (
-    id          VARCHAR(36) PRIMARY KEY,
+    id          INT AUTO_INCREMENT PRIMARY KEY,
     name        VARCHAR(255) NOT NULL,
     web_site    VARCHAR(255),
     description TEXT,
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS universities
 -- Table des diplômes/filieres
 CREATE TABLE IF NOT EXISTS degrees
 (
-    id          VARCHAR(36) PRIMARY KEY,
+    id          INT AUTO_INCREMENT PRIMARY KEY,
     name        VARCHAR(255) NOT NULL UNIQUE,
     description TEXT
 );
@@ -88,8 +88,8 @@ CREATE TABLE IF NOT EXISTS degrees
 -- Table de liaison universités <-> diplômes/filieres (optionnel, pour évolutivité)
 CREATE TABLE IF NOT EXISTS university_degrees
 (
-    university_id VARCHAR(36),
-    degree_id     VARCHAR(36),
+    university_id INT,
+    degree_id     INT,
     PRIMARY KEY (university_id, degree_id),
     FOREIGN KEY (university_id) REFERENCES universities (id) ON DELETE CASCADE,
     FOREIGN KEY (degree_id) REFERENCES degrees (id) ON DELETE CASCADE

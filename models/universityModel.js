@@ -1,5 +1,4 @@
 const db = require('../config/database/db');
-const {v4: uuidv4} = require('uuid');
 
 const UniversityModel = {
     table: 'universities',
@@ -28,25 +27,21 @@ const UniversityModel = {
     toEntity(obj) {
         if (!obj) return null;
         return {
-            id: obj.id,
             name: obj.name,
             web_site: obj.webSite,
             description: obj.description,
-            is_sponsor: obj.isSponsor,
-            created_at: obj.createdAt
+            is_sponsor: obj.isSponsor
         };
     },
 
     async save(universityData) {
         const entity = this.toEntity(universityData);
-        const id = entity.id || uuidv4();
-        const createdAt = entity.created_at || new Date().toISOString().slice(0, 19).replace('T', ' ');
-        await db.execute(
-            `INSERT INTO ${this.table} (id, name, web_site, description, is_sponsor, created_at)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [id, entity.name, entity.web_site || null, entity.description || null, entity.is_sponsor || false, createdAt]
+        const [result] = await db.execute(
+            `INSERT INTO ${this.table} (name, web_site, description, is_sponsor, created_at)
+             VALUES (?, ?, ?, ?, NOW())`,
+            [entity.name, entity.web_site || null, entity.description || null, entity.is_sponsor || false]
         );
-        return this.toObject({...entity, id, created_at: createdAt});
+        return result.insertId;
     },
 
     async getAllSponsors() {
@@ -88,7 +83,7 @@ const UniversityModel = {
         const fields = [];
         const values = [];
         for (const key in entity) {
-            if (key !== 'id' && entity[key] !== undefined && this.columns.includes(key)) {
+            if (entity[key] !== undefined && this.columns.includes(key)) {
                 fields.push(`${key} = ?`);
                 values.push(entity[key]);
             }
@@ -197,7 +192,7 @@ const UniversityModel = {
     },
 
     // Créer une université et lier des diplômes
-    async createWithDegrees({id, name, webSite, description, isSponsor, degrees}) {
+    async createWithDegrees({name, webSite, description, isSponsor, degrees}) {
         // Vérification unicité du nom
         const [existing] = await db.execute(`SELECT id FROM ${this.table} WHERE name = ? LIMIT 1`, [name]);
         if (existing.length > 0) {
@@ -206,18 +201,19 @@ const UniversityModel = {
             throw err;
         }
         // Création de l'université
-        await db.execute(
-            `INSERT INTO ${this.table} (id, name, web_site, description, is_sponsor) VALUES (?, ?, ?, ?, ?)`,
-            [id, name, webSite || null, description || null, isSponsor || false]
+        const [result] = await db.execute(
+            `INSERT INTO ${this.table} (name, web_site, description, is_sponsor) VALUES (?, ?, ?, ?)`,
+            [name, webSite || null, description || null, isSponsor || false]
         );
+        const universityId = result.insertId;
         // Lier les diplômes
         for (const degreeId of degrees) {
             await db.execute(
                 `INSERT INTO university_degrees (university_id, degree_id) VALUES (?, ?)`,
-                [id, degreeId]
+                [universityId, degreeId]
             );
         }
-        return id;
+        return universityId;
     },
 
     // Mettre à jour une université et ses diplômes

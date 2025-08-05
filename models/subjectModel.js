@@ -16,7 +16,6 @@ const SubjectModel = {
     toEntity(subject) {
         if (!subject) return null;
         return {
-            id: subject.id,
             name: subject.name,
             coefficient: subject.coefficient,
             serie_id: subject.serieId
@@ -75,12 +74,12 @@ const SubjectModel = {
             err.status = 409;
             throw err;
         }
-        await db.execute(
-            `INSERT INTO ${this.table} (id, name)
-             VALUES (?, ?)`,
-            [entity.id, entity.name]
+        const [result] = await db.execute(
+            `INSERT INTO ${this.table} (name)
+             VALUES (?)`,
+            [entity.name]
         );
-        return entity.id;
+        return result.insertId;
     },
 
     async update(id, subjectData) {

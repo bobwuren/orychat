@@ -35,15 +35,12 @@ const NoteModel = {
 
     async save(noteData) {
         let entity = this.toEntity(noteData);
-        if (!entity.id) {
-            entity.id = uuidv4();
-        }
-        const sql = `
-            INSERT INTO ${this.table} (id, user_id, subject_id, serie_id, value)
-            VALUES (?, ?, ?, ?, ?)
-        `;
-        await db.execute(sql, [entity.id, entity.user_id, entity.subject_id, entity.serie_id, entity.value]);
-        return entity.id;
+        const [result] = await db.execute(
+            `INSERT INTO ${this.table} (user_id, subject_id, serie_id, value)
+             VALUES (?, ?, ?, ?)`,
+            [entity.user_id, entity.subject_id, entity.serie_id, entity.value]
+        );
+        return result.insertId;
     },
 
     async getAll() {

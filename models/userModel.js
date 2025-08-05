@@ -16,7 +16,6 @@ const UserModel = {
     toEntity(user) {
         if (!user) return null;
         return {
-            id: user.id,
             role: user.role,
             email: user.email,
             password: user.password,
@@ -42,11 +41,12 @@ const UserModel = {
         if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(entity.password)) {
             throw new Error('Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre');
         }
-        await db.execute(
-            `INSERT INTO ${this.table} (id, role, email, password, refresh_token)
-             VALUES (?, ?, ?, ?, ?)`,
-            [entity.id, entity.role, entity.email, entity.password, entity.refresh_token]
+        const [result] = await db.execute(
+            `INSERT INTO ${this.table} (role, email, password, refresh_token)
+             VALUES (?, ?, ?, ?)`,
+            [entity.role, entity.email, entity.password, entity.refresh_token]
         );
+        return result.insertId;
     },
 
     async findByEmail(email) {
