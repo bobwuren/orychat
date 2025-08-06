@@ -117,7 +117,7 @@ export default function DegreesPage() {
         setIsDetailsOpen(true);
     };
 
-    const handleDelete = async (degreeId: string) => {
+    const handleDelete = async (degreeId: number) => {
         try {
             await deleteDegree(degreeId);
             await loadData(); // Recharger les données
@@ -431,7 +431,7 @@ export default function DegreesPage() {
                                             {selectedDegree.name}
                                         </Badge>
                                         <Badge variant="outline" className="text-xs">
-                                            ID: {selectedDegree.id.slice(0, 8)}...
+                                            ID: {selectedDegree.id}...
                                         </Badge>
                                     </div>
                                     <p className="text-sm text-muted-foreground leading-relaxed">

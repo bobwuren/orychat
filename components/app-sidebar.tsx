@@ -73,7 +73,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
         const loadCurrentUser = async () => {
             try {
                 // Récupérer l'ID de l'admin depuis le localStorage
-                const adminId = localStorage.getItem("adminId")
+                const adminId = Number(localStorage.getItem("adminId"));
                 if (adminId) {
                     const user = await getCurrentUser(adminId)
                     setCurrentUser(user)

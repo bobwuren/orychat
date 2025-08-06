@@ -96,7 +96,7 @@ export default function SeriesPage() {
         setIsDetailsOpen(true);
     };
 
-    const handleDelete = async (serieId: string) => {
+    const handleDelete = async (serieId: number) => {
         try {
             await deleteSerie(serieId);
             await loadData(); // Recharger les données
@@ -374,7 +374,7 @@ export default function SeriesPage() {
                                             {selectedSerie.code}
                                         </Badge>
                                         <Badge variant="outline" className="text-xs">
-                                            ID: {selectedSerie.id.slice(0, 8)}...
+                                            ID: {selectedSerie.id}
                                         </Badge>
                                     </div>
                                     <p className="text-sm text-muted-foreground leading-relaxed">

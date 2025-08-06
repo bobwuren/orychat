@@ -158,7 +158,7 @@ export default function SubjectsPage() {
         setIsDetailsOpen(true);
     };
 
-    const handleDelete = async (subjectId: string) => {
+    const handleDelete = async (subjectId: number) => {
         try {
             await (await import('@/lib/services/subjectAdminService')).deleteSubject(subjectId);
             await loadData(); // Recharger les données
@@ -435,7 +435,7 @@ export default function SubjectsPage() {
                                             {selectedSubject.name}
                                         </Badge>
                                         <Badge variant="outline" className="text-xs">
-                                            ID: {selectedSubject.id.slice(0, 8)}...
+                                            ID: {selectedSubject.id}
                                         </Badge>
                                     </div>
                                     <p className="text-sm text-muted-foreground leading-relaxed">

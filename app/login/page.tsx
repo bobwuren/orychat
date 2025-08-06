@@ -2,7 +2,6 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Auth } from "@/components/auth/AuthForm";
-import apiServiceAdmin, { setSessionAdmin } from "@/lib/services/apiServiceAdmin";
 
 export default function Page() {
     const router = useRouter();

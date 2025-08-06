@@ -71,7 +71,7 @@ export default function UniversitiesPage() {
         setSelectedUniversity(university);
         setIsDetailsOpen(true);
     };
-    const handleDelete = async (universityId: string) => {
+    const handleDelete = async (universityId: number) => {
         try {
             await deleteUniversity(universityId);
             await loadData();

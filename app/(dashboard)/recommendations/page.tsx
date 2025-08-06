@@ -9,7 +9,7 @@ import { DataTable } from "@/components/ui/data-table"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "@/hooks/use-toast"
-import { getAllRecommendations, deleteRecommendation, exportRecommendations } from "@/lib/services/recommendationAdminService"
+import { getAllRecommendations, exportRecommendations } from "@/lib/services/recommendationAdminService"
 import { Recommendation } from "@/types/entities"
 import { columns } from "./columns"
 import {
@@ -87,24 +87,6 @@ export default function RecommendationsPage() {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteRecommendation(id)
-      await loadRecommendations() // Recharger les données
-      toast({
-        title: "Recommandation supprimée",
-        description: "La recommandation a été supprimée avec succès",
-      })
-    } catch (error) {
-      console.error('❌ Erreur lors de la suppression:', error)
-      toast({
-        title: "Erreur de suppression",
-        description: "Impossible de supprimer la recommandation",
-        variant: "destructive",
-      })
-    }
-  }
-
   const handleView = (recommendation: Recommendation) => {
     setSelectedRecommendation(recommendation)
     setIsViewDialogOpen(true)
@@ -114,7 +96,7 @@ export default function RecommendationsPage() {
     setIsExporting(true)
     try {
       const exportData = await exportRecommendations()
-      
+
       if (format === 'csv') {
         // Convertir les données en CSV
         const csvContent = convertToCSV(filteredRecommendations)
@@ -444,7 +426,7 @@ export default function RecommendationsPage() {
         </CardHeader>
         <CardContent className="p-0">
           <DataTable
-            columns={columns(handleView, handleDelete)}
+            columns={columns(handleView)}
             data={filteredRecommendations}
           />
         </CardContent>
@@ -485,7 +467,7 @@ export default function RecommendationsPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm font-medium text-muted-foreground">ID Utilisateur:</span>
-                      <code className="text-xs bg-muted px-2 py-1 rounded">{selectedRecommendation.userId.slice(0, 8)}...</code>
+                      <code className="text-xs bg-muted px-2 py-1 rounded">{selectedRecommendation.userId}</code>
                     </div>
                   </CardContent>
                 </Card>
