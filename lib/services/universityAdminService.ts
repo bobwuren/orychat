@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import apiServiceAdmin from '@/lib/services/apiServiceAdmin';
 import {Degree, University} from '@/types/entities';
 
@@ -17,40 +18,8 @@ export const getAllUniversities = async (): Promise<University[]> => {
     }
 };
 
-// Récupérer toutes les universités sponsors
-export const getAllSponsors = async (): Promise<University[]> => {
-    console.log('⭐ [universityAdminService][GET SPONSORS] /api/universities/sponsors');
-    try {
-        const response = await apiServiceAdmin.get('/api/universities/sponsors');
-        console.log('✅ [universityAdminService][GET SPONSORS][SUCCESS]', response.data);
-        if (response.status === 200 && response.data) {
-            return response.data;
-        }
-        throw new Error('Impossible de récupérer les universités sponsors');
-    } catch (err) {
-        console.error('❌ [universityAdminService][GET SPONSORS][ERROR]', err);
-        throw new Error('Erreur lors de la récupération des universités sponsors');
-    }
-};
-
-// Récupérer une université par ID
-export const getUniversityById = async (id: string): Promise<University> => {
-    console.log('🔎 [universityAdminService][GET BY ID]', id);
-    try {
-        const response = await apiServiceAdmin.get(`/api/universities/${id}`);
-        console.log('✅ [universityAdminService][GET BY ID][SUCCESS]', response.data);
-        if (response.status === 200 && response.data) {
-            return response.data;
-        }
-        throw new Error('Impossible de récupérer l\'université');
-    } catch (err) {
-        console.error('❌ [universityAdminService][GET BY ID][ERROR]', err);
-        throw new Error('Erreur lors de la récupération de l\'université');
-    }
-};
-
 // Créer une université (au moins un degree obligatoire)
-export const createUniversity = async (data: Partial<University> & { degrees: string[] }): Promise<University> => {
+export const createUniversity = async (data: Partial<University> & { degrees: number[] }): Promise<University> => {
     if (!data.degrees || !Array.isArray(data.degrees) || data.degrees.length === 0) {
         throw new Error('Une université doit proposer au moins un diplôme.');
     }
@@ -72,7 +41,7 @@ export const createUniversity = async (data: Partial<University> & { degrees: st
 };
 
 // Mettre à jour une université
-export const updateUniversity = async (id: string, data: Partial<University>): Promise<University> => {
+export const updateUniversity = async (id: number, data: Partial<University>): Promise<University> => {
     console.log('✏️ [universityAdminService][UPDATE]', id, data);
     try {
         const response = await apiServiceAdmin.put(`/api/universities/${id}`, data);
@@ -91,7 +60,7 @@ export const updateUniversity = async (id: string, data: Partial<University>): P
 };
 
 // Supprimer une université
-export const deleteUniversity = async (id: string): Promise<void> => {
+export const deleteUniversity = async (id: number): Promise<void> => {
     console.log('🗑️ [universityAdminService][DELETE]', id);
     try {
         const response = await apiServiceAdmin.delete(`/api/universities/${id}`);
@@ -102,68 +71,6 @@ export const deleteUniversity = async (id: string): Promise<void> => {
     } catch (err) {
         console.error('❌ [universityAdminService][DELETE][ERROR]', err);
         throw new Error('Erreur lors de la suppression de l\'université');
-    }
-};
-
-// Associer un diplôme à une université
-export const addDegreeToUniversity = async (universityId: string, degreeId: string): Promise<void> => {
-    console.log('➕ [universityAdminService][ADD DEGREE]', universityId, degreeId);
-    try {
-        const response = await apiServiceAdmin.post(`/api/universities/${universityId}/degrees`, {degreeId});
-        console.log('✅ [universityAdminService][ADD DEGREE][SUCCESS]', response.status);
-        if (response.status !== 200) {
-            throw new Error('Impossible d\'associer le diplôme à l\'université');
-        }
-    } catch (err) {
-        console.error('❌ [universityAdminService][ADD DEGREE][ERROR]', err);
-        throw new Error('Erreur lors de l\'association du diplôme à l\'université');
-    }
-};
-
-// Supprimer un diplôme d'une université
-export const removeDegreeFromUniversity = async (universityId: string, degreeId: string): Promise<void> => {
-    console.log('➖ [universityAdminService][REMOVE DEGREE]', universityId, degreeId);
-    try {
-        const response = await apiServiceAdmin.delete(`/api/universities/${universityId}/degrees/${degreeId}`);
-        console.log('✅ [universityAdminService][REMOVE DEGREE][SUCCESS]', response.status);
-        if (response.status !== 200) {
-            throw new Error('Impossible de supprimer le diplôme de l\'université');
-        }
-    } catch (err) {
-        console.error('❌ [universityAdminService][REMOVE DEGREE][ERROR]', err);
-        throw new Error('Erreur lors de la suppression du diplôme de l\'université');
-    }
-};
-
-// Récupérer les diplômes d'une université
-export const getDegreesByUniversity = async (universityId: string): Promise<Degree[]> => {
-    console.log('🎓 [universityAdminService][GET DEGREES BY UNIVERSITY]', universityId);
-    try {
-        const response = await apiServiceAdmin.get(`/api/universities/${universityId}/degrees`);
-        console.log('✅ [universityAdminService][GET DEGREES BY UNIVERSITY][SUCCESS]', response.data);
-        if (response.status === 200 && response.data) {
-            return response.data;
-        }
-        throw new Error('Impossible de récupérer les diplômes de l\'université');
-    } catch (err) {
-        console.error('❌ [universityAdminService][GET DEGREES BY UNIVERSITY][ERROR]', err);
-        throw new Error('Erreur lors de la récupération des diplômes de l\'université');
-    }
-};
-
-// Récupérer toutes les universités qui proposent un diplôme donné
-export const getUniversitiesByDegree = async (degreeId: string): Promise<University[]> => {
-    console.log('🏫 [universityAdminService][GET UNIVERSITIES BY DEGREE]', degreeId);
-    try {
-        const response = await apiServiceAdmin.get(`/api/universities/degree/${degreeId}`);
-        console.log('✅ [universityAdminService][GET UNIVERSITIES BY DEGREE][SUCCESS]', response.data);
-        if (response.status === 200 && response.data) {
-            return response.data;
-        }
-        throw new Error('Impossible de récupérer les universités pour ce diplôme');
-    } catch (err) {
-        console.error('❌ [universityAdminService][GET UNIVERSITIES BY DEGREE][ERROR]', err);
-        throw new Error('Erreur lors de la récupération des universités pour ce diplôme');
     }
 };
 
@@ -183,7 +90,7 @@ export const exportAllUniversities = async (format: 'csv' | 'json' = 'json'): Pr
                 uni.description || '',
                 uni.webSite || '',
                 uni.isSponsor ? 'Oui' : 'Non',
-                (uni.degrees || []).map(d => typeof d === 'string' ? d : d.name).join('; '),
+                (uni.degrees || []).map(d => typeof d === 'number' ? d : d.name).join('; '),
                 uni.createdAt ? new Date(uni.createdAt).toLocaleDateString('fr-FR') : ''
             ]);
             
@@ -199,21 +106,5 @@ export const exportAllUniversities = async (format: 'csv' | 'json' = 'json'): Pr
     } catch (err) {
         console.error('❌ [universityAdminService][EXPORT][ERROR]', err);
         throw new Error('Erreur lors de l\'export des universités');
-    }
-};
-
-// Récupérer les universités sponsors pour un diplôme donné
-export const getSponsorsByDegree = async (degreeId: string): Promise<University[]> => {
-    console.log('⭐ [universityAdminService][GET SPONSORS BY DEGREE]', degreeId);
-    try {
-        const response = await apiServiceAdmin.get('/api/universities/sponsors-by-degree', {degreeId});
-        console.log('✅ [universityAdminService][GET SPONSORS BY DEGREE][SUCCESS]', response.data);
-        if (response.status === 200 && response.data) {
-            return response.data;
-        }
-        throw new Error('Impossible de récupérer les universités sponsors pour ce diplôme');
-    } catch (err) {
-        console.error('❌ [universityAdminService][GET SPONSORS BY DEGREE][ERROR]', err);
-        throw new Error('Erreur lors de la récupération des universités sponsors pour ce diplôme');
     }
 };

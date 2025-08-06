@@ -1,40 +1,41 @@
 export type Entity = 'auth' | 'subjects' | 'series' | 'recommendations' | 'universities' | 'degrees';
 
 export type User = {
-    id: string;
+    id: number;
     role: string;
     email: string;
 };
 
 export type Subject = {
-    id: string;
+    id: number;
     name: string;
     seriesCoefficients: object;
 };
 
 export type Serie = {
-  id: string;
+  id: number;
   code: string;
   description: string;
   subjects: Array<{
-    id: string;
+    id: number;
     name: string;
     coefficient: number;
   }>;
 };
+
 export type University = {
-    id: string;
+    id: number;
     name: string;
     description: string;
     webSite: string;
     isSponsor: boolean;
     createdAt: string;
-    degrees: Array<string | Degree>;
+    degrees: Array<Degree>;
 };
 
 export type EnrichedSubject = Subject & {
     seriesCoefficientsArray: Array<{
-        serieId: string;
+        serieId: number;
         serieCode: string;
         serieDescription: string;
         coefficient: number;
@@ -42,7 +43,7 @@ export type EnrichedSubject = Subject & {
 }
 
 export type Degree = {
-    id: string;
+    id: number;
     name: string;
     description: string;
     universities?: Array<University>;
@@ -50,9 +51,9 @@ export type Degree = {
 }
 
 export interface Recommendation {
-    id: string;
-    userId: string;
-    serieId: string;
+    id: number;
+    userId: number;
+    serieId: number;
     orientations: Array<{
         name: string;
         why: string;

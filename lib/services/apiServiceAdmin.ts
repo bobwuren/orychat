@@ -58,20 +58,20 @@ const processQueue = (error: any, token: string | null) => {
 export const setSessionAdmin = (session: {
     accessToken: string;
     refreshToken: string;
-    adminId?: string;
+    adminId?: number;
 }) => {
     accessToken = session.accessToken;
     refreshToken = session.refreshToken;
     if (typeof window !== 'undefined') {
         localStorage.setItem("adminAccessToken", accessToken);
         localStorage.setItem("adminRefreshToken", refreshToken);
-        if (session.adminId) {
-            localStorage.setItem("adminId", session.adminId);
+        if (session.adminId !== undefined) {
+            localStorage.setItem("adminId", String(session.adminId));
         }
         setCookie('adminAccessToken', accessToken);
         setCookie('adminRefreshToken', refreshToken);
-        if (session.adminId) {
-            setCookie('adminId', session.adminId);
+        if (session.adminId !== undefined) {
+            setCookie('adminId', String(session.adminId));
         }
     }
 };
@@ -159,11 +159,12 @@ _axiosAdmin.interceptors.response.use(
                 });
                 const newAccess = res.data.accessToken;
                 const newRefresh = res.data.refreshToken;
-                const adminId = localStorage.getItem("adminId") || getCookie("adminId");
+                const adminIdStr = localStorage.getItem("adminId") || getCookie("adminId");
+                const adminId = adminIdStr !== null ? Number(adminIdStr) : undefined;
                 setSessionAdmin({
                     accessToken: newAccess,
                     refreshToken: newRefresh,
-                    adminId: adminId || ""
+                    adminId: adminId
                 });
                 processQueue(null, newAccess);
                 originalRequest.headers["Authorization"] = `Bearer ${newAccess}`;
@@ -276,7 +277,8 @@ export const logoutAdmin = async (): Promise<void> => {
     console.log('🚪 [apiServiceAdmin][LOGOUT] /api/auth/logout');
     try {
         if (accessToken) {
-            const res = await _axiosAdmin.post('/api/auth/logout');
+              const refreshToken = localStorage.getItem('refreshToken');
+            const res = await _axiosAdmin.post('/api/auth/logout', { refreshToken });
             console.log('✅ [apiServiceAdmin][LOGOUT][SUCCESS]', res.status);
         }
     } catch (err) {

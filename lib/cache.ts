@@ -115,7 +115,7 @@ export const CacheService = {
     },
 
     // Mettre à jour un élément dans le cache
-    updateInCache: (entity: Entity, itemId: string, updatedItem: any): void => {
+    updateInCache: (entity: Entity, itemId: number, updatedItem: any): void => {
         if (entity !== 'recommendations' && entity in cache) {
             const cacheKey = entity as keyof CacheData;
             const index = cache[cacheKey].findIndex((item: any) => item.id === itemId);
@@ -126,7 +126,7 @@ export const CacheService = {
     },
 
     // Supprimer un élément du cache
-    removeFromCache: (entity: Entity, itemId: string): void => {
+    removeFromCache: (entity: Entity, itemId: number): void => {
         if (entity !== 'recommendations' && entity in cache) {
             const cacheKey = entity as keyof CacheData;
             cache[cacheKey] = cache[cacheKey].filter((item: any) => item.id !== itemId);

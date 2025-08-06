@@ -37,27 +37,10 @@ export const exportSubjects = async (format: 'csv' | 'json' = 'json'): Promise<a
     }
 };
 
-// Récupérer une matière par ID (admin)
-export const getSubjectById = async (id: string): Promise<Subject> => {
-    console.log('🔎 [subjectAdminService][GET BY ID]', id);
-    try {
-        const response = await apiServiceAdmin.get(`/api/subjects/${id}`);
-        console.log('✅ [subjectAdminService][GET BY ID][SUCCESS]', response.data);
-        if (response.status === 200 && response.data) {
-            return response.data.subject || response.data;
-        } else {
-            throw new Error('Impossible de récupérer la matière');
-        }
-    } catch (err) {
-        console.error('❌ [subjectAdminService][GET BY ID][ERROR]', err);
-        throw new Error('Erreur lors de la récupération de la matière');
-    }
-};
-
 // Créer une matière (admin)
 export const createSubject = async (data: {
   name: string;
-  seriesCoefficients?: { serieId: string; coefficient: number }[];
+  seriesCoefficients?: { serieId: number; coefficient: number }[];
 }): Promise<Subject> => {
   console.log('🆕 [subjectAdminService][CREATE]', data);
   try {
@@ -79,7 +62,10 @@ export const createSubject = async (data: {
 };
 
 // Mettre à jour une matière (admin)
-export const updateSubject = async (id: string, data: Partial<Subject> & { seriesCoefficients?: { serieId: string; coefficient: number }[] }): Promise<Subject> => {
+export const updateSubject = async (
+    id: number,
+    data: Partial<Subject> & { seriesCoefficients?: { serieId: number; coefficient: number }[] }
+): Promise<Subject> => {
     console.log('✏️ [subjectAdminService][UPDATE]', id, data);
     try {
         const response = await apiServiceAdmin.put(`/api/subjects/${id}`, data);
@@ -101,7 +87,7 @@ export const updateSubject = async (id: string, data: Partial<Subject> & { serie
 };
 
 // Supprimer une matière (admin)
-export const deleteSubject = async (id: string): Promise<void> => {
+export const deleteSubject = async (id: number): Promise<void> => {
     console.log('🗑️ [subjectAdminService][DELETE]', id);
     try {
         const response = await apiServiceAdmin.delete(`/api/subjects/${id}`);
@@ -117,25 +103,8 @@ export const deleteSubject = async (id: string): Promise<void> => {
     }
 };
 
-// Récupérer les matières d'une série (admin)
-export const getSubjectsBySerieId = async (serieId: string): Promise<Subject[]> => {
-    console.log('📚 [subjectAdminService][GET BY SERIE]', serieId);
-    try {
-        const response = await apiServiceAdmin.get(`/api/subjects/serie/${serieId}`);
-        console.log('✅ [subjectAdminService][GET BY SERIE][SUCCESS]', response.data);
-        if (response.status === 200 && response.data) {
-            return response.data;
-        } else {
-            throw new Error('Impossible de récupérer les matières de la série');
-        }
-    } catch (err) {
-        console.error('❌ [subjectAdminService][GET BY SERIE][ERROR]', err);
-        throw new Error('Erreur lors de la récupération des matières de la série');
-    }
-};
-
 // Récupérer les coefficients d'une matière pour chaque série (admin)
-export const getSeriesCoefficientsForSubject = async (id: string): Promise<Record<string, number>> => {
+export const getSeriesCoefficientsForSubject = async (id: number): Promise<Record<string, number>> => {
     console.log('📊 [subjectAdminService][GET COEFFICIENTS]', id);
     try {
         const response = await apiServiceAdmin.get(`/api/subjects/${id}/coefficients`);
@@ -148,17 +117,5 @@ export const getSeriesCoefficientsForSubject = async (id: string): Promise<Recor
     } catch (err) {
         console.error('❌ [subjectAdminService][GET COEFFICIENTS][ERROR]', err);
         throw new Error('Erreur lors de la récupération des coefficients');
-    }
-};
-
-// Invalidation du cache après modification (optionnel mais recommandé)
-export const invalidateSubjectsCache = async (): Promise<void> => {
-    console.log('🗑️ [subjectAdminService][CACHE INVALIDATION]');
-    try {
-        // Cette méthode pourrait être appelée après create/update/delete
-        // pour s'assurer que le cache est à jour
-        console.log('✅ [subjectAdminService][CACHE INVALIDATION][SUCCESS]');
-    } catch (err) {
-        console.error('❌ [subjectAdminService][CACHE INVALIDATION][ERROR]', err);
     }
 };

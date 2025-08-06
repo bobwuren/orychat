@@ -64,18 +64,3 @@ export const exportRecommendations = async (): Promise<any> => {
         throw new Error('Erreur lors de l\'export des recommandations');
     }
 };
-
-// Supprimer une recommandation par ID (admin)
-export const deleteRecommendation = async (id: string): Promise<void> => {
-    console.log('🗑️ [recommendationAdminService][DELETE]', id);
-    try {
-        const response = await apiServiceAdmin.delete(`/api/recommendations/${id}`);
-        console.log('✅ [recommendationAdminService][DELETE][SUCCESS]', response.status);
-        if (response.status !== 200) {
-            throw new Error('Impossible de supprimer la recommandation');
-        }
-    } catch (err) {
-        console.error('❌ [recommendationAdminService][DELETE][ERROR]', err);
-        throw new Error('Erreur lors de la suppression de la recommandation');
-    }
-};

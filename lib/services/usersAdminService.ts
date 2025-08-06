@@ -19,7 +19,7 @@ export const getAllUsers = async (): Promise<User[]> => {
 };
 
 // Récupérer un utilisateur par ID
-export const getUserById = async (id: string): Promise<User> => {
+export const getUserById = async (id: number): Promise<User> => {
     console.log('🔎 [usersAdminService][GET BY ID]', id);
     try {
         const response = await apiServiceAdmin.get(`/api/auth/users/${id}`);
@@ -57,7 +57,7 @@ export const createUser = async (data: Partial<User> & { password: string }): Pr
 };
 
 // Mettre à jour un utilisateur
-export const updateUser = async (id: string, data: Partial<User> & { password?: string }): Promise<User> => {
+export const updateUser = async (id: number, data: Partial<User> & { password?: string }): Promise<User> => {
     console.log('✏️ [usersAdminService][UPDATE]', id, { ...data, password: data.password ? '[HIDDEN]' : 'none' });
     try {
         const response = await apiServiceAdmin.put(`/api/auth/admin/users/${id}`, data);
@@ -79,7 +79,7 @@ export const updateUser = async (id: string, data: Partial<User> & { password?: 
 };
 
 // Supprimer un utilisateur
-export const deleteUser = async (id: string): Promise<void> => {
+export const deleteUser = async (id: number): Promise<void> => {
     console.log('🗑️ [usersAdminService][DELETE]', id);
     try {
         const response = await apiServiceAdmin.delete(`/api/auth/users/${id}`);
@@ -97,7 +97,7 @@ export const deleteUser = async (id: string): Promise<void> => {
 };
 
 // Récupérer les informations de l'utilisateur connecté
-export const getCurrentUser = async (id: string): Promise<User> => {
+export const getCurrentUser = async (id: number): Promise<User> => {
     console.log('👤 [usersAdminService][GET CURRENT USER]', id);
     try {
         const response = await apiServiceAdmin.get(`/api/auth/users/${id}`);
@@ -128,7 +128,7 @@ export const getCurrentUser = async (id: string): Promise<User> => {
 };
 
 // Mettre à jour le rôle d'un utilisateur
-export const updateUserRole = async (id: string, role: string): Promise<void> => {
+export const updateUserRole = async (id: number, role: string): Promise<void> => {
     console.log('🛡️ [usersAdminService][UPDATE ROLE]', id, role);
     try {
         const response = await apiServiceAdmin.put(`/api/auth/users/${id}/role`, { role });

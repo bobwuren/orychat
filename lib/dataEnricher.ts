@@ -6,7 +6,8 @@ import {Subject, Serie, EnrichedSubject} from '@/types/entities';
 export function enrichSubjects(subjects: Subject[], series: Serie[]): EnrichedSubject[] {
     return subjects.map(subject => {
         // Transforme le mapping {serieId: coeff} en tableau enrichi
-        const seriesCoefficientsArray = Object.entries(subject.seriesCoefficients || {}).map(([serieId, coeff]) => {
+        const seriesCoefficientsArray = Object.entries(subject.seriesCoefficients || {}).map(([serieIdStr, coeff]) => {
+            const serieId = Number(serieIdStr);
             const serie = series.find(s => s.id === serieId);
             return {
                 serieId,
@@ -21,4 +22,3 @@ export function enrichSubjects(subjects: Subject[], series: Serie[]): EnrichedSu
         };
     });
 }
-
