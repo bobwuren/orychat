@@ -46,23 +46,6 @@ export const exportDegrees = async (format: 'csv' | 'json' = 'json'): Promise<an
     }
 };
 
-// Récupérer un diplôme par ID (admin)
-export const getDegreeById = async (id: string): Promise<Degree> => {
-    console.log('🔎 [degreeAdminService][GET BY ID]', id);
-    try {
-        const response = await apiServiceAdmin.get(`/api/degrees/${id}`);
-        console.log('✅ [degreeAdminService][GET BY ID][SUCCESS]', response.data);
-        if (response.status === 200 && response.data) {
-            return response.data as Degree;
-        } else {
-            throw new Error('Impossible de récupérer le diplôme');
-        }
-    } catch (err) {
-        console.error('❌ [degreeAdminService][GET BY ID][ERROR]', err);
-        throw new Error('Erreur lors de la récupération du diplôme');
-    }
-};
-
 // Créer un diplôme (admin)
 export const createDegree = async (data: Partial<Degree>): Promise<Degree> => {
     console.log('🆕 [degreeAdminService][CREATE]', data);
@@ -84,7 +67,7 @@ export const createDegree = async (data: Partial<Degree>): Promise<Degree> => {
 };
 
 // Mettre à jour un diplôme (admin)
-export const updateDegree = async (id: string, data: Partial<Degree>): Promise<Degree> => {
+export const updateDegree = async (id: number, data: Partial<Degree>): Promise<Degree> => {
     console.log('✏️ [degreeAdminService][UPDATE]', id, data);
     try {
         const response = await apiServiceAdmin.put(`/api/degrees/${id}`, data);
@@ -104,7 +87,7 @@ export const updateDegree = async (id: string, data: Partial<Degree>): Promise<D
 };
 
 // Supprimer un diplôme (admin)
-export const deleteDegree = async (id: string): Promise<void> => {
+export const deleteDegree = async (id: number): Promise<void> => {
     console.log('🗑️ [degreeAdminService][DELETE]', id);
     try {
         const response = await apiServiceAdmin.delete(`/api/degrees/${id}`);
@@ -115,39 +98,5 @@ export const deleteDegree = async (id: string): Promise<void> => {
     } catch (err) {
         console.error('❌ [degreeAdminService][DELETE][ERROR]', err);
         throw new Error('Erreur lors de la suppression du diplôme');
-    }
-};
-
-// Récupérer les diplômes d'une université (admin)
-export const getDegreesByUniversity = async (universityId: string): Promise<Degree[]> => {
-    console.log('🏫 [degreeAdminService][GET BY UNIVERSITY]', universityId);
-    try {
-        const response = await apiServiceAdmin.get(`/api/degrees/university/${universityId}`);
-        console.log('✅ [degreeAdminService][GET BY UNIVERSITY][SUCCESS]', response.data);
-        if (response.status === 200 && response.data) {
-            return response.data as Degree[];
-        } else {
-            throw new Error('Impossible de récupérer les diplômes de l\'université');
-        }
-    } catch (err) {
-        console.error('❌ [degreeAdminService][GET BY UNIVERSITY][ERROR]', err);
-        throw new Error('Erreur lors de la récupération des diplômes de l\'université');
-    }
-};
-
-// Récupérer toutes les universités qui proposent un diplôme (admin)
-export const getUniversitiesByDegree = async (degreeId: string): Promise<any[]> => {
-    console.log('🏫 [degreeAdminService][GET UNIVERSITIES BY DEGREE]', degreeId);
-    try {
-        const response = await apiServiceAdmin.get(`/api/degrees/${degreeId}/universities`);
-        console.log('✅ [degreeAdminService][GET UNIVERSITIES BY DEGREE][SUCCESS]', response.data);
-        if (response.status === 200 && response.data) {
-            return response.data as any[];
-        } else {
-            throw new Error('Impossible de récupérer les universités pour ce diplôme');
-        }
-    } catch (err) {
-        console.error('❌ [degreeAdminService][GET UNIVERSITIES BY DEGREE][ERROR]', err);
-        throw new Error('Erreur lors de la récupération des universités pour ce diplôme');
     }
 };
