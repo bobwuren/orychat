@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -42,7 +43,7 @@ const universityFormSchema = z.object({
   description: z.string().min(1, 'La description est requise').max(500),
   webSite: z.string().url('URL invalide').max(200),
   isSponsor: z.boolean(),
-  degrees: z.array(z.string().min(1, 'Un diplôme est requis'))
+  degrees: z.array(z.number().min(1, 'Un diplôme est requis'))
     .min(1, 'Au moins un diplôme est requis'),
 });
 
@@ -89,17 +90,16 @@ export function UniversityFormDialog({
       try {
         const degrees = await getAllDegrees();
         setAvailableDegrees(degrees);
-        
+
         if (university) {
           form.reset({
             name: university.name || '',
             description: university.description || '',
             webSite: university.webSite || '',
             isSponsor: university.isSponsor || false,
-            degrees: university.degrees?.map(d => typeof d === 'string' ? d : d.id) || [],
+            degrees: university.degrees?.map(d => typeof d === 'number' ? d : d.id) || [],
           });
         } else {
-          // En mode création, réinitialiser le formulaire
           form.reset({
             name: '',
             description: '',
@@ -119,27 +119,22 @@ export function UniversityFormDialog({
   const onSubmit = async (values: UniversityFormValues) => {
     setIsLoading(true);
     setError('');
-    
-    console.log('🏫 [UniversityFormDialog] Submitting form:', {
-      isEditing,
-      universityId: university?.id,
-      values
-    });
-    
+
     try {
-      if (isEditing && university) {
-        console.log('✏️ [UniversityFormDialog] Updating university:', university.id);
-        await updateUniversity(university.id, values);
-        console.log('✅ [UniversityFormDialog] University updated successfully');
-      } else {
-        console.log('🆕 [UniversityFormDialog] Creating new university');
-        await createUniversity(values);
-        console.log('✅ [UniversityFormDialog] University created successfully');
-      }
+  if (isEditing && university) {
+    await updateUniversity(university.id, {
+      ...values,
+      degrees: values.degrees as any
+    });
+  } else {
+    await createUniversity({
+      ...values,
+      degrees: values.degrees as any
+    });
+  }
       onSuccess();
       onOpenChange(false);
     } catch (error: unknown) {
-      console.error('❌ [UniversityFormDialog] Error during submission:', error);
       setError(error instanceof Error ? error.message : 'Erreur lors de la sauvegarde. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
@@ -149,7 +144,6 @@ export function UniversityFormDialog({
   const handleAddDegree = () => {
     const currentDegrees = form.getValues('degrees') || [];
     if (currentDegrees.length < availableDegrees.length) {
-      // Trouver un diplôme non encore ajouté
       const nextDegree = availableDegrees.find(
         deg => !currentDegrees.includes(deg.id)
       );
@@ -171,16 +165,15 @@ export function UniversityFormDialog({
   const handleDegreeChange = (index: number, newDegreeId: string) => {
     const currentDegrees = form.getValues('degrees') || [];
     const newDegrees = [...currentDegrees];
-    newDegrees[index] = newDegreeId;
+    newDegrees[index] = parseInt(newDegreeId);
     form.setValue('degrees', newDegrees, { shouldValidate: true, shouldDirty: true });
     form.trigger('degrees');
   };
 
-  const getAvailableDegreesForSelect = (currentDegreeId: string) => {
+  const getAvailableDegreesForSelect = (currentDegreeId: number) => {
     const usedDegreeIds = (watchedDegrees || [])
-      .filter(id => id !== currentDegreeId); // Exclure le diplôme actuel pour permettre la modification
-    
-    return availableDegrees.filter(degree => 
+      .filter(id => id !== currentDegreeId);
+    return availableDegrees.filter(degree =>
       !usedDegreeIds.includes(degree.id)
     );
   };
@@ -310,7 +303,7 @@ export function UniversityFormDialog({
                     {(watchedDegrees || []).map((degreeId, index) => (
                       <div key={`${degreeId}-${index}`} className="flex items-center gap-2">
                         <Select
-                          value={degreeId}
+                          value={degreeId.toString()}
                           onValueChange={(value) => handleDegreeChange(index, value)}
                           disabled={isLoading}
                         >
@@ -321,7 +314,7 @@ export function UniversityFormDialog({
                           </SelectTrigger>
                           <SelectContent>
                             {getAvailableDegreesForSelect(degreeId).map(degree => (
-                              <SelectItem key={degree.id} value={degree.id}>
+                              <SelectItem key={degree.id} value={degree.id.toString()}>
                                 {degree.name}
                               </SelectItem>
                             ))}

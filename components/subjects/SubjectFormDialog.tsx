@@ -27,7 +27,7 @@ interface SubjectFormDialogProps {
 }
 
 interface SeriesCoefficient {
-  serieId: string;
+  serieId: number;
   coefficient: number;
 }
 
@@ -49,8 +49,6 @@ export function SubjectFormDialog({
     const fetchSeries = async () => {
       setIsLoadingSeries(true);
       try {
-        // Récupérer les séries depuis le cache
-        // L'invalidation après suppression garantit des données fraîches
         const series = await CacheService.get('series');
         setSeriesList(series);
       } catch (error) {
@@ -70,12 +68,11 @@ export function SubjectFormDialog({
       setName(subject.name);
       if (subject.seriesCoefficients) {
         const formattedCoefficients = Object.entries(subject.seriesCoefficients).map(([serieId, coefficient]) => ({
-          serieId,
+          serieId: typeof serieId === 'string' ? parseInt(serieId) : serieId,
           coefficient
         }));
         setSeriesCoefficients(formattedCoefficients);
       } else if (subject.id) {
-        // Si on est en mode édition mais sans coefficients, on les charge
         loadCoefficients(subject.id);
       }
     } else {
@@ -85,11 +82,11 @@ export function SubjectFormDialog({
     setError('');
   }, [subject]);
 
-  const loadCoefficients = async (subjectId: string) => {
+  const loadCoefficients = async (subjectId: number) => {
     try {
       const coefficients = await getSeriesCoefficientsForSubject(subjectId);
       const formattedCoefficients = Object.entries(coefficients).map(([serieId, coefficient]) => ({
-        serieId,
+        serieId: typeof serieId === 'string' ? parseInt(serieId) : serieId,
         coefficient
       }));
       setSeriesCoefficients(formattedCoefficients);
@@ -107,7 +104,6 @@ export function SubjectFormDialog({
       setError('Le nom ne peut pas dépasser 100 caractères');
       return false;
     }
-    // Les séries ne sont plus obligatoires - on peut créer une matière "de base"
     setError('');
     return true;
   };
@@ -117,7 +113,6 @@ export function SubjectFormDialog({
       const firstAvailableSeries = seriesList.find(
         serie => !seriesCoefficients.some(sc => sc.serieId === serie.id)
       );
-      
       if (firstAvailableSeries) {
         setSeriesCoefficients([...seriesCoefficients, {
           serieId: firstAvailableSeries.id,
@@ -133,7 +128,7 @@ export function SubjectFormDialog({
     setSeriesCoefficients(newCoefficients);
   };
 
-  const handleSeriesChange = (index: number, serieId: string) => {
+  const handleSeriesChange = (index: number, serieId: number) => {
     const newCoefficients = [...seriesCoefficients];
     newCoefficients[index].serieId = serieId;
     setSeriesCoefficients(newCoefficients);
@@ -247,8 +242,8 @@ export function SubjectFormDialog({
                     return (
                       <div key={index} className="flex gap-3 items-center">
                         <Select
-                          value={sc.serieId}
-                          onValueChange={(value) => handleSeriesChange(index, value)}
+                          value={sc.serieId.toString()}
+                          onValueChange={(value) => handleSeriesChange(index, parseInt(value))}
                           disabled={isLoading}
                         >
                           <SelectTrigger className="flex-1">
@@ -256,7 +251,7 @@ export function SubjectFormDialog({
                           </SelectTrigger>
                           <SelectContent>
                             {availableSeries.map(serie => (
-                              <SelectItem key={serie.id} value={serie.id}>
+                              <SelectItem key={serie.id} value={serie.id.toString()}>
                                 {serie.code}
                               </SelectItem>
                             ))}

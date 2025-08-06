@@ -45,7 +45,7 @@ const serieFormSchema = z.object({
     .min(1, 'La description est requise')
     .max(500, 'La description ne peut pas dépasser 500 caractères'),
   subjects: z.array(z.object({
-    subjectId: z.string(),
+    subjectId: z.number(),
     coefficient: z.number().min(1, 'Le coefficient doit être au moins 1'),
   })).min(1, 'Au moins une matière est requise'),
 });
@@ -128,7 +128,7 @@ export function SerieFormDialog({
     setError('');
     try {
       if (isEditing && serie) {
-        await updateSerie(serie.id, values);
+        await updateSerie(Number(serie.id), values);
       } else {
         await createSerie(values);
       }
@@ -144,22 +144,16 @@ export function SerieFormDialog({
 
   const handleAddSubject = () => {
     const currentSubjects = form.getValues('subjects') || [];
-    
-    // Trouver les matières déjà ajoutées
     const usedSubjectIds = currentSubjects.map(s => s.subjectId);
-    
-    // Trouver la première matière non encore utilisée
     const availableSubject = availableSubjects.find(
       subject => !usedSubjectIds.includes(subject.id)
     );
-    
     if (availableSubject) {
       const newSubjects = [
         ...currentSubjects,
         { subjectId: availableSubject.id, coefficient: 1 }
       ];
       form.setValue('subjects', newSubjects, { shouldValidate: true, shouldDirty: true });
-      // Forcer le re-render du composant
       form.trigger('subjects');
     }
   };
@@ -168,7 +162,6 @@ export function SerieFormDialog({
     const currentSubjects = form.getValues('subjects') || [];
     const newSubjects = currentSubjects.filter((_, i) => i !== index);
     form.setValue('subjects', newSubjects, { shouldValidate: true, shouldDirty: true });
-    // Forcer le re-render du composant
     form.trigger('subjects');
   };
 
@@ -181,7 +174,7 @@ export function SerieFormDialog({
     form.trigger('subjects');
   };
 
-  const handleSubjectChange = (index: number, newSubjectId: string) => {
+  const handleSubjectChange = (index: number, newSubjectId: number) => {
     const currentSubjects = form.getValues('subjects') || [];
     const newSubjects = [...currentSubjects];
     newSubjects[index].subjectId = newSubjectId;
@@ -189,17 +182,16 @@ export function SerieFormDialog({
     form.trigger('subjects');
   };
 
-  const getAvailableSubjectsForSelect = (currentSubjectId: string) => {
+  const getAvailableSubjectsForSelect = (currentSubjectId: number) => {
     const usedSubjectIds = (watchedSubjects || [])
       .map(s => s.subjectId)
-      .filter(id => id !== currentSubjectId); // Exclure le sujet actuel pour permettre la modification
-    
+      .filter(id => id !== currentSubjectId);
     return availableSubjects.filter(subject => 
       !usedSubjectIds.includes(subject.id)
     );
   };
 
-  const getSubjectName = (subjectId: string) => {
+  const getSubjectName = (subjectId: number) => {
     return availableSubjects.find(s => s.id === subjectId)?.name || 'Inconnu';
   };
 
@@ -301,8 +293,8 @@ export function SerieFormDialog({
                     {(watchedSubjects || []).map((subject, index) => (
                       <div key={`${subject.subjectId}-${index}`} className="flex items-center gap-2">
                         <Select
-                          value={subject.subjectId}
-                          onValueChange={(value) => handleSubjectChange(index, value)}
+                          value={subject.subjectId.toString()}
+                          onValueChange={(value) => handleSubjectChange(index, parseInt(value))}
                           disabled={isLoading}
                         >
                           <SelectTrigger className="flex-1">
@@ -312,7 +304,7 @@ export function SerieFormDialog({
                           </SelectTrigger>
                           <SelectContent>
                             {getAvailableSubjectsForSelect(subject.subjectId).map(sub => (
-                              <SelectItem key={sub.id} value={sub.id}>
+                              <SelectItem key={sub.id} value={sub.id.toString()}>
                                 {sub.name}
                               </SelectItem>
                             ))}

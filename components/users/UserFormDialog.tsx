@@ -92,28 +92,17 @@ export function UserFormDialog({
     setIsLoading(true);
     setError('');
     
-    console.log('👤 [UserFormDialog] Submitting form:', {
-      userId: user?.id,
-      values: { ...values, password: values.password ? '[HIDDEN]' : 'empty' }
-    });
-    
     try {
       if (user) {
-        console.log('✏️ [UserFormDialog] Updating user:', user.id);
-        
-        // Utiliser le service au lieu de fetch direct
         const updatedUser = await updateUser(user.id, {
           email: values.email,
           role: values.role,
           ...(values.password ? { password: values.password } : {})
         });
-        
-        console.log('✅ [UserFormDialog] User updated successfully:', updatedUser);
         onSuccess();
         onOpenChange(false);
       }
     } catch (error: unknown) {
-      console.error('❌ [UserFormDialog] Error during submission:', error);
       setError(error instanceof Error ? error.message : 'Erreur lors de la sauvegarde. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
