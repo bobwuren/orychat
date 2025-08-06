@@ -107,6 +107,11 @@ const DegreeModel = {
         return rows.length > 0 ? this.toObject(rows[0]) : null;
     },
 
+    async findByName(name) {
+    const [rows] = await db.execute(`SELECT * FROM degrees WHERE name = ? LIMIT 1`, [name]);
+    return rows.length > 0 ? rows[0] : null;
+    },
+
     async update(id, degreeData) {
         const entity = this.toEntity(degreeData);
         await db.execute(
@@ -127,31 +132,6 @@ const DegreeModel = {
             [id]
         );
         return result.affectedRows > 0;
-    },
-
-    async getByUniversityId(universityId) {
-        // Récupère tous les diplômes liés à une université
-        const [rows] = await db.execute(
-            `SELECT d.id, d.name, d.description
-             FROM degrees d
-                      INNER JOIN university_degrees ud ON d.id = ud.degree_id
-             WHERE ud.university_id = ?`,
-            [universityId]
-        );
-        return rows;
-    },
-
-    // Récupérer toutes les universités qui proposent ce diplôme
-    async getUniversities(degreeId) {
-        const [rows] = await db.execute(
-            `SELECT u.*
-             FROM universities u
-                      JOIN university_degrees ud ON u.id = ud.university_id
-             WHERE ud.degree_id = ?
-             ORDER BY u.name ASC`,
-            [degreeId]
-        );
-        return rows;
     },
 
     // Exporter tous les diplômes (CSV ou JSON)

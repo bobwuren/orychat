@@ -50,10 +50,16 @@ const SerieModel = {
         }
         const [result] = await db.execute(
             `INSERT INTO ${this.table} (code, description)
-             VALUES (?, ?)`,
+            VALUES (?, ?)`,
             [entity.code, entity.description]
         );
-        return result.insertId;
+        const serieId = result.insertId;
+
+        if (serieData.subjects && Array.isArray(serieData.subjects) && serieData.subjects.length > 0) {
+            await this.addSubjects(serieId, serieData.subjects);
+        }
+
+        return serieId;
     },
 
     async update(id, serieData) {
@@ -61,7 +67,7 @@ const SerieModel = {
         // Vérification unicité du code (hors la série courante)
         if (entity.code) {
             const existing = await this.findByCode(entity.code);
-            if (existing && existing.id !== id) {
+            if (existing && Number(existing.id) !== Number(id)) {
                 const err = new Error('Code already exists');
                 err.status = 409;
                 throw err;
@@ -81,45 +87,29 @@ const SerieModel = {
         return result.affectedRows > 0;
     },
 
-    async patch(id, data) {
-        const fields = [];
-        const values = [];
-        if (data.code) { fields.push('code = ?'); values.push(data.code); }
-        if (data.description) { fields.push('description = ?'); values.push(data.description); }
-        if (fields.length === 0) return false;
-        values.push(id);
-        const [result] = await db.execute(
-            `UPDATE ${this.table} SET ${fields.join(', ')} WHERE id = ?`,
-            values
-        );
-        return result.affectedRows > 0;
-    },
-
     // Gestion des matières associées à une série
     async addSubjects(serieId, subjects) {
         if (!subjects || !Array.isArray(subjects) || subjects.length === 0) return;
-        
-        // Validation des données de chaque matière
-        const validSubjects = subjects.filter(subject => 
-            subject && 
-            typeof subject === 'object' && 
-            subject.subjectId && 
-            typeof subject.subjectId === 'string' &&
-            subject.coefficient !== undefined && 
+
+        // Accepte string ou number pour subjectId
+        const validSubjects = subjects.filter(subject =>
+            subject &&
+            typeof subject === 'object' &&
+            (typeof subject.subjectId === 'string' || typeof subject.subjectId === 'number') &&
+            subject.coefficient !== undefined &&
             !isNaN(Number(subject.coefficient))
         );
-        
+
         if (validSubjects.length === 0) return;
-        
+
         const values = validSubjects.map(subject => [serieId, subject.subjectId, Number(subject.coefficient)]);
         const placeholders = validSubjects.map(() => '(?, ?, ?)').join(', ');
-        
+
         await db.execute(
             `INSERT INTO subject_coefficients (serie_id, subject_id, coefficient) VALUES ${placeholders}`,
             values.flat()
         );
     },
-
     async updateSubjects(serieId, subjects) {
         // Supprimer les anciens coefficients
         await db.execute(

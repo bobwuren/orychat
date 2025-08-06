@@ -87,7 +87,7 @@ const SubjectModel = {
         // Vérification unicité du nom (hors la matière courante)
         if (entity.name) {
             const existing = await this.findByName(entity.name);
-            if (existing && existing.id !== id) {
+            if (existing && Number(existing.id) !== Number(id)) {
                 const err = new Error('Name already exists');
                 err.status = 409;
                 throw err;
@@ -157,39 +157,6 @@ const SubjectModel = {
         }
         
         return updated;
-    },
-
-    // Récupérer les matières sans série assignée
-    async getSubjectsWithoutSeries() {
-        const [rows] = await db.execute(`
-            SELECT s.id, s.name
-            FROM ${this.table} s
-            LEFT JOIN subject_coefficients sc ON s.id = sc.subject_id
-            WHERE sc.subject_id IS NULL
-            ORDER BY s.name ASC
-        `);
-        return rows.map(row => ({
-            id: row.id,
-            name: row.name
-        }));
-    },
-
-    // Récupérer toutes les matières avec indication si elles ont des séries
-    async getAllSubjectsWithSeriesStatus() {
-        const [rows] = await db.execute(`
-            SELECT s.id, s.name, 
-                   COUNT(sc.serie_id) as series_count
-            FROM ${this.table} s
-            LEFT JOIN subject_coefficients sc ON s.id = sc.subject_id
-            GROUP BY s.id, s.name
-            ORDER BY s.name ASC
-        `);
-        return rows.map(row => ({
-            id: row.id,
-            name: row.name,
-            hasSeries: row.series_count > 0,
-            seriesCount: row.series_count
-        }));
     },
 };
 

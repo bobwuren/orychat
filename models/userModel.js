@@ -66,15 +66,6 @@ async create(user) {
         return rows[0];
     },
 
-    async storeRefreshToken(userId, token) {
-        await db.execute(
-            `UPDATE ${this.table}
-             SET refresh_token = ?
-             WHERE id = ?`,
-            [token, userId]
-        );
-    },
-
     async updateRefreshToken(userId, newRefreshToken) {
         await db.execute(
             `UPDATE ${this.table}

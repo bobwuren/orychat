@@ -56,32 +56,10 @@ const NoteModel = {
         return rows.length > 0 ? this.toObject(rows[0]) : null;
     },
 
-    async delete(id) {
-        const [result] = await db.execute(`DELETE
-                                           FROM ${this.table}
-                                           WHERE id = ?`, [id]);
-        return result.affectedRows > 0;
-    },
-
     async getByUserId(userId) {
         const [rows] = await db.execute(`SELECT *
                                          FROM ${this.table}
                                          WHERE user_id = ?`, [userId]);
-        return rows.map(this.toObject);
-    },
-
-    async getBySerieId(serieId) {
-        const [rows] = await db.execute(`SELECT *
-                                         FROM ${this.table}
-                                         WHERE serie_id = ?`, [serieId]);
-        return rows.map(this.toObject);
-    },
-
-    async getByUserAndSerie(userId, serieId) {
-        const [rows] = await db.execute(`SELECT *
-                                         FROM ${this.table}
-                                         WHERE user_id = ?
-                                           AND serie_id = ?`, [userId, serieId]);
         return rows.map(this.toObject);
     },
 };

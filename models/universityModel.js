@@ -118,46 +118,6 @@ const UniversityModel = {
         return rows;
     },
 
-    // Associer un diplôme à une université
-    async addDegree(universityId, degreeId) {
-        await db.execute(
-            `INSERT IGNORE INTO university_degrees (university_id, degree_id)
-             VALUES (?, ?)`,
-            [universityId, degreeId]
-        );
-        return true;
-    },
-
-    // Supprimer un diplôme d'une université
-    async removeDegree(universityId, degreeId) {
-        const [result] = await db.execute(
-            `DELETE
-             FROM university_degrees
-             WHERE university_id = ?
-               AND degree_id = ?`,
-            [universityId, degreeId]
-        );
-        return result.affectedRows > 0;
-    },
-
-    // Chercher les universités sponsors qui proposent un diplôme donné
-    async getSponsorsByDegree(degreeId) {
-        const [rows] = await db.execute(
-            `SELECT u.*
-             FROM universities u
-                      JOIN university_degrees ud ON u.id = ud.university_id
-             WHERE u.is_sponsor = true
-               AND ud.degree_id = ?
-             ORDER BY u.name ASC`,
-            [degreeId]
-        );
-        return await Promise.all(rows.map(async (row) => {
-            const obj = this.toObject(row);
-            obj.degrees = await this.getDegrees(obj.id);
-            return obj;
-        }));
-    },
-
     // Récupérer toutes les universités qui proposent un diplôme donné (sponsors ou non)
     async getByDegree(degreeId) {
         const [rows] = await db.execute(
@@ -218,7 +178,17 @@ const UniversityModel = {
 
     // Mettre à jour une université et ses diplômes
     async updateWithDegrees(id, {name, webSite, description, isSponsor, degrees}) {
-        // Mise à jour des champs simples
+    // Vérification unicité du nom (hors l'université courante)
+    if (name !== undefined) {
+        const [existing] = await db.execute(`SELECT id FROM ${this.table} WHERE name = ? LIMIT 1`, [name]);
+        if (existing.length > 0 && Number(existing[0].id) !== Number(id)) {
+            const err = new Error('Name already exists');
+            err.status = 409;
+            throw err;
+        }
+    }
+
+    // Mise à jour des champs simples
         const updateData = {};
         if (name !== undefined) updateData.name = name;
         if (webSite !== undefined) updateData.webSite = webSite;

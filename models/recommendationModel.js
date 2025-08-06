@@ -69,13 +69,6 @@ const RecommendationModel = {
         const row = rows[0];
         return this.toObject(row);
     },
-
-    async delete(id) {
-        const [result] = await db.execute(`DELETE
-                                           FROM ${this.table}
-                                           WHERE id = ?`, [id]);
-        return result.affectedRows > 0;
-    },
 };
 
 module.exports = RecommendationModel;
