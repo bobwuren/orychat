@@ -1,3 +1,11 @@
+if (process.env.NODE_ENV === "production") {
+    //Désactiver les logs en production
+    for (const methos of ["log", "warn", "error", "info", "debug"]) {
+        // @ts-ignore
+        console[methos] = () => {};
+    }
+}
+
 import {DataProviders} from './providers';
 import type {Metadata} from "next";
 import {Geist, Geist_Mono} from "next/font/google";
