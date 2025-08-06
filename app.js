@@ -1,5 +1,16 @@
 const express = require("express");
 const dotenv = require("dotenv");
+dotenv.config();
+
+// Désactiver les logs en production
+if (process.env.NODE_ENV === "production") {
+  console.log = () => {};
+  console.warn = () => {};
+  console.info = () => {};
+  // Optionally disable console.error in production, but not recommended for critical errors
+  // console.error = () => {};
+}
+
 const cors = require("cors");
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
@@ -18,7 +29,6 @@ const universityRoutes = require("./routes/universityRoutes");
 const degreeRoutes = require("./routes/degreeRoutes");
 
 const app = express();
-dotenv.config();
 
 // Configuration Swagger
 const swaggerOptions = {
