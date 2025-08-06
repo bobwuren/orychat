@@ -59,12 +59,12 @@ export function DegreeFormDialog({
     const form = useForm<DegreeFormValues>({
         resolver: zodResolver(degreeFormSchema),
         defaultValues: {
-            name: '',
-            description: '',
+            name: degree?.name ?? '',
+            description: degree?.description ?? '',
         },
     });
 
-    // Réinitialiser le formulaire quand le diplôme change
+/*    // Réinitialiser le formulaire quand le diplôme change
     useEffect(() => {
         if (degree) {
             form.reset({
@@ -78,6 +78,7 @@ export function DegreeFormDialog({
             });
         }
     }, [degree, form]);
+*/
 
     const onSubmit = async (values: DegreeFormValues) => {
         setIsLoading(true);
