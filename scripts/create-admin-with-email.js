@@ -12,10 +12,12 @@ const rl = readline.createInterface({
 
 // Config email simple (Gmail)
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: process.env.SMTP_PORT === '465',
     auth: {
-        user: `${process.env.GMAIL_USER}`,
-        pass: process.env.GMAIL_APPLICATION_PASSWORD
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
     }
 });
 
