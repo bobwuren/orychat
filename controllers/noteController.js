@@ -71,29 +71,6 @@ exports.getNoteById = async (req, res) => {
     }
 };
 
-// Exporter toutes les notes (CSV ou JSON)
-exports.exportNotes = async (req, res) => {
-    try {
-        const format = req.query.format || 'json';
-        const notes = await NoteModel.getAll();
-        if (format === 'csv') {
-            const parser = new Parser({fields: ['id', 'userId', 'subjectId', 'serieId', 'value']});
-            const csv = parser.parse(notes);
-            res.header('Content-Type', 'text/csv');
-            res.attachment('notes.csv');
-            console.log('✅ [Notes] Notes exported successfully in CSV format');
-            return res.send(csv);
-        } else {
-            res.header('Content-Type', 'application/json');
-            console.log('✅ [Notes] Notes exported successfully in JSON format');
-            return res.json({notes});
-        }
-    } catch (error) {
-        console.log('❌ [Notes] Erreur export:', error);
-        return res.status(500).json({error: 'Erreur serveur'});
-    }
-};
-
 // Créer une note
 exports.createNote = async (req, res) => {
     try {
@@ -115,23 +92,6 @@ exports.createNote = async (req, res) => {
     }
 };
 
-// Supprimer une note (cascade SQL)
-exports.deleteNote = async (req, res) => {
-    try {
-        const note = await NoteModel.getById(req.params.id);
-        if (!note) {
-            console.log('⚠️ [Notes] Note non trouvée à la suppression:', req.params.id);
-            return res.status(404).json({error: 'Non trouvée'});
-        }
-        await NoteModel.delete(req.params.id);
-        console.log('🗑️ [Notes] Note supprimée (cascade SQL)');
-        return res.status(200).json({message: 'Note supprimée'});
-    } catch (error) {
-        console.log('❌ [Notes] Erreur serveur à la suppression:', error);
-        return res.status(500).json({error: 'Erreur serveur'});
-    }
-};
-
 // Récupérer toutes les notes d'un user (getByUserId)
 exports.getNotesByUserId = async (req, res) => {
     try {
@@ -141,32 +101,6 @@ exports.getNotesByUserId = async (req, res) => {
         return res.status(200).json(notes);
     } catch (error) {
         console.log('❌ [Notes] Error getting notes by user id:', error);
-        return res.status(500).json({error: error.message});
-    }
-};
-
-// Récupérer toutes les notes d'une série (getBySerieId)
-exports.getNotesBySerieId = async (req, res) => {
-    try {
-        console.log('🔎 [Notes] Get notes by serieId:', req.params.serieId);
-        const notes = await NoteModel.getBySerieId(req.params.serieId);
-        console.log('✅ [Notes] Notes retrieved successfully for serie:', req.params.serieId);
-        return res.status(200).json(notes);
-    } catch (error) {
-        console.log('❌ [Notes] Error getting notes by serie Id:', error);
-        return res.status(500).json({error: error.message});
-    }
-};
-
-// Récupérer toutes les notes d'un user pour une série (getByUserAndSerie)
-exports.getNotesByUserAndSerie = async (req, res) => {
-    try {
-        console.log('🔎 [Notes] Get notes by userId & serieId:', req.params.userId, req.params.serieId);
-        const notes = await NoteModel.getByUserAndSerie(req.params.userId, req.params.serieId);
-        console.log('✅ [Notes] Notes retrieved successfully for user and serie:', req.params.userId, req.params.serieId);
-        return res.status(200).json(notes);
-    } catch (error) {
-        console.log('❌ [Notes] Error getting notes by user Id and serie Id:', error);
         return res.status(500).json({error: error.message});
     }
 };

@@ -228,7 +228,7 @@ exports.updateSubject = async (req, res) => {
         
         // Mettre à jour la matière avec ou sans coefficients
         await SubjectModel.updateWithCoefficients(
-            req.params.id, 
+            Number(req.params.id), 
             {name: name.trim()}, 
             seriesCoefficients
         );
@@ -262,18 +262,5 @@ exports.deleteSubject = async (req, res) => {
     } catch (error) {
         console.log('❌ [Subjects] Erreur serveur à la suppression:', error);
         return res.status(500).json({error: 'Erreur serveur'});
-    }
-};
-
-// Récupérer les coefficients d'une matière pour chaque série
-exports.getSeriesCoefficientsForSubject = async (req, res) => {
-    try {
-        console.log('🔎 [Subjects] Get series coefficients for subject:', req.params.id);
-        const map = await SubjectModel.getSeriesCoefficientsForSubject(req.params.id);
-        console.log('✅ [Subjects] Coefficients récupérés pour la matière:', req.params.id);
-        return res.status(200).json(map);
-    } catch (error) {
-        console.log(`❌ [Subjects] Error getting series coefficient for subject ${req.params.id}:`, error);
-        return res.status(500).json({error: error.message});
     }
 };

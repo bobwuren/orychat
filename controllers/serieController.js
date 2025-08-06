@@ -111,7 +111,7 @@ exports.updateSerie = async (req, res) => {
         }
         
         // Mettre à jour la série
-        await SerieModel.update(req.params.id, {code: code.trim(), description: description.trim()});
+        await SerieModel.update(Number(req.params.id), {code: code.trim(), description: description.trim()});
         
         // Mettre à jour les matières si fournies (la méthode updateSubjects gère la validation)
         if (subjects !== undefined) {

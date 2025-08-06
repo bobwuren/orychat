@@ -82,7 +82,7 @@ exports.updateUniversity = async (req, res) => {
             console.log('⚠️ [Universities] Aucun champ à modifier');
             return res.status(400).json({error: 'Aucune donnée à modifier'});
         }
-        const university = await UniversityModel.getById(req.params.id);
+        const university = await UniversityModel.getById(Number(req.params.id));
         if (!university) {
             console.log('⚠️ [Universities] Université non trouvée à la modification:', req.params.id);
             return res.status(404).json({error: 'Non trouvé'});
@@ -95,12 +95,12 @@ exports.updateUniversity = async (req, res) => {
             ...(isSponsor !== undefined ? {isSponsor: Boolean(isSponsor)} : {}),
             ...(degrees ? {degrees} : {})
         };
-        await UniversityModel.updateWithDegrees(req.params.id, updateData);
+        await UniversityModel.updateWithDegrees(Number(req.params.id), updateData);
         console.log('✅ [Universities] Université modifiée avec succès:', req.params.id);
         return res.status(200).json({
             message: 'Université modifiée',
             university: {
-                id: req.params.id,
+                id: Number(req.params.id),
                 ...(name ? {name: name.trim()} : {}),
                 ...(webSite !== undefined ? {webSite} : {}),
                 ...(description !== undefined ? {description} : {}),
@@ -126,44 +126,6 @@ exports.delete = async (req, res) => {
         res.status(204).send();
     } catch (error) {
         res.status(500).json({error: 'Erreur lors de la suppression de l\'université.'});
-    }
-};
-
-// Associer un diplôme à une université
-exports.addDegree = async (req, res) => {
-    try {
-        const {degreeId} = req.body;
-        if (!degreeId) return res.status(400).json({error: 'degreeId requis.'});
-        await UniversityModel.addDegree(req.params.id, degreeId);
-        const university = await UniversityModel.getById(req.params.id);
-        res.status(200).json(university);
-    } catch (error) {
-        res.status(500).json({error: 'Erreur lors de l\'ajout du diplôme.'});
-    }
-};
-
-// Supprimer un diplôme d'une université
-exports.removeDegree = async (req, res) => {
-    try {
-        const {degreeId} = req.body;
-        if (!degreeId) return res.status(400).json({error: 'degreeId requis.'});
-        await UniversityModel.removeDegree(req.params.id, degreeId);
-        const university = await UniversityModel.getById(req.params.id);
-        res.status(200).json(university);
-    } catch (error) {
-        res.status(500).json({error: 'Erreur lors de la suppression du diplôme.'});
-    }
-};
-
-// Récupérer les universités sponsors qui proposent un diplôme donné
-exports.getSponsorsByDegree = async (req, res) => {
-    try {
-        const {degreeId} = req.query;
-        if (!degreeId) return res.status(400).json({error: 'degreeId requis.'});
-        const sponsors = await UniversityModel.getSponsorsByDegree(degreeId);
-        res.status(200).json(sponsors);
-    } catch (error) {
-        res.status(500).json({error: 'Erreur lors de la récupération des sponsors pour ce diplôme.'});
     }
 };
 

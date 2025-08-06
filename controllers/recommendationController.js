@@ -181,17 +181,3 @@ exports.getRecommendationById = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-
-exports.deleteRecommendation = async (req, res) => {
-  try {
-    const reco = await RecommendationModel.getById(req.params.id);
-    if (!reco)
-      return res.status(404).json({ error: "Recommendation non trouvée" });
-    await RecommendationModel.delete(req.params.id);
-    return res
-      .status(200)
-      .json({ message: "Recommendation supprimée (cascade SQL)" });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-};
