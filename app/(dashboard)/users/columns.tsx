@@ -49,8 +49,8 @@ const getInitials = (email: string) => {
 // Interface pour les handlers d'actions
 interface UserColumnActions {
     onEdit: (user: User) => void;
-    onDelete: (userId: string) => void;
-    currentUserId: string;
+    onDelete: (userId: number) => void;
+    currentUserId: number;
 }
 
 export const createUserColumns = (actions: UserColumnActions): ColumnDef<User>[] => [
@@ -84,7 +84,7 @@ export const createUserColumns = (actions: UserColumnActions): ColumnDef<User>[]
                     <div className="flex flex-col">
                         <span className="font-medium text-sm">{row.original.email}</span>
                         <span className="text-xs text-muted-foreground">
-                            ID: {row.original.id.slice(0, 8)}...
+                            ID: {row.original.id}
                         </span>
                     </div>
                 </div>
@@ -129,7 +129,7 @@ export const createUserColumns = (actions: UserColumnActions): ColumnDef<User>[]
                         <DropdownMenuSeparator/>
 
                         <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(user.id)}
+                            onClick={() => navigator.clipboard.writeText(user.id.toString())}
                             className="gap-2 cursor-pointer"
                         >
                             <Copy className="h-4 w-4"/>

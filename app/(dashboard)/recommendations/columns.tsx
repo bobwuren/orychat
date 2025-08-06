@@ -12,24 +12,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, ArrowUpDown, Eye, Trash2, Copy } from "lucide-react"
+import { MoreHorizontal, ArrowUpDown, Eye, Copy } from "lucide-react"
 import { Recommendation } from "@/types/entities"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 
 export const columns = (
-  onView: (recommendation: Recommendation) => void,
-  onDelete: (id: string) => Promise<void>
+  onView: (recommendation: Recommendation) => void
 ): ColumnDef<Recommendation>[] => [
   {
     id: "select",
@@ -55,18 +43,16 @@ export const columns = (
   },
   {
     accessorKey: "userEmail",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hover:bg-muted"
-        >
-          Utilisateur
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        className="hover:bg-muted"
+      >
+        Utilisateur
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => {
       const userEmail = row.getValue("userEmail") as string
 
@@ -81,18 +67,16 @@ export const columns = (
   },
   {
     accessorKey: "serieCode",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hover:bg-muted"
-        >
-          Série
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        className="hover:bg-muted"
+      >
+        Série
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => {
       const serieCode = row.getValue("serieCode") as string
 
@@ -209,18 +193,16 @@ export const columns = (
   },
   {
     accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hover:bg-muted"
-        >
-          Date de création
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        className="hover:bg-muted"
+      >
+        Date de création
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => {
       const date = new Date(row.getValue("createdAt"))
       return (
@@ -241,16 +223,8 @@ export const columns = (
     cell: ({ row }) => {
       const recommendation = row.original
 
-      const handleDelete = async () => {
-        try {
-          await onDelete(recommendation.id)
-        } catch (error) {
-          console.error('Erreur lors de la suppression:', error)
-        }
-      }
-
       const handleCopyId = () => {
-        navigator.clipboard.writeText(recommendation.id)
+        navigator.clipboard.writeText(recommendation.id.toString())
       }
 
       return (
@@ -272,39 +246,9 @@ export const columns = (
               <Eye className="mr-2 h-4 w-4" />
               Voir les détails
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <DropdownMenuItem 
-                  onSelect={e => e.preventDefault()}
-                  className="text-destructive hover:text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Supprimer
-                </DropdownMenuItem>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Êtes-vous sûr de vouloir supprimer cette recommandation ? Cette action est irréversible.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Annuler</AlertDialogCancel>
-                  <AlertDialogAction 
-                    onClick={handleDelete}
-                    className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                  >
-                    Supprimer définitivement
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
           </DropdownMenuContent>
         </DropdownMenu>
       )
     },
   },
 ]
-

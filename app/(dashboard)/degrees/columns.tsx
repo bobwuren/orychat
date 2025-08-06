@@ -42,28 +42,26 @@ import {useState} from 'react';
 
 interface DegreesColumnsProps {
     onEdit: (degree: Degree) => void;
-    onDelete: (degreeId: string) => Promise<void>;
+    onDelete: (degreeId: number) => Promise<void>;
     onView: (degree: Degree) => void;
 }
 
 export const createColumns = ({onEdit, onDelete, onView}: DegreesColumnsProps): ColumnDef<Degree>[] => [
     {
         accessorKey: "name",
-        header: ({column}) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    className="h-auto p-0 font-semibold hover:bg-transparent"
-                >
-                    <div className="flex items-center gap-2">
-                        <GraduationCap className="h-4 w-4"/>
-                        Nom du Diplôme
-                        <ArrowUpDown className="ml-2 h-3 w-3"/>
-                    </div>
-                </Button>
-            );
-        },
+        header: ({column}) => (
+            <Button
+                variant="ghost"
+                onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                className="h-auto p-0 font-semibold hover:bg-transparent"
+            >
+                <div className="flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4"/>
+                    Nom du Diplôme
+                    <ArrowUpDown className="ml-2 h-3 w-3"/>
+                </div>
+            </Button>
+        ),
         cell: ({row}) => {
             const fullName = (row.getValue("name") as string) || "";
             const displayName = fullName.length > 15 ? fullName.slice(0, 15) + "..." : fullName;
@@ -107,7 +105,7 @@ export const createColumns = ({onEdit, onDelete, onView}: DegreesColumnsProps): 
                             </Tooltip>
                         </TooltipProvider>
                         <span className="text-xs text-muted-foreground">
-                            ID: {row.original.id.slice(0, 8)}...
+                            ID: {row.original.id}...
                         </span>
                     </div>
                 </div>
@@ -116,21 +114,19 @@ export const createColumns = ({onEdit, onDelete, onView}: DegreesColumnsProps): 
     },
     {
         accessorKey: "description",
-        header: ({column}) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    className="h-auto p-0 font-semibold hover:bg-transparent"
-                >
-                    <div className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4"/>
-                        Description
-                        <ArrowUpDown className="ml-2 h-3 w-3"/>
-                    </div>
-                </Button>
-            );
-        },
+        header: ({column}) => (
+            <Button
+                variant="ghost"
+                onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                className="h-auto p-0 font-semibold hover:bg-transparent"
+            >
+                <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4"/>
+                    Description
+                    <ArrowUpDown className="ml-2 h-3 w-3"/>
+                </div>
+            </Button>
+        ),
         cell: ({row}) => {
             const fullDescription = (row.getValue("description") as string) || "";
             const displayDescription = fullDescription.length > 50 ? fullDescription.slice(0, 50) + "..." : fullDescription;
@@ -182,15 +178,15 @@ export const createColumns = ({onEdit, onDelete, onView}: DegreesColumnsProps): 
         header: 'Universités associées',
         accessorKey: 'associatedUniversities',
         cell: ({row}) => {
-            // Vérifier si les universités sont disponibles dans l'un ou l'autre des champs possibles
-            const universities = (row.original as any).associatedUniversities || 
-                                (row.original as any).universities || [];
-            
-            console.log('🏫 Universités pour le diplôme', row.original.name, ':', universities);
+            // Supporte les deux formats : array d'objets ou array d'IDs
+            const universities = (row.original as any).associatedUniversities ||
+                                 (row.original as any).universities ||
+                                 (row.original as any).universitiesByDegree ||
+                                 [];
             
             const [isTooltipOpen, setIsTooltipOpen] = useState(false);
-            
-            if (universities.length === 0) {
+
+            if (!universities || universities.length === 0) {
                 return (
                     <div className="text-sm text-muted-foreground">
                         Aucune université
@@ -231,11 +227,11 @@ export const createColumns = ({onEdit, onDelete, onView}: DegreesColumnsProps): 
                                     <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto">
                                         {universities.map((university: any) => (
                                             <Badge 
-                                                key={university.id} 
-                                                variant="secondary" 
+                                                key={university.id || university}
+                                                variant="secondary"
                                                 className="text-xs px-2 py-0.5 whitespace-nowrap"
                                             >
-                                                {university.name}
+                                                {typeof university === 'object' ? university.name : university}
                                             </Badge>
                                         ))}
                                     </div>
@@ -266,7 +262,7 @@ export const createColumns = ({onEdit, onDelete, onView}: DegreesColumnsProps): 
             };
 
             const handleCopyId = () => {
-                navigator.clipboard.writeText(degree.id);
+                navigator.clipboard.writeText(degree.id.toString());
             };
 
             return (

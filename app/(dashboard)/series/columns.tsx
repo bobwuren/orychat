@@ -40,7 +40,7 @@ import {useState} from 'react';
 
 interface SeriesColumnsProps {
     onEdit: (serie: Serie) => void;
-    onDelete: (serieId: string) => Promise<void>;
+    onDelete: (serieId: number) => Promise<void>;
     onView: (serie: Serie) => void;
 }
 
@@ -73,7 +73,7 @@ export const createColumns = ({onEdit, onDelete, onView}: SeriesColumnsProps): C
                             {row.getValue("code")}
                         </Badge>
                         <span className="text-xs text-muted-foreground mt-1">
-                            ID: {row.original.id.slice(0, 8)}...
+                            ID: {row.original.id}
                         </span>
                     </div>
                 </div>
@@ -199,7 +199,7 @@ export const createColumns = ({onEdit, onDelete, onView}: SeriesColumnsProps): C
             };
 
             const handleCopyId = () => {
-                navigator.clipboard.writeText(serie.id);
+                navigator.clipboard.writeText(serie.id.toString());
             };
 
             return (

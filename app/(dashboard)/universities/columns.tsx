@@ -40,7 +40,7 @@ import {useState} from 'react';
 
 interface UniversityColumnsProps {
     onEdit: (university: University) => void;
-    onDelete: (universityId: string) => Promise<void>;
+    onDelete: (universityId: number) => Promise<void>;
     onView: (university: University) => void;
 }
 
@@ -92,7 +92,7 @@ export const createColumns = ({onEdit, onDelete, onView}: UniversityColumnsProps
                             )}
                         </Tooltip>
                     </TooltipProvider>
-                    <span className="text-xs text-muted-foreground">ID: {row.original.id.slice(0, 8)}...</span>
+                    <span className="text-xs text-muted-foreground">ID: {row.original.id}</span>
                 </div>
             );
         }
@@ -227,7 +227,7 @@ export const createColumns = ({onEdit, onDelete, onView}: UniversityColumnsProps
             };
 
             const handleCopyId = () => {
-                navigator.clipboard.writeText(university.id);
+                navigator.clipboard.writeText(university.id.toString());
             };
 
             return (

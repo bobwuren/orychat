@@ -37,7 +37,7 @@ import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/compon
 
 interface SubjectsColumnsProps {
     onEdit: (subject: any) => void;
-    onDelete: (subjectId: string) => Promise<void>;
+    onDelete: (subjectId: number) => Promise<void>;
     onView: (subject: any) => void;
 }
 
@@ -70,7 +70,7 @@ export const createColumns = ({onEdit, onDelete, onView}: SubjectsColumnsProps):
                             {row.getValue("name")}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
-                            ID: {row.original.id.slice(0, 8)}...
+                            ID: {row.original.id}
                         </span>
                     </div>
                 </div>
