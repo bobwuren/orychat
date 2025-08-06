@@ -404,6 +404,7 @@ router.post('/refresh', authController.refresh);
 
 // Routes administrateur (protection admin requise)
 router.get('/admin/users', authMiddleware, requireRole('admin'), authController.getAllUsers);
+
 router.get('/admin/users/:id', authMiddleware, requireRole('admin'), authController.getUserById);
 
 /**
@@ -1227,10 +1228,10 @@ router.delete('/users/:id', authMiddleware, requireRole('admin'), authController
  *     description: |
  *       Modifie spécifiquement le rôle d'un utilisateur dans le système.
  *       Cette route est strictement réservée aux administrateurs.
- *       
+ *
  *       **Permissions requises :** Rôle admin
  *       **Authentification :** Token Bearer obligatoire
- *       
+ *
  *       **Règles métier :**
  *       - Seuls les administrateurs peuvent modifier les rôles
  *       - Un admin ne peut pas changer son propre rôle (sécurité)

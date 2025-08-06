@@ -415,66 +415,6 @@ router.get('/:id', requireRole('admin'), recommendationController.getRecommendat
 
 /**
  * @swagger
- * /api/recommendations/{id}:
- *   delete:
- *     summary: Supprimer une recommandation par son ID
- *     description: Supprime une recommandation existante selon son identifiant unique.
- *     tags: [Recommendations]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: ID de la recommandation à supprimer
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Recommandation supprimée avec succès
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Recommendation supprimée (cascade SQL)"
- *       401:
- *         description: Token d'authentification manquant ou invalide
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Token d'authentification manquant ou invalide"
- *       404:
- *         description: Recommandation non trouvée
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Recommendation non trouvée"
- *       500:
- *         description: Erreur interne du serveur
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Error deleting recommendation: ..."
- */
-router.delete('/:id', requireRole('admin'), recommendationController.deleteRecommendation);
-
-/**
- * @swagger
  * /api/recommendations/generate:
  *   post:
  *     summary: Génère une recommandation d'orientation numérique personnalisée pour l'utilisateur connecté

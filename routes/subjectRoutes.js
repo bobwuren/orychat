@@ -1151,33 +1151,4 @@ router.put('/:id', requireRole('admin'), subjectController.updateSubject);
  */
 router.delete('/:id', requireRole('admin'), subjectController.deleteSubject);
 
-/**
- * @swagger
- * /subjects/{id}/coefficients:
- *   get:
- *     summary: Récupérer les coefficients d'une matière pour chaque série
- *     tags: [Subjects]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: ID de la matière
- *     responses:
- *       200:
- *         description: Coefficients par série pour la matière
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/SeriesCoefficient'
- *       500:
- *         description: Erreur serveur
- */
-router.get('/:id/coefficients', subjectController.getSeriesCoefficientsForSubject);
-
 module.exports = router;

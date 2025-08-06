@@ -29,33 +29,6 @@ router.get('/', degreeController.getAll);
 
 /**
  * @swagger
- * /degrees/university/{universityId}:
- *   get:
- *     summary: Récupérer les diplômes d'une université
- *     tags: [Degrees]
- *     parameters:
- *       - in: path
- *         name: universityId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID de l'université
- *     responses:
- *       200:
- *         description: Liste des diplômes de l'université
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Degree'
- *       500:
- *         description: Erreur serveur
- */
-router.get('/university/:universityId', degreeController.getByUniversityId);
-
-/**
- * @swagger
  * /degrees/export:
  *   get:
  *     summary: Exporter tous les diplômes (CSV ou JSON)
@@ -201,34 +174,5 @@ router.put('/:id', requireRole('admin'), degreeController.update);
  *         description: Erreur serveur
  */
 router.delete('/:id', requireRole('admin'), degreeController.delete);
-
-/**
- * @swagger
- * /degrees/{id}/universities:
- *   get:
- *     summary: Récupérer toutes les universités qui proposent ce diplôme
- *     tags: [Degrees]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: ID du diplôme
- *     responses:
- *       200:
- *         description: Liste des universités
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/University'
- *       500:
- *         description: Erreur serveur
- */
-router.get('/:id/universities', requireRole('admin'), degreeController.getUniversities);
 
 module.exports = router;
