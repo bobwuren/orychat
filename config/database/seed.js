@@ -1,306 +1,357 @@
 const db = require("./db");
 
+// --- UNIVERSITIES, DEGREES, AND ASSOCIATIONS ---
+const universities = [
+  {
+    name: "Université de Lomé (UL)",
+    web_site: "https://www.univ-lome.tg/",
+    description: "La plus grande université publique du Togo, reconnue pour son Centre Informatique et de Calcul (CIC) et l’Institut des Sciences de l’Information, de la Communication et des Arts (ISICA). Elle propose des formations de pointe en informatique, communication numérique et intelligence artificielle.",
+    is_sponsor: true,
+    degrees: [
+      { name: "Licence en Informatique", description: "Génie logiciel, Réseaux, Bases de données, Maintenance" },
+      { name: "Master en Informatique", description: "Intelligence artificielle, Sécurité informatique, Systèmes d’information" },
+      { name: "Doctorat en Informatique", description: "IA, Big Data, Cybersécurité, Informatique décisionnelle" },
+      { name: "Licence en Communication Numérique et Multimédia", description: "Journalisme numérique, Marketing digital, Design graphique" },
+      { name: "Master en Communication et Médias Numériques", description: null },
+    ]
+  },
+  {
+    name: "Université de Kara (UK)",
+    web_site: "https://www.univkara.tg/",
+    description: "Université publique du nord du Togo, dotée d'une Faculté des Sciences et d’un Département d’Informatique dynamique, axé sur la formation en programmation, algorithmique, IA et technologies web.",
+    is_sponsor: true,
+    degrees: [
+      { name: "Licence en Informatique", description: "Programmation, Algorithmique, Bases de données, Réseaux" },
+      { name: "Master en Informatique", description: "Intelligence artificielle, Technologies web, Systèmes d’information" },
+      { name: "Doctorat en Informatique (en projet)", description: null },
+    ]
+  },
+  {
+    name: "École Supérieure de Commerce et d’Économie Numérique (ESCEN)",
+    web_site: "https://escen.university/",
+    description: "Établissement privé spécialisé dans l’économie numérique, le management digital et la transformation digitale, reconnu par le Ministère de l’Enseignement Supérieur.",
+    is_sponsor: true,
+    degrees: [
+      { name: "Licence en Économie Numérique", description: "Marketing Digital et E-commerce, Finance Digitale et Inclusion Financière, Management de Projets Numériques" },
+      { name: "Master en Économie Numérique", description: "Stratégie digitale, Transformation numérique, Gouvernance des données" },
+    ]
+  },
+  {
+    name: "Tam Tam Digital School",
+    web_site: "https://tamtamdigital.org/",
+    description: "École privée innovante, pionnière dans la formation accélérée aux métiers du numérique, reconnue par l’Agence Nationale de la Formation Professionnelle (ANF).",
+    is_sponsor: true,
+    degrees: [
+      { name: "Certificat Professionnel en Développement Web & Mobile", description: "6-12 mois, reconnu ANF" },
+      { name: "Certificat en Data Science et Intelligence Artificielle", description: null },
+      { name: "Certificat en Marketing Digital et Community Management", description: null },
+      { name: "Certificat en Design Numérique et UX/UI", description: null },
+      { name: "Diplôme en Gestion de Projets Numériques", description: "bac+3, niveau licence" },
+    ]
+  },
+  {
+    name: "Institut Africain d’Informatique (IAI-Togo)",
+    web_site: "https://www.iai-togo.tg/",
+    description: "Institution publique panafricaine, sous tutelle du CIO, spécialisée dans la formation d’ingénieurs et de techniciens supérieurs en informatique, avec des diplômes reconnus internationalement.",
+    is_sponsor: true,
+    degrees: [
+      { name: "Diplôme d’Ingénieur en Informatique", description: "Génie logiciel, Sécurité des systèmes d’information, Réseaux et télécommunications, Intelligence artificielle et Big Data" },
+      { name: "Licence Professionnelle en Informatique", description: null },
+    ]
+  },
+  {
+    name: "Lomé Business School (LBS)",
+    web_site: "https://lome-bs.com/",
+    description: "Grande école privée accréditée, spécialisée dans le management des systèmes d’information, le digital management et la transformation numérique, avec des diplômes reconnus en Afrique et en Europe.",
+    is_sponsor: true,
+    degrees: [
+      { name: "Bachelor en Systèmes d’Information et Digital Management", description: null },
+      { name: "Master en Management des Systèmes d’Information", description: null },
+      { name: "Master en Marketing Digital et Transformation Numérique", description: null },
+      { name: "Master en Gestion de Projets Technologiques", description: null },
+    ]
+  },
+  {
+    name: "iPNet (Institut de formation en nouvelles technologies)",
+    web_site: "https://www.ipnetuniversity.com/",
+    description: "Institut privé de référence dans la formation aux nouvelles technologies, cybersécurité, IA, data science et développement d’applications web et mobiles.",
+    is_sponsor: true,
+    degrees: [
+      { name: "Licence en Cybersécurité", description: null },
+      { name: "Licence en Intelligence Artificielle et Data Science", description: null },
+      { name: "Licence en Développement d’Applications (Web & Mobile)", description: null },
+      { name: "Licence en Réseaux et Télécommunications", description: null },
+    ]
+  },
+];
+
+// --- SERIES, SUBJECTS, AND COEFFICIENTS ---
+const series = [
+  {
+    code: "A4",
+    description: "Littéraire",
+    subjects: [
+      { name: "Français", coefficient: 4 },
+      { name: "Anglais", coefficient: 3 },
+      { name: "Philosophie", coefficient: 4 },
+      { name: "Histoire-Géographie", coefficient: 3 },
+      { name: "Langue vivante 2", coefficient: 2 },
+      
+    ]
+  },
+  {
+    code: "C",
+    description: "Mathématiques et Sciences Physiques",
+    subjects: [
+      { name: "Mathématiques", coefficient: 4 },
+      { name: "Physique-Chimie", coefficient: 4 },
+      { name: "Français", coefficient: 2 },
+      { name: "Anglais", coefficient: 2 },
+      { name: "Philosophie", coefficient: 2 },
+      { name: "Histoire-Géographie", coefficient: 2 },
+      
+    ]
+  },
+  {
+    code: "D",
+    description: "Mathématiques et Sciences de la Nature",
+    subjects: [
+      { name: "Mathématiques", coefficient: 3 },
+      { name: "Sciences de la Vie et de la Terre (SVT)", coefficient: 4 },
+      { name: "Physique-Chimie", coefficient: 3 },
+      { name: "Français", coefficient: 2 },
+      { name: "Anglais", coefficient: 2 },
+      { name: "Philosophie", coefficient: 2 },
+      { name: "Histoire-Géographie", coefficient: 2 },
+      
+    ]
+  },
+  {
+    code: "F1",
+    description: "Construction Mécanique",
+    subjects: [
+      { name: "Dessin Industriel", coefficient: 3 },
+      { name: "Mécanique Appliquée", coefficient: 4 },
+      { name: "Technologie Mécanique", coefficient: 3 },
+      { name: "Mathématiques Appliquées", coefficient: 3 },
+      { name: "Sciences Physiques", coefficient: 3 },
+      { name: "Français", coefficient: 2 },
+      { name: "Anglais", coefficient: 2 },
+      { name: "Philosophie", coefficient: 2 },
+      { name: "Histoire-Géographie", coefficient: 2 },
+      { name: "Éducation Civique et Morale", coefficient: 1 },
+      
+    ]
+  },
+  {
+    code: "F2",
+    description: "Électronique",
+    subjects: [
+      { name: "Électronique", coefficient: 4 },
+      { name: "Électrotechnique", coefficient: 4 },
+      { name: "Mathématiques Appliquées", coefficient: 3 },
+      { name: "Sciences Physiques", coefficient: 3 },
+      { name: "Dessin Technique", coefficient: 3 },
+      { name: "Français", coefficient: 2 },
+      { name: "Anglais", coefficient: 2 },
+      { name: "Philosophie", coefficient: 2 },
+      { name: "Histoire-Géographie", coefficient: 2 },
+      { name: "Éducation Civique et Morale", coefficient: 1 },
+      
+    ]
+  },
+  {
+    code: "F3",
+    description: "Électrotechnique",
+    subjects: [
+      { name: "Électrotechnique", coefficient: 4 },
+      { name: "Machines Électriques", coefficient: 3 },
+      { name: "Mathématiques Appliquées", coefficient: 3 },
+      { name: "Sciences Physiques", coefficient: 3 },
+      { name: "Dessin Technique", coefficient: 3 },
+      { name: "Français", coefficient: 2 },
+      { name: "Anglais", coefficient: 2 },
+      { name: "Philosophie", coefficient: 2 },
+      { name: "Histoire-Géographie", coefficient: 2 },
+      { name: "Éducation Civique et Morale", coefficient: 1 },
+      
+    ]
+  },
+  {
+    code: "F4",
+    description: "Génie Civil (Bâtiment et Travaux Publics)",
+    subjects: [
+      { name: "Dessin de Bâtiment", coefficient: 4 },
+      { name: "Technologie de Construction", coefficient: 4 },
+      { name: "Mécanique Appliquée (Résistance des matériaux)", coefficient: 3 },
+      { name: "Métré et Étude de Prix", coefficient: 3 },
+      { name: "Topographie", coefficient: 3 },
+      { name: "Mathématiques Appliquées", coefficient: 3 },
+      { name: "Sciences Physiques", coefficient: 3 },
+      { name: "Français", coefficient: 2 },
+      { name: "Anglais", coefficient: 2 },
+      { name: "Philosophie", coefficient: 2 },
+      { name: "Histoire-Géographie", coefficient: 2 },
+      { name: "Éducation Civique et Morale", coefficient: 1 },
+      
+    ]
+  },
+  {
+    code: "G1",
+    description: "Gestion Administrative",
+    subjects: [
+      { name: "Gestion Administrative", coefficient: 4 },
+      { name: "Organisation du Travail", coefficient: 3 },
+      { name: "Secrétariat et Correspondance", coefficient: 3 },
+      { name: "Comptabilité Générale", coefficient: 4 },
+      { name: "Informatique de Bureau", coefficient: 2 },
+      { name: "Français", coefficient: 2 },
+      { name: "Anglais Commercial", coefficient: 2 },
+      { name: "Mathématiques Appliquées", coefficient: 2 },
+      { name: "Sciences Économiques et Sociales", coefficient: 2 },
+      { name: "Histoire-Géographie", coefficient: 2 },
+      { name: "Philosophie", coefficient: 2 },
+      { name: "Éducation Civique et Morale", coefficient: 1 },
+      
+    ]
+  },
+  {
+    code: "G2",
+    description: "Technique Quantitative de Gestion",
+    subjects: [
+      { name: "Comptabilité Générale", coefficient: 4 },
+      { name: "Comptabilité Analytique", coefficient: 3 },
+      { name: "Mathématiques Financières", coefficient: 3 },
+      { name: "Statistiques Appliquées", coefficient: 3 },
+      { name: "Sciences de Gestion", coefficient: 2 },
+      { name: "Informatique Appliquée à la Gestion", coefficient: 2 },
+      { name: "Français", coefficient: 2 },
+      { name: "Anglais Commercial", coefficient: 2 },
+      { name: "Mathématiques", coefficient: 2 },
+      { name: "Sciences Économiques", coefficient: 2 },
+      { name: "Histoire-Géographie", coefficient: 2 },
+      { name: "Philosophie", coefficient: 2 },
+      { name: "Éducation Civique et Morale", coefficient: 1 },
+      
+    ]
+  },
+  {
+    code: "G3",
+    description: "Technique Commerciale",
+    subjects: [
+      { name: "Technique de Vente et Négociation", coefficient: 3 },
+      { name: "Marketing", coefficient: 3 },
+      { name: "Communication Commerciale", coefficient: 2 },
+      { name: "Droit Commercial", coefficient: 2 },
+      { name: "Comptabilité de Base", coefficient: 2 },
+      { name: "Informatique de Gestion", coefficient: 2 },
+      { name: "Français", coefficient: 2 },
+      { name: "Anglais Commercial", coefficient: 2 },
+      { name: "Mathématiques Appliquées", coefficient: 2 },
+      { name: "Sciences Économiques", coefficient: 2 },
+      { name: "Histoire-Géographie", coefficient: 2 },
+      { name: "Philosophie", coefficient: 2 },
+      { name: "Éducation Civique et Morale", coefficient: 1 },
+      
+    ]
+  },
+  {
+    code: "E",
+    description: "Génie Mécanique (Maintenance Industrielle, etc.)",
+    subjects: [
+      { name: "Mécanique Appliquée", coefficient: 4 },
+      { name: "Technologie de Maintenance", coefficient: 3 },
+      { name: "Dessin Industriel", coefficient: 3 },
+      { name: "Construction Mécanique", coefficient: 3 },
+      { name: "Mathématiques Appliquées", coefficient: 3 },
+      { name: "Sciences Physiques", coefficient: 3 },
+      { name: "Français", coefficient: 2 },
+      { name: "Anglais", coefficient: 2 },
+      { name: "Philosophie", coefficient: 2 },
+      { name: "Histoire-Géographie", coefficient: 2 },
+      { name: "Éducation Civique et Morale", coefficient: 1 },
+      
+    ]
+  },
+  {
+    code: "Ti/1",
+    description: "Techniques Industrielles (Chaudronnerie, Soudage)",
+    subjects: [
+      { name: "Chaudronnerie", coefficient: 4 },
+      { name: "Soudage", coefficient: 4 },
+      { name: "Dessin Technique Industriel", coefficient: 3 },
+      { name: "Technologie des Matériaux", coefficient: 3 },
+      { name: "Mathématiques Appliquées", coefficient: 3 },
+      { name: "Sciences Physiques", coefficient: 3 },
+      { name: "Français", coefficient: 2 },
+      { name: "Anglais", coefficient: 2 },
+      { name: "Philosophie", coefficient: 2 },
+      { name: "Histoire-Géographie", coefficient: 2 },
+      { name: "Éducation Civique et Morale", coefficient: 1 },
+    ]
+  },
+];
+
+// --- SEED FUNCTION ---
 async function seed() {
-    try {
-        console.log("🌱 Début du seed pour le système éducatif togolais...");
+  // 1. Insert universities
+  for (const uni of universities) {
+    const [uniResult] = await db.query(
+      `INSERT INTO universities (name, web_site, description, is_sponsor) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE name=name`,
+      [uni.name, uni.web_site, uni.description, uni.is_sponsor]
+    );
+    // Get university id
+    const [uniRow] = await db.query(`SELECT id FROM universities WHERE name = ?`, [uni.name]);
+    const university_id = uniRow[0].id;
 
-        // Création des séries du système éducatif togolais
-        const series = [
-            {code: "A4", description: "Série Littéraire (Lettres Modernes)"},
-            {code: "B", description: "Série Économique et Sociale"},
-            {code: "C", description: "Série Scientifique (Mathématiques-Sciences Physiques)"},
-            {code: "D", description: "Série Scientifique (Sciences Naturelles)"},
-            {code: "E", description: "Série Techniques Industrielles"},
-            {code: "F1", description: "Série Électrotechnique"},
-            {code: "F2", description: "Série Mécanique Générale"},
-            {code: "F3", description: "Série Électronique"},
-            {code: "F4", description: "Série Génie Civil"},
-            {code: "G1", description: "Série Secrétariat-Bureautique"},
-            {code: "G2", description: "Série Comptabilité"},
-            {code: "G3", description: "Série Commerce-Vente"},
-            {code: "Ti", description: "Série Techniques Industrielles"}
-        ];
-
-        const seriesMap = new Map();
-
-        for (const s of series) {
-            const [result] = await db.execute(
-                "INSERT INTO series (code, description) VALUES (?, ?)",
-                [s.code, s.description]
-            );
-            seriesMap.set(s.code, result.insertId);
-        }
-
-        console.log("✅ Séries créées avec succès");
-
-        // Matières et coefficients selon le système togolais
-        const subjects = [
-            // Matières communes
-            {name: "Mathématiques", coeff: {A4: 2, B: 3, C: 7, D: 5, E: 4, F1: 4, F2: 4, F3: 4, F4: 4, G1: 2, G2: 3, G3: 2, Ti: 4}},
-            {name: "Français", coeff: {A4: 5, B: 4, C: 3, D: 3, E: 3, F1: 3, F2: 3, F3: 3, F4: 3, G1: 4, G2: 3, G3: 3, Ti: 3}},
-            {name: "Anglais", coeff: {A4: 3, B: 3, C: 2, D: 2, E: 2, F1: 2, F2: 2, F3: 2, F4: 2, G1: 3, G2: 2, G3: 4, Ti: 2}},
-            {name: "Philosophie", coeff: {A4: 4, B: 3, C: 2, D: 2, E: 2, F1: 2, F2: 2, F3: 2, F4: 2, G1: 2, G2: 2, G3: 2, Ti: 2}},
-            {name: "Histoire-Géographie", coeff: {A4: 4, B: 4, C: 2, D: 2, E: 2, F1: 2, F2: 2, F3: 2, F4: 2, G1: 2, G2: 2, G3: 2, Ti: 2}},
-            {name: "Education Civique et Morale", coeff: {A4: 1, B: 1, C: 1, D: 1, E: 1, F1: 1, F2: 1, F3: 1, F4: 1, G1: 1, G2: 1, G3: 1, Ti: 1}},
-            // Matières scientifiques
-            {name: "Physique-Chimie", coeff: {C: 6, D: 3, E: 4, F1: 3, F2: 3, F3: 3, F4: 3, Ti: 4}},
-            {name: "Sciences de la Vie et de la Terre", coeff: {D: 6, C: 2}},
-            {name: "Sciences Physiques", coeff: {E: 5, Ti: 5}},
-            // Matières techniques
-            {name: "Technologie", coeff: {E: 6, F1: 8, F2: 8, F3: 8, F4: 8, Ti: 8}},
-            {name: "Dessin Technique", coeff: {E: 3, F1: 4, F2: 4, F3: 4, F4: 4, Ti: 4}},
-            {name: "Électrotechnique", coeff: {F1: 8}},
-            {name: "Mécanique", coeff: {F2: 8}},
-            {name: "Électronique", coeff: {F3: 8}},
-            {name: "Génie Civil", coeff: {F4: 8}},
-            {name: "Construction Mécanique", coeff: {F2: 4, Ti: 4}},
-            // Matières économiques et gestion
-            {name: "Sciences Économiques et Sociales", coeff: {B: 6}},
-            {name: "Comptabilité", coeff: {G2: 8, G1: 2, G3: 3}},
-            {name: "Économie d'Entreprise", coeff: {G2: 4, G3: 6}},
-            {name: "Droit", coeff: {B: 3, G1: 3, G2: 3, G3: 3}},
-            {name: "Secrétariat-Bureautique", coeff: {G1: 8}},
-            {name: "Techniques Commerciales", coeff: {G3: 8}},
-            {name: "Marketing", coeff: {G3: 4}},
-            {name: "Communication", coeff: {G1: 4, G3: 3}},
-            // Matières littéraires
-            {name: "Littérature", coeff: {A4: 4}},
-            {name: "Latin", coeff: {A4: 2}},
-            {name: "Grec", coeff: {A4: 2}},
-            // Langues
-            {name: "Allemand", coeff: {A4: 2, B: 2, C: 2, D: 2}},
-            {name: "Espagnol", coeff: {A4: 2, B: 2, C: 2, D: 2}},
-            // Informatique (matière moderne ajoutée)
-            {name: "Informatique", coeff: {A4: 1, B: 2, C: 2, D: 2, E: 3, F1: 3, F2: 3, F3: 4, F4: 3, G1: 4, G2: 3, G3: 3, Ti: 4}}
-        ];
-
-        for (const subj of subjects) {
-            const [result] = await db.execute(
-                "INSERT INTO subjects (name) VALUES (?)",
-                [subj.name]
-            );
-            const subjectId = result.insertId;
-
-            if (subj.coeff) {
-                for (const [code, coeff] of Object.entries(subj.coeff)) {
-                    const serieId = seriesMap.get(code);
-                    if (serieId) {
-                        await db.execute(
-                            "INSERT INTO subject_coefficients (subject_id, serie_id, coefficient) VALUES (?, ?, ?)",
-                            [subjectId, serieId, coeff]
-                        );
-                    }
-                }
-            }
-        }
-
-        console.log("✅ Matières et coefficients créés avec succès");
-
-        // Formations dans le numérique disponibles au Togo
-        const allDegrees = [
-            // Licences professionnelles
-            "Licence Professionnelle en Informatique de Gestion",
-            "Licence Professionnelle en Génie Logiciel",
-            "Licence Professionnelle en Réseaux et Télécommunications",
-            "Licence Professionnelle en Maintenance Informatique",
-            "Licence Professionnelle en Développement Web et Mobile",
-            "Licence Professionnelle en Cybersécurité",
-            "Licence Professionnelle en Administration Systèmes et Réseaux",
-            "Licence Professionnelle en Intelligence Artificielle",
-            "Licence Professionnelle en Data Science",
-            "Licence Professionnelle en E-commerce",
-            "Licence Professionnelle en Infographie et Multimédia",
-            "Licence Professionnelle en Télécommunications",
-            // Licences académiques
-            "Licence en Informatique",
-            "Licence en Mathématiques-Informatique",
-            "Licence en Télécommunications",
-            // Masters
-            "Master en Informatique",
-            "Master en Génie Logiciel",
-            "Master en Réseaux et Systèmes Distribués",
-            "Master en Sécurité des Systèmes d'Information",
-            "Master en Intelligence Artificielle",
-            "Master en Data Science et Big Data",
-            "Master en Télécommunications",
-            // BTS
-            "BTS Informatique de Gestion",
-            "BTS Maintenance Informatique",
-            "BTS Électronique",
-            "BTS Télécommunications",
-            // Autres formations
-            "Ingénieur en Informatique",
-            "Ingénieur en Télécommunications",
-            "DUT Informatique"
-        ];
-
-        // Insérer les diplômes
-        const degreeMap = new Map();
-        for (const degreeName of allDegrees) {
-            const [result] = await db.execute(
-                "INSERT INTO degrees (name) VALUES (?)",
-                [degreeName]
-            );
-            degreeMap.set(degreeName, result.insertId);
-        }
-
-        console.log("✅ Formations créées avec succès");
-
-        // Vraies universités et instituts togolais du numérique
-        const universities = [
-            {
-                name: "Institut Africain d'Informatique (IAI-TOGO)",
-                web_site: "https://iai.tg",
-                description: "Institut de référence en informatique en Afrique de l'Ouest, formations de qualité en informatique et télécommunications.",
-                is_sponsor: true,
-                degrees: [
-                    "Licence Professionnelle en Informatique de Gestion",
-                    "Licence Professionnelle en Génie Logiciel",
-                    "Licence Professionnelle en Réseaux et Télécommunications",
-                    "Master en Informatique",
-                    "Master en Génie Logiciel",
-                    "Ingénieur en Informatique"
-                ]
-            },
-            {
-                name: "Université de Lomé (UL)",
-                web_site: "https://univ-lome.tg",
-                description: "Université publique du Togo, Faculté des Sciences et École Supérieure d'Informatique.",
-                is_sponsor: false,
-                degrees: [
-                    "Licence en Informatique",
-                    "Licence en Mathématiques-Informatique",
-                    "Master en Informatique",
-                    "Master en Réseaux et Systèmes Distribués",
-                    "DUT Informatique"
-                ]
-            },
-            {
-                name: "École Supérieure d'Informatique et de Gestion (ESIG)",
-                web_site: "https://esig.tg",
-                description: "École privée spécialisée en informatique et gestion, formations professionnalisantes.",
-                is_sponsor: true,
-                degrees: [
-                    "Licence Professionnelle en Développement Web et Mobile",
-                    "Licence Professionnelle en Cybersécurité",
-                    "Licence Professionnelle en Administration Systèmes et Réseaux",
-                    "BTS Informatique de Gestion",
-                    "Master en Sécurité des Systèmes d'Information"
-                ]
-            },
-            {
-                name: "Institut Supérieur des Sciences et Techniques (ISST)",
-                web_site: "https://isst.tg",
-                description: "Institut technique supérieur offrant des formations en informatique et électronique.",
-                is_sponsor: false,
-                degrees: [
-                    "BTS Informatique de Gestion",
-                    "BTS Maintenance Informatique",
-                    "BTS Électronique",
-                    "Licence Professionnelle en Maintenance Informatique"
-                ]
-            },
-            {
-                name: "École Supérieure de Commerce et de Gestion (ESCG)",
-                web_site: "https://escg.tg",
-                description: "École de commerce avec spécialisation en systèmes d'information et e-commerce.",
-                is_sponsor: true,
-                degrees: [
-                    "Licence Professionnelle en E-commerce",
-                    "Licence Professionnelle en Informatique de Gestion",
-                    "Master en Data Science et Big Data"
-                ]
-            },
-            {
-                name: "Institut des Sciences et Techniques de l'Information (ISTI)",
-                web_site: "https://isti.tg",
-                description: "Institut spécialisé dans les nouvelles technologies et l'intelligence artificielle.",
-                is_sponsor: true,
-                degrees: [
-                    "Licence Professionnelle en Intelligence Artificielle",
-                    "Licence Professionnelle en Data Science",
-                    "Master en Intelligence Artificielle",
-                    "Master en Data Science et Big Data"
-                ]
-            },
-            {
-                name: "École Supérieure des Télécommunications (EST)",
-                web_site: "https://est.tg",
-                description: "École spécialisée en télécommunications et réseaux.",
-                is_sponsor: false,
-                degrees: [
-                    "Licence en Télécommunications",
-                    "BTS Télécommunications",
-                    "Master en Télécommunications",
-                    "Ingénieur en Télécommunications"
-                ]
-            },
-            {
-                name: "Institut Supérieur de Communication Numérique (ISCN)",
-                web_site: "https://iscn.tg",
-                description: "Institut moderne axé sur la communication numérique et le multimédia.",
-                is_sponsor: true,
-                degrees: [
-                    "Licence Professionnelle en Infographie et Multimédia",
-                    "Licence Professionnelle en Développement Web et Mobile",
-                    "BTS Informatique de Gestion"
-                ]
-            },
-            {
-                name: "Université de Kara (UK)",
-                web_site: "https://univ-kara.tg",
-                description: "Université publique du Nord-Togo avec département informatique.",
-                is_sponsor: false,
-                degrees: [
-                    "Licence en Informatique",
-                    "BTS Informatique de Gestion",
-                    "DUT Informatique"
-                ]
-            },
-            {
-                name: "École Africaine de Développement (EAD-Togo)",
-                web_site: "https://ead.tg",
-                description: "École privée proposant des formations en développement informatique et gestion de projet.",
-                is_sponsor: true,
-                degrees: [
-                    "Licence Professionnelle en Génie Logiciel",
-                    "Licence Professionnelle en Développement Web et Mobile",
-                    "Master en Génie Logiciel"
-                ]
-            }
-        ];
-
-        for (const u of universities) {
-            const [result] = await db.execute(
-                "INSERT INTO universities (name, web_site, description, is_sponsor, created_at) VALUES (?, ?, ?, ?, NOW())",
-                [u.name, u.web_site, u.description, u.is_sponsor]
-            );
-            const universityId = result.insertId;
-
-            for (const degreeName of u.degrees) {
-                const degreeId = degreeMap.get(degreeName);
-                if (degreeId) {
-                    await db.execute(
-                        "INSERT INTO university_degrees (university_id, degree_id) VALUES (?, ?)",
-                        [universityId, degreeId]
-                    );
-                }
-            }
-        }
-
-        console.log("✅ Universités et associations avec les formations créées avec succès");
-        console.log("🎉 Seed terminé avec succès !");
-        console.log(`📊 Résumé:`);
-        console.log(`   - ${series.length} séries du baccalauréat togolais`);
-        console.log(`   - ${subjects.length} matières avec coefficients par série`);
-        console.log(`   - ${allDegrees.length} formations dans le numérique`);
-        console.log(`   - ${universities.length} établissements d'enseignement supérieur`);
-        
-        process.exit(0);
-    } catch (err) {
-        console.error("❌ Erreur lors du seed:", err);
-        process.exit(1);
+    // 2. Insert degrees and link
+    for (const deg of uni.degrees) {
+      await db.query(
+        `INSERT INTO degrees (name, description) VALUES (?, ?) ON DUPLICATE KEY UPDATE name=name`,
+        [deg.name, deg.description]
+      );
+      // Get degree id
+      const [degRow] = await db.query(`SELECT id FROM degrees WHERE name = ?`, [deg.name]);
+      const degree_id = degRow[0].id;
+      // Link university <-> degree
+      await db.query(
+        `INSERT IGNORE INTO university_degrees (university_id, degree_id) VALUES (?, ?)`,
+        [university_id, degree_id]
+      );
     }
+  }
+
+  // 3. Insert series
+  for (const serie of series) {
+    await db.query(
+      `INSERT INTO series (code, description) VALUES (?, ?) ON DUPLICATE KEY UPDATE code=code`,
+      [serie.code, serie.description]
+    );
+    // Get serie id
+    const [serieRow] = await db.query(`SELECT id FROM series WHERE code = ?`, [serie.code]);
+    const serie_id = serieRow[0].id;
+
+    // 4. Insert subjects and coefficients
+    for (const subj of serie.subjects) {
+      await db.query(
+        `INSERT INTO subjects (name) VALUES (?) ON DUPLICATE KEY UPDATE name=name`,
+        [subj.name]
+      );
+      // Get subject id
+      const [subjRow] = await db.query(`SELECT id FROM subjects WHERE name = ?`, [subj.name]);
+      const subject_id = subjRow[0].id;
+      // Insert coefficient (réel)
+      await db.query(
+        `INSERT IGNORE INTO subject_coefficients (subject_id, serie_id, coefficient) VALUES (?, ?, ?)`,
+        [subject_id, serie_id, subj.coefficient]
+      );
+    }
+  }
+
+  console.log("Universities, degrees, series, subjects, and coefficients seeded!");
 }
 
-seed();
+if (require.main === module) {
+  seed().then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); });
+}
+
