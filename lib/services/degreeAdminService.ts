@@ -4,18 +4,18 @@ import { Degree } from '@/types/entities';
 
 // Récupérer tous les diplômes (admin)
 export const getAllDegrees = async (): Promise<Degree[]> => {
-    console.log('📚 [degreeAdminService][GET] /api/degrees');
+    // console.log('📚 [degreeAdminService][GET] /api/degrees');
     try {
         const response = await apiServiceAdmin.get('/api/degrees');
-        console.log('✅ [degreeAdminService][GET][SUCCESS] Format de la réponse:', 
-            Array.isArray(response.data) ?
-            `Array of ${response.data.length} items. First item keys: ${response.data[0] ? Object.keys(response.data[0]).join(', ') : 'empty'}` :
-            typeof response.data);
+        // console.log('✅ [degreeAdminService][GET][SUCCESS] Format de la réponse:', 
+        //     Array.isArray(response.data) ?
+        //     `Array of ${response.data.length} items. First item keys: ${response.data[0] ? Object.keys(response.data[0]).join(', ') : 'empty'}` :
+        //     typeof response.data);
             
         if (response.status === 200 && response.data) {
             // Afficher un échantillon pour déboguer
             if (Array.isArray(response.data) && response.data.length > 0) {
-                console.log('📊 Exemple de diplôme reçu:', JSON.stringify(response.data[0], null, 2));
+                // console.log('📊 Exemple de diplôme reçu:', JSON.stringify(response.data[0], null, 2));
             }
             
             // Les données sont déjà enrichies avec les universités par le backend
@@ -31,10 +31,10 @@ export const getAllDegrees = async (): Promise<Degree[]> => {
 
 // Exporter tous les diplômes (admin)
 export const exportDegrees = async (format: 'csv' | 'json' = 'json'): Promise<any> => {
-    console.log('📦 [degreeAdminService][EXPORT]', format);
+    // console.log('📦 [degreeAdminService][EXPORT]', format);
     try {
         const response = await apiServiceAdmin.get('/api/degrees/export', { format });
-        console.log('✅ [degreeAdminService][EXPORT][SUCCESS]', response.data);
+        // console.log('✅ [degreeAdminService][EXPORT][SUCCESS]', response.data);
         if (response.status === 200 && response.data) {
             return response.data;
         } else {
@@ -48,10 +48,10 @@ export const exportDegrees = async (format: 'csv' | 'json' = 'json'): Promise<an
 
 // Créer un diplôme (admin)
 export const createDegree = async (data: Partial<Degree>): Promise<Degree> => {
-    console.log('🆕 [degreeAdminService][CREATE]', data);
+    // console.log('🆕 [degreeAdminService][CREATE]', data);
     try {
         const response = await apiServiceAdmin.post('/api/degrees', data);
-        console.log('✅ [degreeAdminService][CREATE][SUCCESS]', response.data);
+        // console.log('✅ [degreeAdminService][CREATE][SUCCESS]', response.data);
         if (response.status === 201 && response.data) {
             return response.data as Degree;
         } else {
@@ -68,10 +68,10 @@ export const createDegree = async (data: Partial<Degree>): Promise<Degree> => {
 
 // Mettre à jour un diplôme (admin)
 export const updateDegree = async (id: number, data: Partial<Degree>): Promise<Degree> => {
-    console.log('✏️ [degreeAdminService][UPDATE]', id, data);
+    // console.log('✏️ [degreeAdminService][UPDATE]', id, data);
     try {
         const response = await apiServiceAdmin.put(`/api/degrees/${id}`, data);
-        console.log('✅ [degreeAdminService][UPDATE][SUCCESS]', response.data);
+        // console.log('✅ [degreeAdminService][UPDATE][SUCCESS]', response.data);
         if (response.status === 200 && response.data) {
             return response.data as Degree;
         } else {
@@ -88,10 +88,10 @@ export const updateDegree = async (id: number, data: Partial<Degree>): Promise<D
 
 // Supprimer un diplôme (admin)
 export const deleteDegree = async (id: number): Promise<void> => {
-    console.log('🗑️ [degreeAdminService][DELETE]', id);
+    // console.log('🗑️ [degreeAdminService][DELETE]', id);
     try {
         const response = await apiServiceAdmin.delete(`/api/degrees/${id}`);
-        console.log('✅ [degreeAdminService][DELETE][SUCCESS]', response.status);
+        // console.log('✅ [degreeAdminService][DELETE][SUCCESS]', response.status);
         if (response.status !== 204) {
             throw new Error('Impossible de supprimer le diplôme');
         }

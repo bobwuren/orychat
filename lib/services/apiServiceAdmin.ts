@@ -200,10 +200,10 @@ const apiServiceAdmin = {
         path: string,
         query?: Record<string, any>
     ): Promise<AxiosResponse<T>> => {
-        console.log('🟢 [apiServiceAdmin][GET]', path, query);
+        // console.log('🟢 [apiServiceAdmin][GET]', path, query);
         try {
             const res = await _axiosAdmin.get(path, {params: query});
-            console.log('✅ [apiServiceAdmin][GET][SUCCESS]', path, res.status, res.data);
+            // console.log('✅ [apiServiceAdmin][GET][SUCCESS]', path, res.status, res.data);
             return res;
         } catch (err) {
             const errorDetails = handleApiError(err, `apiServiceAdmin GET ${path}`);
@@ -215,10 +215,10 @@ const apiServiceAdmin = {
         path: string,
         data?: any
     ): Promise<AxiosResponse<T>> => {
-        console.log('🟡 [apiServiceAdmin][POST]', path, data);
+        // console.log('🟡 [apiServiceAdmin][POST]', path, data);
         try {
             const res = await _axiosAdmin.post(path, data);
-            console.log('✅ [apiServiceAdmin][POST][SUCCESS]', path, res.status, res.data);
+            // console.log('✅ [apiServiceAdmin][POST][SUCCESS]', path, res.status, res.data);
             return res;
         } catch (err) {
             const errorDetails = handleApiError(err, `apiServiceAdmin POST ${path}`);
@@ -230,10 +230,10 @@ const apiServiceAdmin = {
         path: string,
         data?: any
     ): Promise<AxiosResponse<T>> => {
-        console.log('🔵 [apiServiceAdmin][PUT]', path, data);
+        // console.log('🔵 [apiServiceAdmin][PUT]', path, data);
         try {
             const res = await _axiosAdmin.put(path, data);
-            console.log('✅ [apiServiceAdmin][PUT][SUCCESS]', path, res.status, res.data);
+            // console.log('✅ [apiServiceAdmin][PUT][SUCCESS]', path, res.status, res.data);
             return res;
         } catch (err) {
             const errorDetails = handleApiError(err, `apiServiceAdmin PUT ${path}`);
@@ -245,10 +245,10 @@ const apiServiceAdmin = {
         path: string,
         data?: any
     ): Promise<AxiosResponse<T>> => {
-        console.log('🟣 [apiServiceAdmin][PATCH]', path, data);
+        // console.log('🟣 [apiServiceAdmin][PATCH]', path, data);
         try {
             const res = await _axiosAdmin.patch(path, data);
-            console.log('✅ [apiServiceAdmin][PATCH][SUCCESS]', path, res.status, res.data);
+            // console.log('✅ [apiServiceAdmin][PATCH][SUCCESS]', path, res.status, res.data);
             return res;
         } catch (err) {
             const errorDetails = handleApiError(err, `apiServiceAdmin PATCH ${path}`);
@@ -257,10 +257,10 @@ const apiServiceAdmin = {
         }
     },
     delete: async <T = any>(path: string): Promise<AxiosResponse<T>> => {
-        console.log('🔴 [apiServiceAdmin][DELETE]', path);
+        // console.log('🔴 [apiServiceAdmin][DELETE]', path);
         try {
             const res = await _axiosAdmin.delete(path);
-            console.log('✅ [apiServiceAdmin][DELETE][SUCCESS]', path, res.status, res.data);
+            // console.log('✅ [apiServiceAdmin][DELETE][SUCCESS]', path, res.status, res.data);
             return res;
         } catch (err) {
             const errorDetails = handleApiError(err, `apiServiceAdmin DELETE ${path}`);
@@ -274,12 +274,12 @@ export default apiServiceAdmin;
 
 // 🚪 Fonction de logout admin
 export const logoutAdmin = async (): Promise<void> => {
-    console.log('🚪 [apiServiceAdmin][LOGOUT] /api/auth/logout');
+    // console.log('🚪 [apiServiceAdmin][LOGOUT] /api/auth/logout');
     try {
         if (accessToken) {
               const refreshToken = localStorage.getItem('refreshToken');
             const res = await _axiosAdmin.post('/api/auth/logout', { refreshToken });
-            console.log('✅ [apiServiceAdmin][LOGOUT][SUCCESS]', res.status);
+            // console.log('✅ [apiServiceAdmin][LOGOUT][SUCCESS]', res.status);
         }
     } catch (err) {
         console.error('❌ [apiServiceAdmin][LOGOUT][ERROR]', err);

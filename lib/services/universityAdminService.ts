@@ -4,10 +4,10 @@ import {Degree, University} from '@/types/entities';
 
 // Récupérer toutes les universités
 export const getAllUniversities = async (): Promise<University[]> => {
-    console.log('🏫 [universityAdminService][GET] /api/universities');
+    // console.log('🏫 [universityAdminService][GET] /api/universities');
     try {
         const response = await apiServiceAdmin.get('/api/universities');
-        console.log('✅ [universityAdminService][GET][SUCCESS]', response.data);
+        // console.log('✅ [universityAdminService][GET][SUCCESS]', response.data);
         if (response.status === 200 && response.data) {
             return response.data;
         }
@@ -23,10 +23,10 @@ export const createUniversity = async (data: Partial<University> & { degrees: nu
     if (!data.degrees || !Array.isArray(data.degrees) || data.degrees.length === 0) {
         throw new Error('Une université doit proposer au moins un diplôme.');
     }
-    console.log('🆕 [universityAdminService][CREATE]', data);
+    // console.log('🆕 [universityAdminService][CREATE]', data);
     try {
         const response = await apiServiceAdmin.post('/api/universities', data);
-        console.log('✅ [universityAdminService][CREATE][SUCCESS]', response.data);
+        // console.log('✅ [universityAdminService][CREATE][SUCCESS]', response.data);
         if (response.status === 201 && response.data) {
             return response.data.university || response.data;
         }
@@ -42,10 +42,10 @@ export const createUniversity = async (data: Partial<University> & { degrees: nu
 
 // Mettre à jour une université
 export const updateUniversity = async (id: number, data: Partial<University>): Promise<University> => {
-    console.log('✏️ [universityAdminService][UPDATE]', id, data);
+    // console.log('✏️ [universityAdminService][UPDATE]', id, data);
     try {
         const response = await apiServiceAdmin.put(`/api/universities/${id}`, data);
-        console.log('✅ [universityAdminService][UPDATE][SUCCESS]', response.data);
+        // console.log('✅ [universityAdminService][UPDATE][SUCCESS]', response.data);
         if (response.status === 200 && response.data) {
             return response.data.university || response.data;
         }
@@ -61,10 +61,10 @@ export const updateUniversity = async (id: number, data: Partial<University>): P
 
 // Supprimer une université
 export const deleteUniversity = async (id: number): Promise<void> => {
-    console.log('🗑️ [universityAdminService][DELETE]', id);
+    // console.log('🗑️ [universityAdminService][DELETE]', id);
     try {
         const response = await apiServiceAdmin.delete(`/api/universities/${id}`);
-        console.log('✅ [universityAdminService][DELETE][SUCCESS]', response.status);
+        // console.log('✅ [universityAdminService][DELETE][SUCCESS]', response.status);
         if (response.status !== 204) {
             throw new Error('Impossible de supprimer l\'université');
         }
@@ -76,7 +76,7 @@ export const deleteUniversity = async (id: number): Promise<void> => {
 
 // Exporter toutes les universités (CSV ou JSON)
 export const exportAllUniversities = async (format: 'csv' | 'json' = 'json'): Promise<any> => {
-    console.log('📦 [universityAdminService][EXPORT]', format);
+    // console.log('📦 [universityAdminService][EXPORT]', format);
     try {
         // Utiliser les données déjà disponibles au lieu d'un endpoint spécialisé
         const universities = await getAllUniversities();

@@ -114,7 +114,7 @@ export default function RecommendationsPage() {
         link.click()
       }
       
-      console.log('✅ Export réussi:', format)
+      // console.log('✅ Export réussi:', format)
       toast({
         title: "Export réussi",
         description: `Les recommandations ont été exportées en ${format.toUpperCase()}`,

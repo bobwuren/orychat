@@ -5,16 +5,16 @@ import { CacheService } from '@/lib/cache';
 
 // Récupérer toutes les recommandations (admin)
 export const getAllRecommendations = async (): Promise<Recommendation[]> => {
-    console.log('📋 [recommendationAdminService][GET] /api/recommendations/all');
+    // console.log('📋 [recommendationAdminService][GET] /api/recommendations/all');
     try {
         const response = await apiServiceAdmin.get('/api/recommendations/all');
-        console.log('✅ [recommendationAdminService][GET][SUCCESS]', response.data);
+        // console.log('✅ [recommendationAdminService][GET][SUCCESS]', response.data);
         if (response.status === 200 && response.data) {
             const recommendations = response.data.recommendations as Recommendation[];
             
             // Vérifier que recommendations est bien un array
             if (!Array.isArray(recommendations)) {
-                console.warn('⚠️ La réponse ne contient pas un array de recommandations:', response.data);
+                // console.warn('⚠️ La réponse ne contient pas un array de recommandations:', response.data);
                 return [];
             }
             
@@ -50,10 +50,10 @@ export const getAllRecommendations = async (): Promise<Recommendation[]> => {
 
 // Exporter les recommandations (admin)
 export const exportRecommendations = async (): Promise<any> => {
-    console.log('📦 [recommendationAdminService][EXPORT]');
+    // console.log('📦 [recommendationAdminService][EXPORT]');
     try {
         const response = await apiServiceAdmin.get('/api/recommendations/export');
-        console.log('✅ [recommendationAdminService][EXPORT][SUCCESS]', response.data);
+        // console.log('✅ [recommendationAdminService][EXPORT][SUCCESS]', response.data);
         if (response.status === 200 && response.data) {
             return response.data;
         } else {

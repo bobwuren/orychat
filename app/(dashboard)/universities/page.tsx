@@ -108,7 +108,7 @@ export default function UniversitiesPage() {
             link.click();
             document.body.removeChild(link);
             
-            console.log('✅ Export réussi:', format);
+            // console.log('✅ Export réussi:', format);
         } catch (error) {
             console.error('❌ Erreur lors de l\'export:', error);
         } finally {

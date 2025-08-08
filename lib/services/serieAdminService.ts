@@ -5,10 +5,10 @@ import { CacheService } from '@/lib/cache';
 
 // Récupérer toutes les séries (admin)
 export const getAllSeries = async (): Promise<Serie[]> => {
-    console.log('📚 [serieAdminService][GET] /api/series');
+    // console.log('📚 [serieAdminService][GET] /api/series');
     try {
         const response = await apiServiceAdmin.get('/api/series');
-        console.log('✅ [serieAdminService][GET][SUCCESS]', response.data);
+        // console.log('✅ [serieAdminService][GET][SUCCESS]', response.data);
         if (response.status === 200 && response.data) {
             return response.data.series || response.data;
         } else {
@@ -22,10 +22,10 @@ export const getAllSeries = async (): Promise<Serie[]> => {
 
 // Exporter les séries (admin)
 export const exportSeries = async (format: 'csv' | 'json' = 'json'): Promise<any> => {
-    console.log('📦 [serieAdminService][EXPORT]', format);
+    // console.log('📦 [serieAdminService][EXPORT]', format);
     try {
         const response = await apiServiceAdmin.get('/api/series/export', { format });
-        console.log('✅ [serieAdminService][EXPORT][SUCCESS]', response.data);
+        // console.log('✅ [serieAdminService][EXPORT][SUCCESS]', response.data);
         if (response.status === 200 && response.data) {
             return response.data;
         } else {
@@ -42,10 +42,10 @@ export const createSerie = async (data: {
   description: string;
   subjects?: Array<{ subjectId: number; coefficient: number }>;
 }): Promise<Serie> => {
-  console.log('🆕 [serieAdminService][CREATE]', data);
+  // console.log('🆕 [serieAdminService][CREATE]', data);
   try {
     const response = await apiServiceAdmin.post('/api/series', data);
-    console.log('✅ [serieAdminService][CREATE][SUCCESS]', response.data);
+    // console.log('✅ [serieAdminService][CREATE][SUCCESS]', response.data);
     if (response.status === 201 && response.data) {
       // Invalider le cache après création
       CacheService.invalidate('series');
@@ -69,10 +69,10 @@ export const updateSerie = async (
     subjects?: Array<{ subjectId: number; coefficient: number }>;
   }
 ): Promise<Serie> => {
-  console.log('✏️ [serieAdminService][UPDATE]', id, data);
+  // console.log('✏️ [serieAdminService][UPDATE]', id, data);
   try {
     const response = await apiServiceAdmin.put(`/api/series/${id}`, data);
-    console.log('✅ [serieAdminService][UPDATE][SUCCESS]', response.data);
+    // console.log('✅ [serieAdminService][UPDATE][SUCCESS]', response.data);
     if (response.status === 200 && response.data) {
       // Invalider le cache après mise à jour
       CacheService.invalidate('series');
@@ -90,10 +90,10 @@ export const updateSerie = async (
 
 // Supprimer une série (admin)
 export const deleteSerie = async (id: number, cascade: boolean = false): Promise<void> => {
-    console.log('🗑️ [serieAdminService][DELETE]', id, 'cascade:', cascade);
+    // console.log('🗑️ [serieAdminService][DELETE]', id, 'cascade:', cascade);
     try {
         const response = await apiServiceAdmin.delete(`/api/series/${id}?cascade=${cascade}`);
-        console.log('✅ [serieAdminService][DELETE][SUCCESS]', response.status);
+        // console.log('✅ [serieAdminService][DELETE][SUCCESS]', response.status);
         if (response.status !== 200) {
             throw new Error('Impossible de supprimer la série');
         }
@@ -107,10 +107,10 @@ export const deleteSerie = async (id: number, cascade: boolean = false): Promise
 
 // Récupérer les matières associées à une série (admin)
 export const getSubjectsForSerie = async (serieId: number): Promise<any[]> => {
-    console.log('📚 [serieAdminService][GET SUBJECTS]', serieId);
+    // console.log('📚 [serieAdminService][GET SUBJECTS]', serieId);
     try {
         const response = await apiServiceAdmin.get(`/api/subjects/serie/${serieId}`);
-        console.log('✅ [serieAdminService][GET SUBJECTS][SUCCESS]', response.data);
+        // console.log('✅ [serieAdminService][GET SUBJECTS][SUCCESS]', response.data);
         if (response.status === 200 && response.data) {
             return response.data;
         } else {

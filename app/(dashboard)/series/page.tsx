@@ -136,7 +136,7 @@ export default function SeriesPage() {
                 link.click();
             }
             
-            console.log('✅ Export réussi:', format);
+            // console.log('✅ Export réussi:', format);
         } catch (error) {
             console.error('❌ Erreur lors de l\'export:', error);
         } finally {

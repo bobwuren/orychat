@@ -5,10 +5,10 @@ import { CacheService } from '@/lib/cache';
 
 // Récupérer toutes les matières (admin)
 export const getAllSubjects = async (): Promise<Subject[]> => {
-    console.log('📚 [subjectAdminService][GET] /api/subjects');
+    // console.log('📚 [subjectAdminService][GET] /api/subjects');
     try {
         const response = await apiServiceAdmin.get('/api/subjects');
-        console.log('✅ [subjectAdminService][GET][SUCCESS]', response.data);
+        // console.log('✅ [subjectAdminService][GET][SUCCESS]', response.data);
         if (response.status === 200 && response.data) {
             return response.data.subjects || response.data;
         } else {
@@ -22,10 +22,10 @@ export const getAllSubjects = async (): Promise<Subject[]> => {
 
 // Exporter les matières (admin)
 export const exportSubjects = async (format: 'csv' | 'json' = 'json'): Promise<any> => {
-    console.log('📦 [subjectAdminService][EXPORT]', format);
+    // console.log('📦 [subjectAdminService][EXPORT]', format);
     try {
         const response = await apiServiceAdmin.get('/api/subjects/export', {format});
-        console.log('✅ [subjectAdminService][EXPORT][SUCCESS]', response.data);
+        // console.log('✅ [subjectAdminService][EXPORT][SUCCESS]', response.data);
         if (response.status === 200 && response.data) {
             return response.data;
         } else {
@@ -42,10 +42,10 @@ export const createSubject = async (data: {
   name: string;
   seriesCoefficients?: { serieId: number; coefficient: number }[];
 }): Promise<Subject> => {
-  console.log('🆕 [subjectAdminService][CREATE]', data);
+//   console.log('🆕 [subjectAdminService][CREATE]', data);
   try {
     const response = await apiServiceAdmin.post('/api/subjects', data);
-    console.log('✅ [subjectAdminService][CREATE][SUCCESS]', response.data);
+    // console.log('✅ [subjectAdminService][CREATE][SUCCESS]', response.data);
     if (response.status === 201 && response.data) {
       // Invalider le cache après création
       CacheService.invalidate('subjects');
@@ -66,10 +66,10 @@ export const updateSubject = async (
     id: number,
     data: Partial<Subject> & { seriesCoefficients?: { serieId: number; coefficient: number }[] }
 ): Promise<Subject> => {
-    console.log('✏️ [subjectAdminService][UPDATE]', id, data);
+    // console.log('✏️ [subjectAdminService][UPDATE]', id, data);
     try {
         const response = await apiServiceAdmin.put(`/api/subjects/${id}`, data);
-        console.log('✅ [subjectAdminService][UPDATE][SUCCESS]', response.data);
+        // console.log('✅ [subjectAdminService][UPDATE][SUCCESS]', response.data);
         if (response.status === 200 && response.data) {
             // Invalider le cache après mise à jour
             CacheService.invalidate('subjects');
@@ -88,10 +88,10 @@ export const updateSubject = async (
 
 // Supprimer une matière (admin)
 export const deleteSubject = async (id: number): Promise<void> => {
-    console.log('🗑️ [subjectAdminService][DELETE]', id);
+    // console.log('🗑️ [subjectAdminService][DELETE]', id);
     try {
         const response = await apiServiceAdmin.delete(`/api/subjects/${id}`);
-        console.log('✅ [subjectAdminService][DELETE][SUCCESS]', response.status);
+        // console.log('✅ [subjectAdminService][DELETE][SUCCESS]', response.status);
         if (response.status !== 200) {
             throw new Error('Impossible de supprimer la matière');
         }
@@ -105,10 +105,10 @@ export const deleteSubject = async (id: number): Promise<void> => {
 
 // Récupérer les coefficients d'une matière pour chaque série (admin)
 export const getSeriesCoefficientsForSubject = async (id: number): Promise<Record<string, number>> => {
-    console.log('📊 [subjectAdminService][GET COEFFICIENTS]', id);
+    // console.log('📊 [subjectAdminService][GET COEFFICIENTS]', id);
     try {
         const response = await apiServiceAdmin.get(`/api/subjects/${id}/coefficients`);
-        console.log('✅ [subjectAdminService][GET COEFFICIENTS][SUCCESS]', response.data);
+        // console.log('✅ [subjectAdminService][GET COEFFICIENTS][SUCCESS]', response.data);
         if (response.status === 200 && response.data) {
             return response.data;
         } else {

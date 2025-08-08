@@ -57,8 +57,8 @@ export default function DegreesPage() {
 
             // Ajouter des logs pour diagnostiquer la structure des données
             if (degreesData && degreesData.length > 0) {
-                console.log('📊 Structure du premier diplôme:', JSON.stringify(degreesData[0], null, 2));
-                console.log('🔑 Clés disponibles dans les données:', Object.keys(degreesData[0]));
+                // console.log('📊 Structure du premier diplôme:', JSON.stringify(degreesData[0], null, 2));
+                // console.log('🔑 Clés disponibles dans les données:', Object.keys(degreesData[0]));
             }
 
             // Les universités sont déjà incluses dans les données pour l'affichage
@@ -66,14 +66,14 @@ export default function DegreesPage() {
                 // Vérifier si universities existe et est un tableau
                 const universities = Array.isArray(degree.universities) ? degree.universities : [];
                 // Log pour chaque diplôme
-                console.log(`🏫 Diplôme "${degree.name}": ${universities.length} universités trouvées`);
+                // console.log(`🏫 Diplôme "${degree.name}": ${universities.length} universités trouvées`);
                 return {
                     ...degree,
                     associatedUniversities: universities
                 };
             });
 
-            console.log(`✅ [DegreesPage] ${enrichedDegrees.length} diplômes chargés avec leurs universités`);
+            // console.log(`✅ [DegreesPage] ${enrichedDegrees.length} diplômes chargés avec leurs universités`);
             setData(enrichedDegrees);
             setFilteredData(enrichedDegrees);
         } catch (error) {
