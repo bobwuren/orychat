@@ -28,7 +28,7 @@ export default function HomePage() {
             const res = await apiService.post('/api/auth/login', {email, password});
             const {user, accessToken, refreshToken} = res.data;
             setSession({accessToken, refreshToken});
-            console.log('✅ Connexion réussie :', user);
+            // console.log('✅ Connexion réussie :', user);
             router.push('/dashboard');
         } catch (err: any) {
             console.error('❌ Erreur de login:', err?.message || 'Erreur inconnue');

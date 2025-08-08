@@ -92,7 +92,7 @@ const RecommendationPage = () => {
                         return;
                     }
                     // Sinon, ne pas utiliser le cache (mauvais utilisateur ou mauvaise série)
-                    console.log("Recommandation en cache ignorée (utilisateur ou série différents)");
+                    // console.log("Recommandation en cache ignorée (utilisateur ou série différents)");
                     localStorage.removeItem('lastRecommendation');
                 } catch (e) {
                     console.error("Erreur lors du parsing du cache:", e);
@@ -206,7 +206,7 @@ const RecommendationPage = () => {
                             variant="full" 
                             showHistoryConfirmation={false}
                             onHistoryNavigate={() => {
-                                console.log("Navigation vers l'historique depuis la page de recommandation");
+                                // console.log("Navigation vers l'historique depuis la page de recommandation");
                             }}
                         />
                     </div>

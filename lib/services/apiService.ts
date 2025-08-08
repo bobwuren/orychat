@@ -148,12 +148,12 @@ export const getCurrentUser = async (): Promise<any> => {
             throw new Error('Aucun utilisateur connecté - ID utilisateur manquant');
         }
 
-        console.log('🔍 Récupération des informations utilisateur:', userId);
+        // console.log('🔍 Récupération des informations utilisateur:', userId);
 
         const response = await _axios.get(`/api/auth/users/${userId}`);
 
         if (response.status === 200 && response.data?.user) {
-            console.log('✅ Informations utilisateur récupérées:', response.data.user);
+            // console.log('✅ Informations utilisateur récupérées:', response.data.user);
             return response.data.user;
         } else {
             console.error('❌ Réponse inattendue:', response.data);
@@ -198,7 +198,7 @@ _axios.interceptors.request.use((config) => {
 // 🔁 Gestion automatique du refresh et des erreurs - Version simple
 _axios.interceptors.response.use(
     (response) => {
-        console.log('✅ [API] Réponse reçue:', response.config.url, response.status);
+        // console.log('✅ [API] Réponse reçue:', response.config.url, response.status);
         return response;
     },
     async (error: AxiosError<any>) => {
@@ -240,7 +240,7 @@ _axios.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                console.log('🔁 [API] Tentative de refresh du token...');
+                // console.log('🔁 [API] Tentative de refresh du token...');
                 const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`, {
                     refreshToken,
                 });
@@ -250,7 +250,7 @@ _axios.interceptors.response.use(
                 const userIdStr = localStorage.getItem('userId') || getCookie('userId');
                 const userId = userIdStr ? Number(userIdStr) : undefined;
 
-                console.log('🔓 [API] Token refresh réussi !');
+                // console.log('🔓 [API] Token refresh réussi !');
 
                 // Mettre à jour les tokens
                 setSession({

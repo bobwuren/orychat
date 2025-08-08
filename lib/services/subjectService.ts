@@ -4,7 +4,7 @@ import {Subject} from '@/types/subject';
 export const getSubjectsySerie = async (serieId: number): Promise<Subject[]> => {
     try {
         const response = await apiService.get(`/api/subjects/serie/${serieId}`);
-        console.log('📜 Réponse brute matières:\n', response.data);
+        // console.log('📜 Réponse brute matières:\n', response.data);
         if (response.status === 200) {
             const subjectsData = response.data.subjects ?? [];
             return subjectsData.map((subject: Subject) => ({

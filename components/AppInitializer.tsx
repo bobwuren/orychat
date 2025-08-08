@@ -11,7 +11,7 @@ export default function AppInitializer() {
     // Configurer les gestionnaires d'erreurs côté serveur
     setupServerErrorHandlers();
     
-    console.log("Application initialisée avec protection contre les crashs");
+    // console.log("Application initialisée avec protection contre les crashs");
   }, []);
   
   return null;
