@@ -28,7 +28,9 @@ exports.getRecommendation = async ({userId, serieId, notes}) => {
         }).join('\n  - ');
 
         const sponsorsList = sponsors.map(u =>
-            `${u.name}: ${u.degrees?.join(', ') || 'Aucun programme numérique'}`
+            `${u.name} (${u.webSite || ''}): ${u.degrees && u.degrees.length > 0
+                ? u.degrees.map(d => d.name).join(', ')
+                : 'Aucun programme numérique'}`
         ).join('\n  - ');
 
         const content = `
