@@ -190,7 +190,7 @@ const shouldAddToken = (url: string) => {
 _axios.interceptors.request.use((config) => {
     if (accessToken && shouldAddToken(config.url ?? "")) {
         config.headers["Authorization"] = `Bearer ${accessToken}`;
-        config.headers["role"] = "client";
+        config.headers["permissions"] = "client";
     }
     return config;
 });
@@ -264,7 +264,7 @@ _axios.interceptors.response.use(
 
                 // Retry la requête originale
                 originalRequest.headers["Authorization"] = `Bearer ${newAccess}`;
-                originalRequest.headers["role"] = "client";
+                originalRequest.headers["permissions"] = "client";
 
                 return _axios(originalRequest);
             } catch (refreshError) {
