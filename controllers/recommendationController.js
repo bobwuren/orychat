@@ -13,29 +13,42 @@ exports.generateRecommendation = async (req, res) => {
       .json({ error: "Invalid input data. Please provide serieId and notes." });
   }
   try {
+    // 1. Sauvegarder les notes en base et récupérer leurs ids
+    const NoteModel = require("../models/noteModel");
+    const savedNoteIds = [];
+    for (const note of notes) {
+      const { userId: nUserId, subjectId, serieId: nSerieId, value } = note;
+      // On utilise l'userId du token si non fourni
+      const noteId = await NoteModel.save({
+        userId: nUserId || userId,
+        subjectId,
+        serieId: nSerieId || serieId,
+        value,
+      });
+      savedNoteIds.push(noteId);
+    }
+    // 2. Reconstituer les notes avec leurs ids
+    const notesWithIds = notes.map((note, idx) => ({ ...note, id: savedNoteIds[idx] }));
+    // 3. Générer la recommandation avec les notes sauvegardées
     const recommendation = await aiService.getRecommendation({
       userId,
       serieId,
-      notes,
+      notes: notesWithIds,
     });
-
+    // 4. Sauvegarder la recommandation
     const recommendationId = await RecommendationModel.save({
       userId: recommendation.userId,
       serieId: recommendation.serieId,
       orientations: recommendation.orientations,
       noteIds: recommendation.noteIds,
     });
-
     const allSeries = await require("../models/serieModel").getAll();
     const serieCode = allSeries.find(
       (s) => s.id === recommendation.serieId
     )?.code;
-
     console.warn("\n💾💾Saved Recommendation: ", recommendationId);
-
     // On récupère la recommandation complète pour la réponse
     const savedReco = await RecommendationModel.getById(recommendationId);
-
     console.log(
       "✅ [Reco] Recommendation generated & saved:",
       recommendationId
