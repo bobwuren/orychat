@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const universityController = require('../controllers/universityController');
 const authMiddleware = require('../middlewares/authMiddleware');
-const requireRole = require('../middlewares/requireRoleMiddleware');
+const requirePermissions = require('../middlewares/requirePermissionsMiddleware');
 
 // Toutes les routes nécessitent l'authentification
 router.use(authMiddleware);
@@ -714,7 +714,7 @@ router.get('/:id', universityController.getById);
  *               message: "Erreur lors de la création de l'université"
  *               error: "INTERNAL_SERVER_ERROR"
  */
-router.post('/', requireRole('admin'), universityController.createUniversity);
+router.post('/', requirePermissions('admin'), universityController.createUniversity);
 
 /**
  * @swagger
@@ -957,7 +957,7 @@ router.post('/', requireRole('admin'), universityController.createUniversity);
  *               message: "Erreur lors de la modification de l'université"
  *               error: "INTERNAL_SERVER_ERROR"
  */
-router.put('/:id', requireRole('admin'), universityController.updateUniversity);
+router.put('/:id', requirePermissions('admin'), universityController.updateUniversity);
 
 /**
  * @swagger
@@ -1121,7 +1121,7 @@ router.put('/:id', requireRole('admin'), universityController.updateUniversity);
  *               message: "Erreur lors de la suppression de l'université"
  *               error: "DELETION_FAILED"
  */
-router.delete('/:id', requireRole('admin'), universityController.delete);
+router.delete('/:id', requirePermissions('admin'), universityController.delete);
 
 /**
  * @swagger

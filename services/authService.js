@@ -2,11 +2,11 @@ const UserModel = require('../models/userModel');
 const {comparePasswords, hashPassword} = require('../utils/passwordUtils');
 const {generateAccessToken, generateRefreshToken, verifyRefreshToken} = require("../config/tokens/jwt");
 
-exports.register = async ({email, password, role}) => {
+exports.register = async ({email, password, permissions}) => {
     console.log('📝 [AuthService] Register user:', {email});
     const hashed = await hashPassword(password);
     const user = {
-        role,
+        permissions,
         email,
         password: hashed
     };

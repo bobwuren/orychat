@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const degreeController = require('../controllers/degreeController');
 const authMiddleware = require('../middlewares/authMiddleware');
-const requireRole = require('../middlewares/requireRoleMiddleware');
+const requirePermissions = require('../middlewares/requirePermissionsMiddleware');
 
 // Toutes les routes nécessitent l'authentification
 router.use(authMiddleware);
@@ -60,7 +60,7 @@ router.get('/', degreeController.getAll);
  *       500:
  *         description: Erreur serveur
  */
-router.get('/export', requireRole('admin'), degreeController.exportAll);
+router.get('/export', requirePermissions('admin'), degreeController.exportAll);
 
 /**
  * @swagger
@@ -113,7 +113,7 @@ router.get('/:id', degreeController.getById);
  *       500:
  *         description: Erreur serveur
  */
-router.post('/', requireRole('admin'), degreeController.create);
+router.post('/', requirePermissions('admin'), degreeController.create);
 
 /**
  * @swagger
@@ -148,7 +148,7 @@ router.post('/', requireRole('admin'), degreeController.create);
  *       500:
  *         description: Erreur serveur
  */
-router.put('/:id', requireRole('admin'), degreeController.update);
+router.put('/:id', requirePermissions('admin'), degreeController.update);
 
 /**
  * @swagger
@@ -173,6 +173,6 @@ router.put('/:id', requireRole('admin'), degreeController.update);
  *       500:
  *         description: Erreur serveur
  */
-router.delete('/:id', requireRole('admin'), degreeController.delete);
+router.delete('/:id', requirePermissions('admin'), degreeController.delete);
 
 module.exports = router;

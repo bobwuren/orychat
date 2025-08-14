@@ -4,8 +4,8 @@ const validator = require('validator');
 const generatePassword = require('generate-password');
 
 exports.register = async (req, res) => {
-    const {email, password, role} = req.body;
-    console.log('📝 [Auth] Tentative inscription:', {email, password, role});
+    const {email, password, permissions} = req.body;
+    console.log('📝 [Auth] Tentative inscription:', {email, password, permissions});
 
     if (!email || !password) {
         console.log('⚠️ [Auth] Échec inscription: champs manquants');
@@ -24,8 +24,8 @@ exports.register = async (req, res) => {
     }
 
     // Vérification du rôle si fourni
-    const allowedRoles = ['admin', 'client'];
-    if (role && !allowedRoles.includes(role)) {
+    const allowedPermissions = ['admin', 'client'];
+    if (permissions && !allowedPermissions.includes(permissions)) {
         console.log('⚠️ [Auth] Échec inscription: rôle non autorisé');
         return res.status(400).json({error: 'Rôle non autorisé'});
     }
@@ -37,15 +37,15 @@ exports.register = async (req, res) => {
             return res.status(409).json({error: 'Utilisateur déjà existant'});
         }
 
-        const userRole = role ? role : 'client'; // Par défaut, le rôle est 'client'
-        const response = await AuthService.register({email, password, role: userRole});
+        const userPermissions = permissions ? permissions : 'client'; // Par défaut, le rôle est 'client'
+        const response = await AuthService.register({email, password, permissions: userPermissions});
         console.log('✅ [Auth] Utilisateur inscrit:', response.user.email);
         return res.status(201).json({
             message: 'Utilisateur inscrit avec succès',
             user: {
                 id: response.user.id,
                 email: response.user.email,
-                role: response.user.role
+                permissions: response.user.permissions
             },
             refreshToken: response.refreshToken,
             accessToken: response.accessToken,
@@ -73,7 +73,7 @@ exports.login = async (req, res) => {
             user: {
                 id: response.user.id,
                 email: response.user.email,
-                role: response.user.role
+                permissions: response.user.permissions
             },
             refreshToken: response.refreshToken,
             accessToken: response.accessToken,
@@ -138,7 +138,7 @@ exports.getAllUsers = async (req, res) => {
         return res.status(200).json({
             users: users.map(user => ({
                 id: user.id,
-                role: user.role,
+                permissions: user.permissions,
                 email: user.email
             }))
         });
@@ -160,7 +160,7 @@ exports.getUserById = async (req, res) => {
         return res.status(200).json({
             user: {
                 id: user.id,
-                role: user.role,
+                permissions: user.permissions,
                 email: user.email
             }
         });
@@ -172,11 +172,11 @@ exports.getUserById = async (req, res) => {
 
 exports.updateUserById = async (req, res) => {
     try {
-        const {email, role, password} = req.body;
-        console.log('🛠️ [User] Mise à jour utilisateur:', req.params.id, {email, role, password: password ? '[HIDDEN]' : 'none'});
+        const {email, permissions, password} = req.body;
+        console.log('🛠️ [User] Mise à jour utilisateur:', req.params.id, {email, permissions, password: password ? '[HIDDEN]' : 'none'});
         
         // Vérifier qu'au moins un champ est fourni
-        if (!email && !role && !password) {
+        if (!email && !permissions && !password) {
             console.log('⚠️ [User] Aucun champ à mettre à jour');
             return res.status(400).json({error: 'Aucun champ à mettre à jour fourni'});
         }
@@ -193,13 +193,13 @@ exports.updateUserById = async (req, res) => {
         }
         
         // Validation et ajout du rôle
-        if (role) {
-            const allowedRoles = ['admin', 'client'];
-            if (!allowedRoles.includes(role)) {
-                console.log('⚠️ [User] Rôle non autorisé:', role);
+        if (permissions) {
+            const allowedPermissions = ['admin', 'client'];
+            if (!allowedPermissions.includes(permissions)) {
+                console.log('⚠️ [User] Rôle non autorisé:', permissions);
                 return res.status(400).json({error: 'Rôle non autorisé'});
             }
-            updateData.role = role;
+            updateData.permissions = permissions;
         }
         
         // Validation et ajout du mot de passe
@@ -227,7 +227,7 @@ exports.updateUserById = async (req, res) => {
             user: {
                 id: updatedUser.id,
                 email: updatedUser.email,
-                role: updatedUser.role
+                permissions: updatedUser.permissions
             }
         });
     } catch (error) {
@@ -252,25 +252,25 @@ exports.deleteUserById = async (req, res) => {
     }
 };
 
-exports.updateUserRole = async (req, res) => {
+exports.updateUserPermissions = async (req, res) => {
     try {
-        const {role} = req.body;
-        console.log('🛡️ [User] Mise à jour rôle utilisateur:', req.params.id, role);
-        if (!role) {
+        const {permissions} = req.body;
+        console.log('🛡️ [User] Mise à jour rôle utilisateur:', req.params.id, permissions);
+        if (!permissions) {
             console.log('⚠️ [User] Rôle manquant pour mise à jour');
             return res.status(400).json({error: 'Rôle requis'});
         }
-        const allowedRoles = ['admin', 'client'];
-        if (!allowedRoles.includes(role)) {
-            console.log('⚠️ [User] Rôle non autorisé:', role);
+        const allowedPermissions = ['admin', 'client'];
+        if (!allowedPermissions.includes(permissions)) {
+            console.log('⚠️ [User] Rôle non autorisé:', permissions);
             return res.status(400).json({error: 'Rôle non autorisé'});
         }
-        const updated = await UserModel.updateRole(req.params.id, role);
+        const updated = await UserModel.updatePermissions(req.params.id, permissions);
         if (!updated) {
             console.log('⚠️ [User] Utilisateur non trouvé pour mise à jour rôle:', req.params.id);
             return res.status(404).json({error: 'Utilisateur non trouvé'});
         }
-        console.log('✅ [User] Rôle utilisateur mis à jour:', req.params.id, role);
+        console.log('✅ [User] Rôle utilisateur mis à jour:', req.params.id, permissions);
         return res.status(200).json({message: 'Rôle utilisateur mis à jour'});
     } catch (error) {
         console.error('❌ [User] Erreur mise à jour rôle utilisateur:', error);
@@ -310,7 +310,7 @@ exports.createAdminUser = async (req, res) => {
             excludeSimilarCharacters: true
         });
 
-        const response = await AuthService.register({email, password: generatedPassword, role: 'admin'});
+        const response = await AuthService.register({email, password: generatedPassword, permissions: 'admin'});
         console.log('✅ [Auth] Utilisateur admin créé:', response.user.email);
         
         return res.status(201).json({
@@ -318,7 +318,7 @@ exports.createAdminUser = async (req, res) => {
             user: {
                 id: response.user.id,
                 email: response.user.email,
-                role: response.user.role
+                permissions: response.user.permissions
             },
             credentials: {
                 email: response.user.email,

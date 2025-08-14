@@ -7,7 +7,7 @@ const UserModel = {
         if (!row) return null;
         return {
             id: row.id,
-            role: row.role,
+            permissions: row.permissions,
             email: row.email,
             refreshToken: row.refresh_token
         };
@@ -16,7 +16,7 @@ const UserModel = {
     toEntity(user) {
         if (!user) return null;
         return {
-            role: user.role,
+            permissions: user.permissions,
             email: user.email,
             password: user.password,
             refresh_token: user.refreshToken
@@ -43,14 +43,14 @@ async create(user) {
         }
         const refreshTokenValue = typeof entity.refresh_token === 'undefined' ? null : entity.refresh_token;
         const [result] = await db.execute(
-            `INSERT INTO ${this.table} (role, email, password, refresh_token)
+            `INSERT INTO ${this.table} (permissions, email, password, refresh_token)
              VALUES (?, ?, ?, ?)`,
-            [entity.role, entity.email, entity.password, refreshTokenValue]
+            [entity.permissions, entity.email, entity.password, refreshTokenValue]
         );
         // Retourner l'objet complet pour le service
         return {
             id: result.insertId,
-            role: entity.role,
+            permissions: entity.permissions,
             email: entity.email,
             refreshToken: refreshTokenValue
         };
@@ -82,16 +82,16 @@ async create(user) {
         return rows.map(this.toObject);
     },
 
-    async updateById(userId, {email, role, password}) {
+    async updateById(userId, {email, permissions, password}) {
         const fields = [];
         const values = [];
         if (email) {
             fields.push('email = ?');
             values.push(email);
         }
-        if (role) {
-            fields.push('role = ?');
-            values.push(role);
+        if (permissions) {
+            fields.push('permissions = ?');
+            values.push(permissions);
         }
         if (password) {
             fields.push('password = ?');
@@ -118,12 +118,12 @@ async create(user) {
         return result.affectedRows > 0;
     },
 
-    async updateRole(userId, role) {
+    async updatePermissions(userId, permissions) {
         const [result] = await db.execute(
             `UPDATE ${this.table}
-             SET role = ?
+             SET permissions = ?
              WHERE id = ?`,
-            [role, userId]
+            [permissions, userId]
         );
         return result.affectedRows > 0;
     }

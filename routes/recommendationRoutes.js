@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middlewares/authMiddleware');
-const requireRole = require('../middlewares/requireRoleMiddleware');
+const requirePermissions = require('../middlewares/requirePermissionsMiddleware');
 const recommendationController = require('../controllers/recommendationController');
 
 // Toutes les routes nécessitent l'authentification
@@ -213,7 +213,7 @@ router.post('/save', recommendationController.saveRecommendation);
  *                   type: string
  *                   example: "An error occurred while fetching all recommendations"
  */
-router.get('/all', requireRole('admin'), recommendationController.getAllRecommendations);
+router.get('/all', requirePermissions('admin'), recommendationController.getAllRecommendations);
 
 /**
  * @swagger
@@ -267,7 +267,7 @@ router.get('/all', requireRole('admin'), recommendationController.getAllRecommen
  *                   type: string
  *                   example: "Erreur serveur"
  */
-router.get('/export', requireRole('admin'), recommendationController.exportRecommendations);
+router.get('/export', requirePermissions('admin'), recommendationController.exportRecommendations);
 
 /**
  * @swagger
@@ -411,7 +411,7 @@ router.get('/', recommendationController.getUserRecommendations);
  *                   type: string
  *                   example: "Error getting recommendation by Id: ..."
  */
-router.get('/:id', requireRole('admin'), recommendationController.getRecommendationById);
+router.get('/:id', requirePermissions('admin'), recommendationController.getRecommendationById);
 
 /**
  * @swagger

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const serieController = require('../controllers/serieController');
 const authMiddleware = require('../middlewares/authMiddleware');
-const requireRole = require('../middlewares/requireRoleMiddleware');
+const requirePermissions = require('../middlewares/requirePermissionsMiddleware');
 
 // Toutes les routes nécessitent l'authentification
 router.use(authMiddleware);
@@ -343,7 +343,7 @@ router.get('/', serieController.getAllSeries);
  *                   type: string
  *                   example: "Erreur lors de l'export des séries"
  */
-router.get('/export', requireRole('admin'), serieController.exportSeries);
+router.get('/export', requirePermissions('admin'), serieController.exportSeries);
 
 /**
  * @swagger
@@ -808,7 +808,7 @@ router.get('/:id', serieController.getSerieById);
  *                   type: string
  *                   example: "Erreur lors de la création de la série"
  */
-router.post('/', requireRole('admin'), serieController.createSerie);
+router.post('/', requirePermissions('admin'), serieController.createSerie);
 
 /**
  * @swagger
@@ -1110,7 +1110,7 @@ router.post('/', requireRole('admin'), serieController.createSerie);
  *                   type: string
  *                   example: "Erreur lors de la mise à jour de la série"
  */
-router.put('/:id', requireRole('admin'), serieController.updateSerie);
+router.put('/:id', requirePermissions('admin'), serieController.updateSerie);
 
 /**
  * @swagger
@@ -1352,6 +1352,6 @@ router.put('/:id', requireRole('admin'), serieController.updateSerie);
  *                   type: string
  *                   example: "Erreur lors de la suppression de la série"
  */
-router.delete('/:id', requireRole('admin'), serieController.deleteSerie);
+router.delete('/:id', requirePermissions('admin'), serieController.deleteSerie);
 
 module.exports = router;

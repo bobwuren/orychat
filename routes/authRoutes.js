@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middlewares/authMiddleware');
-const requireRole = require('../middlewares/requireRoleMiddleware');
+const requirePermissions = require('../middlewares/requirePermissionsMiddleware');
 
 /**
  * @swagger
@@ -71,7 +71,7 @@ const requireRole = require('../middlewares/requireRoleMiddleware');
  *                       format: email
  *                       description: Adresse email de l'utilisateur
  *                       example: "jean.dupont@example.com"
- *                     role:
+ *                     permissions:
  *                       type: string
  *                       enum: [admin, client]
  *                       description: Rôle de l'utilisateur dans le système
@@ -169,7 +169,7 @@ router.post('/login', authController.login);
  *                 minLength: 8
  *                 pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$"
  *                 example: SecurePass123
- *               role:
+ *               permissions:
  *                 type: string
  *                 enum: [admin, client]
  *                 description: Rôle dans le système (optionnel, 'client' par défaut)
@@ -188,7 +188,7 @@ router.post('/login', authController.login);
  *                 name: "Pierre Durand"
  *                 email: "pierre.durand@example.com"
  *                 password: "MySecurePass456"
- *                 role: "client"
+ *                 permissions: "client"
  *     responses:
  *       201:
  *         description: Utilisateur inscrit avec succès
@@ -214,7 +214,7 @@ router.post('/login', authController.login);
  *                     name:
  *                       type: string
  *                       example: "Jean Dupont"
- *                     role:
+ *                     permissions:
  *                       type: string
  *                       enum: [admin, client]
  *                       example: "client"
@@ -253,7 +253,7 @@ router.post('/login', authController.login);
  *                   summary: Mot de passe trop faible
  *                   value:
  *                     error: "Le mot de passe doit faire au moins 8 caractères, contenir une majuscule, une minuscule et un chiffre"
- *                 invalid_role:
+ *                 invalid_permissions:
  *                   summary: Rôle non autorisé
  *                   value:
  *                     error: "Rôle non autorisé"
@@ -345,7 +345,7 @@ router.post('/register', authController.register);
  *                     email:
  *                       type: string
  *                       example: "jean.dupont@example.com"
- *                     role:
+ *                     permissions:
  *                       type: string
  *                       enum: [admin, client]
  *                       example: "client"
@@ -403,9 +403,9 @@ router.post('/register', authController.register);
 router.post('/refresh', authController.refresh);
 
 // Routes administrateur (protection admin requise)
-router.get('/admin/users', authMiddleware, requireRole('admin'), authController.getAllUsers);
+router.get('/admin/users', authMiddleware, requirePermissions('admin'), authController.getAllUsers);
 
-router.get('/admin/users/:id', authMiddleware, requireRole('admin'), authController.getUserById);
+router.get('/admin/users/:id', authMiddleware, requirePermissions('admin'), authController.getUserById);
 
 /**
  * @swagger
@@ -439,7 +439,7 @@ router.get('/admin/users/:id', authMiddleware, requireRole('admin'), authControl
  *               password:
  *                 type: string
  *                 description: Nouveau mot de passe (optionnel)
- *               role:
+ *               permissions:
  *                 type: string
  *                 enum: [admin, client]
  *                 description: Nouveau rôle (optionnel)
@@ -457,9 +457,9 @@ router.get('/admin/users/:id', authMiddleware, requireRole('admin'), authControl
  *       500:
  *         description: Erreur serveur interne
  */
-router.put('/admin/users/:id', authMiddleware, requireRole('admin'), authController.updateUserById);
+router.put('/admin/users/:id', authMiddleware, requirePermissions('admin'), authController.updateUserById);
 
-router.delete('/admin/users/:id', authMiddleware, requireRole('admin'), authController.deleteUserById);
+router.delete('/admin/users/:id', authMiddleware, requirePermissions('admin'), authController.deleteUserById);
 /**
  * @swagger
  * /logout:
@@ -604,7 +604,7 @@ router.post('/logout', authMiddleware, authController.logout);
  *           default: 50
  *         description: Nombre d'utilisateurs par page (optionnel)
  *       - in: query
- *         name: role
+ *         name: permissions
  *         schema:
  *           type: string
  *           enum: [admin, client]
@@ -627,7 +627,7 @@ router.post('/logout', authMiddleware, authController.logout);
  *                         type: string
  *                         description: Identifiant unique de l'utilisateur
  *                         example: "usr_123456789"
- *                       role:
+ *                       permissions:
  *                         type: string
  *                         enum: [admin, client]
  *                         description: Rôle de l'utilisateur
@@ -677,13 +677,13 @@ router.post('/logout', authMiddleware, authController.logout);
  *                 value:
  *                   users:
  *                     - id: "usr_123456789"
- *                       role: "admin"
+ *                       permissions: "admin"
  *                       name: "Admin Système"
  *                       email: "admin@orientys.com"
  *                       createdAt: "2024-01-01T00:00:00.000Z"
  *                       lastLogin: "2024-01-20T08:00:00.000Z"
  *                     - id: "usr_987654321"
- *                       role: "client"
+ *                       permissions: "client"
  *                       name: "Marie Martin"
  *                       email: "marie.martin@student.fr"
  *                       createdAt: "2024-01-15T10:30:00.000Z"
@@ -732,7 +732,7 @@ router.post('/logout', authMiddleware, authController.logout);
  *                   type: string
  *                   example: "Erreur lors de la récupération des utilisateurs"
  */
-router.get('/users', authMiddleware, requireRole('admin'), authController.getAllUsers);
+router.get('/users', authMiddleware, requirePermissions('admin'), authController.getAllUsers);
 
 /**
  * @swagger
@@ -773,7 +773,7 @@ router.get('/users', authMiddleware, requireRole('admin'), authController.getAll
  *                       type: string
  *                       description: Identifiant unique de l'utilisateur
  *                       example: "usr_123456789"
- *                     role:
+ *                     permissions:
  *                       type: string
  *                       enum: [admin, client]
  *                       description: Rôle de l'utilisateur dans le système
@@ -812,7 +812,7 @@ router.get('/users', authMiddleware, requireRole('admin'), authController.getAll
  *                 value:
  *                   user:
  *                     id: "usr_admin_001"
- *                     role: "admin"
+ *                     permissions: "admin"
  *                     name: "Admin Système"
  *                     email: "admin@orientys.com"
  *                     createdAt: "2024-01-01T00:00:00.000Z"
@@ -824,7 +824,7 @@ router.get('/users', authMiddleware, requireRole('admin'), authController.getAll
  *                 value:
  *                   user:
  *                     id: "usr_123456789"
- *                     role: "client"
+ *                     permissions: "client"
  *                     name: "Marie Martin"
  *                     email: "marie.martin@student.fr"
  *                     createdAt: "2024-01-15T10:30:00.000Z"
@@ -938,7 +938,7 @@ router.get('/users/:id', authMiddleware, authController.getUserById);
  *                 format: email
  *                 description: Nouvelle adresse email (doit être unique)
  *                 example: "jean-claude.dupont@example.com"
- *               role:
+ *               permissions:
  *                 type: string
  *                 enum: [admin, client]
  *                 description: Nouveau rôle de l'utilisateur
@@ -957,7 +957,7 @@ router.get('/users/:id', authMiddleware, authController.getUserById);
  *               value:
  *                 name: "Marie-Claire Martin"
  *                 email: "marie-claire.martin@example.com"
- *                 role: "admin"
+ *                 permissions: "admin"
  *     responses:
  *       200:
  *         description: Utilisateur mis à jour avec succès
@@ -982,7 +982,7 @@ router.get('/users/:id', authMiddleware, authController.getUserById);
  *                       type: string
  *                       format: email
  *                       example: "jean-claude.dupont@example.com"
- *                     role:
+ *                     permissions:
  *                       type: string
  *                       enum: [admin, client]
  *                       example: "client"
@@ -1013,7 +1013,7 @@ router.get('/users/:id', authMiddleware, authController.getUserById);
  *                   summary: Nom vide
  *                   value:
  *                     error: "Le nom ne peut pas être vide"
- *                 invalid_role:
+ *                 invalid_permissions:
  *                   summary: Rôle invalide
  *                   value:
  *                     error: "Rôle non autorisé"
@@ -1076,7 +1076,7 @@ router.get('/users/:id', authMiddleware, authController.getUserById);
  *                   type: string
  *                   example: "Erreur lors de la mise à jour de l'utilisateur"
  */
-router.put('/users/:id', authMiddleware, requireRole('admin'), authController.updateUserById);
+router.put('/users/:id', authMiddleware, requirePermissions('admin'), authController.updateUserById);
 
 /**
  * @swagger
@@ -1132,7 +1132,7 @@ router.put('/users/:id', authMiddleware, requireRole('admin'), authController.up
  *                     email:
  *                       type: string
  *                       example: "jean.dupont@example.com"
- *                     role:
+ *                     permissions:
  *                       type: string
  *                       example: "client"
  *                 deletedAt:
@@ -1149,7 +1149,7 @@ router.put('/users/:id', authMiddleware, requireRole('admin'), authController.up
  *                     id: "usr_123456789"
  *                     name: "Marie Martin"
  *                     email: "marie.martin@student.fr"
- *                     role: "client"
+ *                     permissions: "client"
  *                   deletedAt: "2024-01-20T16:45:00.000Z"
  *       400:
  *         description: ID utilisateur invalide
@@ -1218,11 +1218,11 @@ router.put('/users/:id', authMiddleware, requireRole('admin'), authController.up
  *                   type: string
  *                   example: "Erreur lors de la suppression de l'utilisateur"
  */
-router.delete('/users/:id', authMiddleware, requireRole('admin'), authController.deleteUserById);
+router.delete('/users/:id', authMiddleware, requirePermissions('admin'), authController.deleteUserById);
 
 /**
  * @swagger
- * /users/{id}/role:
+ * /users/{id}/permissions:
  *   patch:
  *     summary: Met à jour le rôle d'un utilisateur
  *     description: |
@@ -1255,9 +1255,9 @@ router.delete('/users/:id', authMiddleware, requireRole('admin'), authController
  *           schema:
  *             type: object
  *             required:
- *               - role
+ *               - permissions
  *             properties:
- *               role:
+ *               permissions:
  *                 type: string
  *                 enum: [admin, client]
  *                 description: |
@@ -1269,11 +1269,11 @@ router.delete('/users/:id', authMiddleware, requireRole('admin'), authController
  *             promote_to_admin:
  *               summary: Promouvoir en administrateur
  *               value:
- *                 role: "admin"
+ *                 permissions: "admin"
  *             demote_to_client:
  *               summary: Rétrograder en client
  *               value:
- *                 role: "client"
+ *                 permissions: "client"
  *     responses:
  *       200:
  *         description: Rôle utilisateur mis à jour avec succès
@@ -1298,12 +1298,12 @@ router.delete('/users/:id', authMiddleware, requireRole('admin'), authController
  *                       type: string
  *                       format: email
  *                       example: "jean.dupont@example.com"
- *                     role:
+ *                     permissions:
  *                       type: string
  *                       enum: [admin, client]
  *                       description: Nouveau rôle assigné
  *                       example: "admin"
- *                     previousRole:
+ *                     previousPermissions:
  *                       type: string
  *                       enum: [admin, client]
  *                       description: Ancien rôle (pour traçabilité)
@@ -1326,8 +1326,8 @@ router.delete('/users/:id', authMiddleware, requireRole('admin'), authController
  *                     id: "usr_123456789"
  *                     name: "Jean Dupont"
  *                     email: "jean.dupont@example.com"
- *                     role: "admin"
- *                     previousRole: "client"
+ *                     permissions: "admin"
+ *                     previousPermissions: "client"
  *                     updatedAt: "2024-01-20T17:15:00.000Z"
  *                     updatedBy: "usr_admin_001"
  *       400:
@@ -1340,11 +1340,11 @@ router.delete('/users/:id', authMiddleware, requireRole('admin'), authController
  *                 error:
  *                   type: string
  *               examples:
- *                 missing_role:
+ *                 missing_permissions:
  *                   summary: Rôle manquant
  *                   value:
  *                     error: "Rôle requis"
- *                 invalid_role:
+ *                 invalid_permissions:
  *                   summary: Rôle invalide
  *                   value:
  *                     error: "Rôle non autorisé"
@@ -1352,7 +1352,7 @@ router.delete('/users/:id', authMiddleware, requireRole('admin'), authController
  *                   summary: Auto-modification interdite
  *                   value:
  *                     error: "Vous ne pouvez pas modifier votre propre rôle"
- *                 same_role:
+ *                 same_permissions:
  *                   summary: Rôle identique
  *                   value:
  *                     error: "L'utilisateur a déjà ce rôle"
@@ -1405,7 +1405,7 @@ router.delete('/users/:id', authMiddleware, requireRole('admin'), authController
  *                   type: string
  *                   example: "Erreur lors de la mise à jour du rôle utilisateur"
  */
-router.patch('/users/:id/role', authMiddleware, requireRole('admin'), authController.updateUserRole);
+router.patch('/users/:id/permissions', authMiddleware, requirePermissions('admin'), authController.updateUserPermissions);
 
 // /**
 //  * @swagger
@@ -1501,7 +1501,7 @@ router.patch('/users/:id/role', authMiddleware, requireRole('admin'), authContro
 //  *                     name:
 //  *                       type: string
 //  *                       example: "Admin Système"
-//  *                     role:
+//  *                     permissions:
 //  *                       type: string
 //  *                       enum: [admin]
 //  *                       description: Rôle automatiquement défini à 'admin'
@@ -1538,7 +1538,7 @@ router.patch('/users/:id/role', authMiddleware, requireRole('admin'), authContro
 //  *                     id: "usr_admin_789"
 //  *                     email: "admin@orientys.com"
 //  *                     name: "Admin Système"
-//  *                     role: "admin"
+//  *                     permissions: "admin"
 //  *                     createdAt: "2024-01-20T18:00:00.000Z"
 //  *                     createdBy: "usr_admin_001"
 //  *                   auditLog:
@@ -1620,6 +1620,6 @@ router.patch('/users/:id/role', authMiddleware, requireRole('admin'), authContro
 //  *                   type: string
 //  *                   example: "Erreur lors de la création de l'utilisateur admin"
 //  */
-// router.post('/admin/create-admin', authMiddleware, requireRole('admin'), authController.createAdminUser);
+// router.post('/admin/create-admin', authMiddleware, requirePermissions('admin'), authController.createAdminUser);
 
 module.exports = router;

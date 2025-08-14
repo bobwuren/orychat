@@ -8,7 +8,7 @@ const {
     createNote
 } = require('../controllers/noteController');
 const authMiddleware = require('../middlewares/authMiddleware');
-const requireRole = require('../middlewares/requireRoleMiddleware');
+const requirePermissions = require('../middlewares/requirePermissionsMiddleware');
 
 // Toutes les routes nécessitent l'authentification
 router.use(authMiddleware);
@@ -42,7 +42,7 @@ router.post('/save', saveNotes);
  *       500:
  *         description: Erreur serveur
  */
-router.get('/user/:userId',requireRole('admin'), getNotesByUserId);
+router.get('/user/:userId',requirePermissions('admin'), getNotesByUserId);
 
 /**
  * @swagger
@@ -64,7 +64,7 @@ router.get('/user/:userId',requireRole('admin'), getNotesByUserId);
  *       500:
  *         description: Erreur serveur
  */
-router.get('/', requireRole('admin'), getAllNotes);
+router.get('/', requirePermissions('admin'), getAllNotes);
 
 /**
  * @swagger
@@ -97,7 +97,7 @@ router.get('/', requireRole('admin'), getAllNotes);
  *       500:
  *         description: Erreur serveur
  */
-router.post('/', requireRole('admin'), createNote);
+router.post('/', requirePermissions('admin'), createNote);
 
 /**
  * @swagger

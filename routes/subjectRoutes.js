@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const subjectController = require('../controllers/subjectController');
 const authMiddleware = require('../middlewares/authMiddleware');
-const requireRole = require('../middlewares/requireRoleMiddleware');
+const requirePermissions = require('../middlewares/requirePermissionsMiddleware');
 
 // Toutes les routes nécessitent l'authentification
 router.use(authMiddleware);
@@ -261,7 +261,7 @@ router.get('/', subjectController.getAllSubjects);
  *               message: "Erreur lors de l'export des matières"
  *               error: "EXPORT_FAILED"
  */
-router.get('/export', requireRole('admin'), subjectController.exportSubjects);
+router.get('/export', requirePermissions('admin'), subjectController.exportSubjects);
 
 /**
  * @swagger
@@ -753,7 +753,7 @@ router.get('/serie/:serieId', subjectController.getSubjectsBySerieId);
  *               message: "Erreur lors de la création de la matière"
  *               error: "INTERNAL_SERVER_ERROR"
  */
-router.post('/', requireRole('admin'), subjectController.createSubject);
+router.post('/', requirePermissions('admin'), subjectController.createSubject);
 
 /**
  * @swagger
@@ -993,7 +993,7 @@ router.post('/', requireRole('admin'), subjectController.createSubject);
  *               message: "Erreur lors de la modification de la matière"
  *               error: "INTERNAL_SERVER_ERROR"
  */
-router.put('/:id', requireRole('admin'), subjectController.updateSubject);
+router.put('/:id', requirePermissions('admin'), subjectController.updateSubject);
 
 /**
  * @swagger
@@ -1149,6 +1149,6 @@ router.put('/:id', requireRole('admin'), subjectController.updateSubject);
  *               message: "Erreur lors de la suppression de la matière"
  *               error: "DELETION_FAILED"
  */
-router.delete('/:id', requireRole('admin'), subjectController.deleteSubject);
+router.delete('/:id', requirePermissions('admin'), subjectController.deleteSubject);
 
 module.exports = router;

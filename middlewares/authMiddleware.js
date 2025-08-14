@@ -14,12 +14,12 @@ module.exports = async (req, res, next) => {
     const token = authHeader.split(' ')[1];
     try {
         const decoded = verifyAccessToken(token);
-        //On recupere le role de l'utilisateur
+        //On recupere le permissions de l'utilisateur
         const user = await UserModel.findById(decoded.userId);
         if (!user) return res.status(401).json({
             error: 'Unauthorized access: User not found'
         })
-        req.user = {id: decoded.userId, role: user.role};
+        req.user = {id: decoded.userId, permissions: user.permissions};
         console.log(`✅ [Auth Middleware] Token OK for user: ${decoded.userId}`);
         next();
     } catch (error) {
