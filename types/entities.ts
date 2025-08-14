@@ -2,7 +2,7 @@ export type Entity = 'auth' | 'subjects' | 'series' | 'recommendations' | 'unive
 
 export type User = {
     id: number;
-    role: string;
+    permissions: string;
     email: string;
 };
 

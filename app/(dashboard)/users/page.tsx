@@ -31,10 +31,10 @@ export default function UsersPage() {
     const [filteredData, setFilteredData] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterRole, setFilterRole] = useState('all');
+    const [filterPermissions, setFilterPermissions] = useState('all');
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [currentUserId, setCurrentUserId] = useState<string>('');
+    const [currentUserId, setCurrentUserId] = useState<number>();
 
     useEffect(() => {
         // Récupérer l'ID de l'utilisateur actuel depuis le localStorage
@@ -76,17 +76,17 @@ export default function UsersPage() {
         }
 
         // Filtrage par rôle
-        if (filterRole !== 'all') {
-            filtered = filtered.filter(user => user.role === filterRole);
+        if (filterPermissions !== 'all') {
+            filtered = filtered.filter(user => user.permissions === filterPermissions);
         }
 
         setFilteredData(filtered);
-    }, [data, searchTerm, filterRole]);
+    }, [data, searchTerm, filterPermissions]);
 
     // Calculs des statistiques
     const totalUsers = data.length;
-    const adminUsers = data.filter(u => u.role === 'admin').length;
-    const clientUsers = data.filter(u => u.role === 'client').length;
+    const adminUsers = data.filter(u => u.permissions === 'admin').length;
+    const clientUsers = data.filter(u => u.permissions === 'client').length;
 
     // Handlers pour les actions CRUD
     const handleEditUser = (user: User) => {
@@ -94,7 +94,7 @@ export default function UsersPage() {
         setIsFormOpen(true);
     };
 
-    const handleDeleteUser = async (userId: string) => {
+    const handleDeleteUser = async (userId: number) => {
         // Protection : empêcher l'admin de se supprimer lui-même
         if (userId === currentUserId) {
             alert('Vous ne pouvez pas supprimer votre propre compte !');
@@ -122,7 +122,7 @@ export default function UsersPage() {
     const columns = createUserColumns({
         onEdit: handleEditUser,
         onDelete: handleDeleteUser,
-        currentUserId: currentUserId
+        currentUserId: currentUserId ?? 0
     });
 
     if (loading) {
@@ -269,7 +269,7 @@ export default function UsersPage() {
                             />
                         </div>
 
-                        <Select value={filterRole} onValueChange={setFilterRole}>
+                        <Select value={filterPermissions} onValueChange={setFilterPermissions}>
                             <SelectTrigger className="w-full sm:w-48">
                                 <Shield className="h-4 w-4 mr-2"/>
                                 <SelectValue placeholder="Rôle"/>
@@ -282,7 +282,7 @@ export default function UsersPage() {
                         </Select>
                     </div>
 
-                    {(searchTerm || filterRole !== 'all') && (
+                    {(searchTerm || filterPermissions !== 'all') && (
                         <div className="flex items-center justify-between mt-4 pt-4 border-t">
                             <p className="text-sm text-muted-foreground">
                                 {filteredData.length} résultat{filteredData.length > 1 ? 's' : ''} trouvé{filteredData.length > 1 ? 's' : ''}
@@ -292,7 +292,7 @@ export default function UsersPage() {
                                 size="sm"
                                 onClick={() => {
                                     setSearchTerm('');
-                                    setFilterRole('all');
+                                    setFilterPermissions('all');
                                 }}
                             >
                                 Réinitialiser

@@ -125,7 +125,7 @@ _axiosAdmin.interceptors.request.use((config) => {
     
     if (accessToken && shouldAddToken(config.url ?? "")) {
         config.headers["Authorization"] = `Bearer ${accessToken}`;
-        config.headers["role"] = "admin";
+        config.headers["permissions"] = "admin";
     }
     return config;
 });
@@ -168,7 +168,7 @@ _axiosAdmin.interceptors.response.use(
                 });
                 processQueue(null, newAccess);
                 originalRequest.headers["Authorization"] = `Bearer ${newAccess}`;
-                originalRequest.headers["role"] = "admin";
+                originalRequest.headers["permissions"] = "admin";
                 return _axiosAdmin(originalRequest);
             } catch (refreshError) {
                 processQueue(refreshError, null);

@@ -34,11 +34,11 @@ import {
 import { User } from '@/types/entities';
 
 // Fonction pour déterminer le rôle de l'utilisateur
-const getUserRole = (user: User) => {
-    if (user.role === 'admin') {
-        return {role: 'admin', label: 'Administrateur', color: 'bg-red-500', icon: Crown};
+const getUserPermissions = (user: User) => {
+    if (user.permissions === 'admin') {
+        return {permissions: 'admin', label: 'Administrateur', color: 'bg-red-500', icon: Crown};
     }
-    return {role: 'client', label: 'Client', color: 'bg-green-500', icon: UserCheck};
+    return {permissions: 'client', label: 'Client', color: 'bg-green-500', icon: UserCheck};
 };
 
 // Fonction pour générer un avatar basé sur les initiales
@@ -72,13 +72,13 @@ export const createUserColumns = (actions: UserColumnActions): ColumnDef<User>[]
             );
         },
         cell: ({row}) => {
-            const userRole = getUserRole(row.original);
+            const userPermissions = getUserPermissions(row.original);
             const initials = getInitials(row.original.email);
 
             return (
                 <div className="flex items-center gap-3">
                     <div
-                        className={`w-10 h-10 rounded-full ${userRole.color} flex items-center justify-center text-white font-semibold text-sm`}>
+                        className={`w-10 h-10 rounded-full ${userPermissions.color} flex items-center justify-center text-white font-semibold text-sm`}>
                         {initials}
                     </div>
                     <div className="flex flex-col">
@@ -92,18 +92,18 @@ export const createUserColumns = (actions: UserColumnActions): ColumnDef<User>[]
         }
     },
     {
-        accessorKey: 'role',
+        accessorKey: 'permissions',
         header: 'Rôle',
         cell: ({row}) => {
-            const userRole = getUserRole(row.original);
-            const IconComponent = userRole.icon;
+            const userPermissions = getUserPermissions(row.original);
+            const IconComponent = userPermissions.icon;
             return (
                 <Badge
                     variant="secondary"
-                    className={`${userRole.color} text-white gap-1`}
+                    className={`${userPermissions.color} text-white gap-1`}
                 >
                     <IconComponent className="h-3 w-3"/>
-                    {userRole.label}
+                    {userPermissions.label}
                 </Badge>
             );
         }

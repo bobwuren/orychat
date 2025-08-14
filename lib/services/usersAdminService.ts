@@ -128,16 +128,16 @@ export const getCurrentUser = async (id: number): Promise<User> => {
 };
 
 // Mettre à jour le rôle d'un utilisateur
-export const updateUserRole = async (id: number, role: string): Promise<void> => {
-    // console.log('🛡️ [usersAdminService][UPDATE ROLE]', id, role);
+export const updateUserPermissions = async (id: number, permissions: string): Promise<void> => {
+    // console.log('🛡️ [usersAdminService][UPDATE permissions]', id, permissions);
     try {
-        const response = await apiServiceAdmin.put(`/api/auth/users/${id}/role`, { role });
-        // console.log('✅ [usersAdminService][UPDATE ROLE][SUCCESS]', response.status);
+        const response = await apiServiceAdmin.put(`/api/auth/users/${id}/permissions`, { permissions });
+        // console.log('✅ [usersAdminService][UPDATE permissions][SUCCESS]', response.status);
         if (response.status !== 200) {
             throw new Error('Impossible de mettre à jour le rôle');
         }
     } catch (err: any) {
-        console.error('❌ [usersAdminService][UPDATE ROLE][ERROR]', err);
+        console.error('❌ [usersAdminService][UPDATE permissions][ERROR]', err);
         if (err.response?.data?.error) {
             throw new Error(err.response.data.error);
         }

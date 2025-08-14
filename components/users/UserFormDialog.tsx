@@ -38,7 +38,7 @@ import { updateUser } from '@/lib/services/usersAdminService';
 const userUpdateSchema = z.object({
   email: z.string().email('Email invalide').min(1, 'Email requis'),
   password: z.string().min(8, 'Le mot de passe doit faire au moins 8 caractères').optional().or(z.literal('')),
-  role: z.enum(['admin', 'client']),
+  permissions: z.enum(['admin', 'client']),
 });
 
 type UserUpdateValues = z.infer<typeof userUpdateSchema>;
@@ -47,7 +47,7 @@ interface UserFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   user?: UserType | null;
-  currentUserId?: string;
+  currentUserId?: number;
   onSuccess: () => void;
 }
 
@@ -67,7 +67,7 @@ export function UserFormDialog({
     defaultValues: {
       email: '',
       password: '',
-      role: 'client',
+      permissions: 'client',
     },
   });
 
@@ -76,13 +76,13 @@ export function UserFormDialog({
       form.reset({
         email: user.email,
         password: '',
-        role: user.role as 'admin' | 'client',
+        permissions: user.permissions as 'admin' | 'client',
       });
     } else {
       form.reset({
         email: '',
         password: '',
-        role: 'client',
+        permissions: 'client',
       });
     }
     setError('');
@@ -96,7 +96,7 @@ export function UserFormDialog({
       if (user) {
         const updatedUser = await updateUser(user.id, {
           email: values.email,
-          role: values.role,
+          permissions: values.permissions,
           ...(values.password ? { password: values.password } : {})
         });
         onSuccess();
@@ -191,7 +191,7 @@ export function UserFormDialog({
 
                 <FormField
                   control={form.control}
-                  name="role"
+                  name="permissions"
                   render={({field}) => (
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
