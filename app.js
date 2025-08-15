@@ -61,15 +61,10 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
 // CORS
-app.use(
-  cors({
-    origin:
-      process.env.NODE_ENV === "production"
-        ? [process.env.CLIENT_URL, process.env.ADMIN_URL]
-        : true,
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: true, // Allow all origins in development
+  credentials: true
+}));
 
 app.use(express.json());
 
