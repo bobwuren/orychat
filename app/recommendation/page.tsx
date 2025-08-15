@@ -122,7 +122,7 @@ const RecommendationPage = () => {
                 }
             } catch (err: any) {
                 setError(err.message || 'Erreur lors de la génération');
-                setTimeout(() => router.push('/dashboard'), 3000);
+                setTimeout(() => router.push('/dashboard'), 3002);
             } finally {
                 setLoading(false);
             }
