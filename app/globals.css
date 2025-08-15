@@ -48,43 +48,43 @@
     --radius-xl: 0.875rem;
 }
 
-@variant dark {
-    @theme inline {
-        --color-background: hsl(262 53% 4%);
-        --color-foreground: hsl(262 15% 97%);
-        --color-muted: hsl(262 15% 9%);
-        --color-muted-foreground: hsl(262 14% 70%);
-        --color-popover: hsl(262 53% 4%);
-        --color-popover-foreground: hsl(262 15% 97%);
-        --color-card: hsl(262 53% 4%);
-        --color-card-foreground: hsl(262 15% 97%);
-        --color-border: hsl(262 5% 14%);
-        --color-input: hsl(262 5% 14%);
-        --color-primary: hsl(262 58% 52%);
-        --color-primary-foreground: hsl(0 0% 100%);
-        --color-secondary: hsl(262 15% 11%);
-        --color-secondary-foreground: hsl(262 15% 71%);
-        --color-accent: hsl(262 15% 11%);
-        --color-accent-foreground: hsl(262 15% 71%);
-        --color-destructive: hsl(18 89% 46%);
-        --color-destructive-foreground: hsl(0 0% 100%);
-        --color-ring: hsl(262 58% 52%);
-        --color-chart-1: hsl(262 58% 52%);
-        --color-chart-2: hsl(262 15% 11%);
-        --color-chart-3: hsl(262 15% 11%);
-        --color-chart-4: hsl(262 15% 14%);
-        --color-chart-5: hsl(262 61% 52%);
+/*@variant dark {*/
+/*    @theme inline {*/
+/*        --color-background: hsl(262 53% 4%);*/
+/*        --color-foreground: hsl(262 15% 97%);*/
+/*        --color-muted: hsl(262 15% 9%);*/
+/*        --color-muted-foreground: hsl(262 14% 70%);*/
+/*        --color-popover: hsl(262 53% 4%);*/
+/*        --color-popover-foreground: hsl(262 15% 97%);*/
+/*        --color-card: hsl(262 53% 4%);*/
+/*        --color-card-foreground: hsl(262 15% 97%);*/
+/*        --color-border: hsl(262 5% 14%);*/
+/*        --color-input: hsl(262 5% 14%);*/
+/*        --color-primary: hsl(262 58% 52%);*/
+/*        --color-primary-foreground: hsl(0 0% 100%);*/
+/*        --color-secondary: hsl(262 15% 11%);*/
+/*        --color-secondary-foreground: hsl(262 15% 71%);*/
+/*        --color-accent: hsl(262 15% 11%);*/
+/*        --color-accent-foreground: hsl(262 15% 71%);*/
+/*        --color-destructive: hsl(18 89% 46%);*/
+/*        --color-destructive-foreground: hsl(0 0% 100%);*/
+/*        --color-ring: hsl(262 58% 52%);*/
+/*        --color-chart-1: hsl(262 58% 52%);*/
+/*        --color-chart-2: hsl(262 15% 11%);*/
+/*        --color-chart-3: hsl(262 15% 11%);*/
+/*        --color-chart-4: hsl(262 15% 14%);*/
+/*        --color-chart-5: hsl(262 61% 52%);*/
 
-        --color-sidebar: hsl(262 53% 4%);
-        --color-sidebar-foreground: hsl(262 15% 97%);
-        --color-sidebar-primary: hsl(262 58% 52%);
-        --color-sidebar-primary-foreground: hsl(0 0% 100%);
-        --color-sidebar-accent: hsl(262 15% 11%);
-        --color-sidebar-accent-foreground: hsl(262 15% 71%);
-        --color-sidebar-border: hsl(262 5% 14%);
-        --color-sidebar-ring: hsl(262 58% 52%);
-    }
-}
+/*        --color-sidebar: hsl(262 53% 4%);*/
+/*        --color-sidebar-foreground: hsl(262 15% 97%);*/
+/*        --color-sidebar-primary: hsl(262 58% 52%);*/
+/*        --color-sidebar-primary-foreground: hsl(0 0% 100%);*/
+/*        --color-sidebar-accent: hsl(262 15% 11%);*/
+/*        --color-sidebar-accent-foreground: hsl(262 15% 71%);*/
+/*        --color-sidebar-border: hsl(262 5% 14%);*/
+/*        --color-sidebar-ring: hsl(262 58% 52%);*/
+/*    }*/
+/*}*/
 
 @layer base {
     * {
