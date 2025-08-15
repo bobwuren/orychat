@@ -2,14 +2,14 @@ const express = require("express");
 const dotenv = require("dotenv");
 dotenv.config();
 
-// Désactiver les logs en production
+/*// Désactiver les logs en production
 if (process.env.NODE_ENV === "production") {
   console.log = () => {};
   console.warn = () => {};
   console.info = () => {};
   // Optionally disable console.error in production, but not recommended for critical errors
   // console.error = () => {};
-}
+}*/
 
 const cors = require("cors");
 const swaggerJSDoc = require("swagger-jsdoc");
@@ -61,10 +61,17 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
 // CORS
-app.use(cors({
-  origin: true, // Allow all origins in development
-  credentials: true
-}));
+if (process.env.NODE_ENV === "production") {
+  app.use(cors({
+    origin: [process.env.CLIENT_URL, process.env.ADMIN_URL], // Ex: ["https://mondomaine.com", "https://admin.mondomaine.com"]
+    credentials: true
+  }));
+} else {
+  app.use(cors({
+    origin: true, // Allow all origins in development
+    credentials: true
+  }));
+}
 
 app.use(express.json());
 
