@@ -14,6 +14,9 @@ CREATE TABLE IF NOT EXISTS users
     refresh_token TEXT                  DEFAULT NULL
 );
 
+alter table users
+    add name varchar(20) NOT NULL ;
+
 -- Table des séries
 CREATE TABLE IF NOT EXISTS series
 (

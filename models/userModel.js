@@ -31,28 +31,29 @@ const UserModel = {
         return this.toObject(rows[0]);
     },
 
-async create(user) {
+    async create(user) {
         const entity = this.toEntity(user);
         // Validation du format d'email
         if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(entity.email)) {
             throw new Error('Format d\'email invalide');
         }
-        // Validation du mot de passe (au moins 8 caractères, une majuscule, une minuscule, un chiffre)
+        // Validation du mot de passe
         if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(entity.password)) {
             throw new Error('Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre');
         }
         const refreshTokenValue = typeof entity.refresh_token === 'undefined' ? null : entity.refresh_token;
+        const defaultName = entity.email.split('@')[0];
         const [result] = await db.execute(
-            `INSERT INTO ${this.table} (permissions, email, password, refresh_token)
-             VALUES (?, ?, ?, ?)`,
-            [entity.permissions, entity.email, entity.password, refreshTokenValue]
+            `INSERT INTO ${this.table} (permissions, email, password, refresh_token, name)
+             VALUES (?, ?, ?, ?, ?)`,
+            [entity.permissions, entity.email, entity.password, refreshTokenValue, defaultName]
         );
-        // Retourner l'objet complet pour le service
         return {
             id: result.insertId,
             permissions: entity.permissions,
             email: entity.email,
-            refreshToken: refreshTokenValue
+            refreshToken: refreshTokenValue,
+            name: defaultName
         };
     },
 
