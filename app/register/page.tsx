@@ -29,7 +29,7 @@ export default function Page() {
             // Utiliser les options de notification
             const res = await apiService.post(
                 "/api/auth/register", 
-                {email, password, name: '', role: 'client'},
+                {email, password, name: '', permissions: 'client'},
                 { 
                     showLoadingToast: true, 
                     loadingMessage: "Création du compte en cours...", 

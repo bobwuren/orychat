@@ -39,7 +39,7 @@ interface UserInfo {
     id: number;
     email: string;
     name?: string;
-    role: string;
+    permissions: string;
 }
 
 export default function ModernNavigation({ 
@@ -79,7 +79,7 @@ export default function ModernNavigation({
     };
 
     const displayName = userInfo?.email || 'Utilisateur';
-    const isAdmin = userInfo?.role === 'admin';
+    const isAdmin = userInfo?.permissions === 'admin';
 
     // Version mobile avec menu burger
     if (variant === "mobile") {
