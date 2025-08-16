@@ -26,7 +26,7 @@ import {zodResolver} from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {createDegree, updateDegree} from '@/lib/services/degreeAdminService';
 import {Loader2, GraduationCap} from 'lucide-react';
-import { Degree } from '@/types/entities';
+import {Degree} from '@/types/entities';
 
 const degreeFormSchema = z.object({
     name: z.string()
@@ -47,11 +47,11 @@ interface DegreeFormDialogProps {
 }
 
 export function DegreeFormDialog({
-    open,
-    onOpenChange,
-    degree,
-    onSuccess
-}: DegreeFormDialogProps) {
+                                     open,
+                                     onOpenChange,
+                                     degree,
+                                     onSuccess
+                                 }: DegreeFormDialogProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const isEditing = !!degree;
@@ -64,21 +64,22 @@ export function DegreeFormDialog({
         },
     });
 
-/*    // Réinitialiser le formulaire quand le diplôme change
+    // Réinitialiser le formulaire quand le diplôme change
     useEffect(() => {
-        if (degree) {
-            form.reset({
-                name: degree.name,
-                description: degree.description,
-            });
-        } else {
-            form.reset({
-                name: '',
-                description: '',
-            });
+        if (open) {
+            if (degree) {
+                form.reset({
+                    name: degree.name,
+                    description: degree.description,
+                });
+            } else {
+                form.reset({
+                    name: '',
+                    description: '',
+                });
+            }
         }
-    }, [degree, form]);
-*/
+    }, [degree, open, form]);
 
     const onSubmit = async (values: DegreeFormValues) => {
         setIsLoading(true);
