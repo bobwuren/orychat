@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/sidebar"
 import { useLogout } from "@/components/auth/logout-provider"
 import { ThemeSwitch } from "@/components/comp-182"
-import { useTheme } from "next-themes"
 
 export function NavUser({
                           user,
@@ -40,7 +39,6 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const { openLogoutDialog } = useLogout()
-  const { theme, setTheme } = useTheme()
 
   return (
       <SidebarMenu>
@@ -85,13 +83,14 @@ export function NavUser({
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+
+              {/*/!* Section pour le changement de thème *!/*/}
               {/*<div className="flex items-center justify-between px-2 py-1.5">*/}
               {/*  <span className="text-sm">Thème</span>*/}
-              {/*  <ThemeSwitch*/}
-              {/*      checked={theme === "dark"}*/}
-              {/*      onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}*/}
-              {/*  />*/}
+              {/*  <ThemeSwitch />*/}
               {/*</div>*/}
+              {/*<DropdownMenuSeparator />*/}
+
               <DropdownMenuItem
                   className="cursor-pointer"
                   onClick={(e) => {
