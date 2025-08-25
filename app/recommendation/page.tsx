@@ -76,12 +76,6 @@ const extractUrl = (uni: any): string => {
     return possibleUrls[0] || '#';
 };
 
-// Interface pour l'erreur de moyenne insuffisante
-interface InsufficientGradeError {
-    error: string;
-    moyenne: number;
-}
-
 const RecommendationPage = () => {
     const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
     const [loading, setLoading] = useState(true);
@@ -100,33 +94,26 @@ const RecommendationPage = () => {
         const userId = Number(localStorage.getItem('userId'));
         const serieId = Number(localStorage.getItem('selectedSerieId'));
         const notesStr = localStorage.getItem('notes');
-
-        // Vérifier d'abord si les données requises sont disponibles
         if (!serieId || !notesStr || !userId) {
             setError('Données manquantes');
             setTimeout(() => router.push('/dashboard'), 2000);
             return;
         }
-
-        // Vérifier si une recommandation existe en cache ET qu'elle appartient à l'utilisateur actuel
         const cached = localStorage.getItem('lastRecommendation');
         if (cached && !showRetryPrompt) {
             try {
                 const cachedRec = JSON.parse(cached);
-                // Vérifier que la recommandation en cache appartient bien à l'utilisateur actuel
                 if (cachedRec.userId === userId && cachedRec.serieId === serieId) {
                     setRecommendation(cachedRec);
                     setLoading(false);
                     return;
                 }
-                // Sinon, ne pas utiliser le cache (mauvais utilisateur ou mauvaise série)
                 localStorage.removeItem('lastRecommendation');
             } catch (e) {
                 console.error("Erreur lors du parsing du cache:", e);
                 localStorage.removeItem('lastRecommendation');
             }
         }
-
         try {
             const notesArr = Object.entries(JSON.parse(notesStr)).map(([subjectId, value]) => ({
                 subjectId: Number(subjectId),
@@ -134,37 +121,24 @@ const RecommendationPage = () => {
                 userId,
                 serieId
             }));
-
             const rec = await getARecommendation(userId, serieId, notesArr);
-
-            // Vérifier que la recommandation reçue contient bien un userId
-            // et qu'il correspond à l'utilisateur actuel avant de la mettre en cache
-            if (rec && rec.userId === userId) {
-                setRecommendation(rec);
-                localStorage.setItem('lastRecommendation', JSON.stringify(rec));
-                // Réinitialiser les états d'erreur
-                setInsufficientGrade(null);
-                setError(null);
-            } else {
-                console.error("La recommandation reçue n'a pas le bon userId:", rec?.userId, "vs", userId);
-                setRecommendation(rec); // On l'affiche quand même
-            }
-        } catch (err: any) {
-            console.error("Erreur complète:", err);
-
-            // Gestion spécifique de l'erreur 400 (moyenne insuffisante)
-            if (err.response?.status === 400 && err.response?.data?.moyenne !== undefined) {
-                setInsufficientGrade({
-                    error: err.response.data.error || "Moyenne insuffisante pour générer une recommandation",
-                    moyenne: err.response.data.moyenne
-                });
+            // Si la réponse contient une moyenne, c'est une erreur de moyenne insuffisante
+            if ((rec as any).moyenne !== undefined) {
+                setInsufficientGrade(rec as InsufficientGradeError);
                 setError(null);
                 setRecommendation(null);
-            } else {
-                setError(err.message || 'Erreur lors de la génération');
+            } else if (rec && (rec as Recommendation).userId === userId) {
+                setRecommendation(rec as Recommendation);
+                localStorage.setItem('lastRecommendation', JSON.stringify(rec));
                 setInsufficientGrade(null);
-                setTimeout(() => router.push('/dashboard'), 3002);
+                setError(null);
+            } else {
+                setRecommendation(rec as Recommendation);
             }
+        } catch (err: any) {
+            setError(err.message || 'Erreur lors de la génération');
+            setInsufficientGrade(null);
+            setTimeout(() => router.push('/dashboard'), 3002);
         } finally {
             setLoading(false);
         }
@@ -584,3 +558,4 @@ const RecommendationPage = () => {
 };
 
 export default RecommendationPage;
+

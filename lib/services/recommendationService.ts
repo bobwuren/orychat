@@ -2,7 +2,13 @@ import {Recommendation} from '@/types/recommendation';
 import apiService from '@/lib/services/apiService';
 import {Note} from '@/types/note';
 
-export const getARecommendation = async (userId: number, serieId: number, notes: Note[]): Promise<Recommendation> => {
+// Interface pour l'erreur de moyenne insuffisante
+export interface InsufficientGradeError {
+    error: string;
+    moyenne: number;
+}
+
+export const getARecommendation = async (userId: number, serieId: number, notes: Note[]): Promise<Recommendation | InsufficientGradeError> => {
     try {
         // console.log('🔍 Récupération de la recommandation pour l\'utilisateur:', userId, ' série:', serieId);
 
@@ -19,8 +25,11 @@ export const getARecommendation = async (userId: number, serieId: number, notes:
     } catch (err: any) {
         // Gestion spécifique du cas où la moyenne est insuffisante (code 400)
         if (err?.response?.status === 400 && err?.response?.data?.moyenne !== undefined) {
-            console.log("❌ Moyenne insuffisante pour obtenir une recommandation: ", err.response.data.moyenne);
-            throw new Error(`Moyenne insuffisante (${err.response.data.moyenne}) pour obtenir une recommandation.`);
+            // Retourne un objet d'erreur spécial pour la moyenne insuffisante
+            return {
+                error: err.response.data.error || 'Moyenne insuffisante pour générer une recommandation',
+                moyenne: err.response.data.moyenne
+            };
         }
         throw new Error('Impossible de générer la recommandation');
     }
