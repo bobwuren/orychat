@@ -297,16 +297,7 @@ const RecommendationPage = () => {
                     {/* Actions */}
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                         <Button
-                            onClick={handleUpdateGrades}
-                            size="lg"
-                            className="flex-1 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
-                        >
-                            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                            Corriger mes notes
-                        </Button>
-
-                        <Button
-                            onClick={handleUpdateGrades}
+                            onClick={handleNewRecommendation}
                             size="lg"
                             className="flex-1 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
                         >
