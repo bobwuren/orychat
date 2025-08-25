@@ -16,13 +16,17 @@ export const getARecommendation = async (userId: number, serieId: number, notes:
             // console.log('❌ Erreur lors de la récupération de la recommandation:', response.data);
             throw new Error('Impossible de récupérer la recommandation');
         }
-    } catch (err) {
-        // console.log('❌ Erreur lors de la génération de la recommandation:', err);
+    } catch (err: any) {
+        // Gestion spécifique du cas où la moyenne est insuffisante (code 400)
+        if (err?.response?.status === 400 && err?.response?.data?.moyenne !== undefined) {
+            console.log("❌ Moyenne insuffisante pour obtenir une recommandation: ", err.response.data.moyenne);
+            throw new Error(`Moyenne insuffisante (${err.response.data.moyenne}) pour obtenir une recommandation.`);
+        }
         throw new Error('Impossible de générer la recommandation');
     }
 }
 
-    export const getUserRecommendationsHistory = async (userId: number): Promise<Recommendation[]> => {
+export const getUserRecommendationsHistory = async (userId: number): Promise<Recommendation[]> => {
         try {
             // console.log('🔍 Récupération de l\'historique des recommandations pour l\'utilisateur:', userId);
 
