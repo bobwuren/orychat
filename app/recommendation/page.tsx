@@ -27,7 +27,7 @@ import {
     Target,
     RefreshCw
 } from 'lucide-react';
-import {getARecommendation} from '@/lib/services/recommendationService';
+import {getARecommendation, InsufficientGradeError} from '@/lib/services/recommendationService';
 import {Recommendation} from '@/types/recommendation';
 import {useRouter} from 'next/navigation';
 import ModernNavigation from "@/components/navigation/ModernNavigation";
@@ -155,11 +155,6 @@ const RecommendationPage = () => {
         router.push('/dashboard');
     };
 
-    const handleRetryRecommendation = () => {
-        setShowRetryDialog(false);
-        setLoading(true);
-        fetchOrLoadRecommendation(true);
-    };
 
     const handleUpdateGrades = () => {
         // Nettoyer seulement les notes pour permettre à l'utilisateur de les corriger
@@ -219,11 +214,9 @@ const RecommendationPage = () => {
                         <AlertCircle className="h-4 w-4" />
                         <AlertTitle className="text-destructive">Moyenne trop faible pour le BAC</AlertTitle>
                         <AlertDescription className="text-destructive/80 mt-2">
-                            Votre moyenne actuelle de <span className="font-bold">{insufficientGrade.moyenne.toFixed(1)}/20</span> est
-                            inférieure au minimum requis de 10/20 pour obtenir le BAC et accéder aux études supérieures.
+                            Votre moyenne actuelle de <span className="font-bold inline">{insufficientGrade.moyenne.toFixed(1)}/20</span> est inférieure au minimum requis de 10/20 pour obtenir le BAC et accéder aux études supérieures.
                         </AlertDescription>
                     </Alert>
-
                     {/* Card principale avec conseils */}
                     <Card className="mb-6 sm:mb-8 border-0 shadow-2xl bg-card/60 backdrop-blur-md overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-orange-500/8 via-transparent to-red-500/8" />
@@ -313,20 +306,9 @@ const RecommendationPage = () => {
                         </Button>
 
                         <Button
-                            onClick={() => setShowRetryDialog(true)}
-                            variant="outline"
+                            onClick={handleUpdateGrades}
                             size="lg"
-                            className="flex-1 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-bold shadow-lg hover:shadow-xl transition-all duration-300"
-                        >
-                            <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                            Réessayer quand même
-                        </Button>
-
-                        <Button
-                            onClick={handleNewRecommendation}
-                            variant="ghost"
-                            size="lg"
-                            className="sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-bold"
+                            className="flex-1 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
                         >
                             <Home className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                             Accueil
@@ -356,9 +338,6 @@ const RecommendationPage = () => {
                                 >
                                     Annuler
                                 </Button>
-                                <AlertDialogAction onClick={handleRetryRecommendation}>
-                                    Générer quand même
-                                </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
