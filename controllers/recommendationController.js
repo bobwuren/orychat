@@ -12,6 +12,21 @@ exports.generateRecommendation = async (req, res) => {
       .status(400)
       .json({ error: "Invalid input data. Please provide serieId and notes." });
   }
+  // Calcul de la moyenne
+  console.log("❕❕❕ [Reco] Notes reçues:", notes);
+  const moyenne =
+    notes.length > 0
+      ? notes.reduce((acc, n) => acc + (n.value || 0), 0) / notes.length
+      : 0;
+  console.log("❕❕❕ [Reco] Moyenne calculée:", moyenne);
+  if (moyenne < 10) {
+    console.log("❌ [Reco] Moyenne insuffisante:", moyenne);
+    return res.status(400).json({
+      error:
+        "Moyenne insuffisante pour obtenir le BAC. Impossible de générer une recommandation d'orientations.",
+      moyenne,
+    });
+  }
   try {
     // 1. Sauvegarder les notes en base et récupérer leurs ids
     const NoteModel = require("../models/noteModel");

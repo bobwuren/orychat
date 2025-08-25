@@ -498,7 +498,7 @@ router.get('/:id', requirePermissions('admin'), recommendationController.getReco
  *                       type: string
  *                       format: date-time
  *       400:
- *         description: Données invalides
+ *         description: Données invalides ou moyenne insuffisante pour le BAC
  *         content:
  *           application/json:
  *             schema:
@@ -507,6 +507,9 @@ router.get('/:id', requirePermissions('admin'), recommendationController.getReco
  *                 error:
  *                   type: string
  *                   example: "Invalid input data. Please provide serieId and notes."
+ *                 moyenne:
+ *                   type: number
+ *                   example: 8.5
  *       401:
  *         description: Token d'authentification manquant ou invalide
  *         content:
