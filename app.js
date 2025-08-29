@@ -2,7 +2,6 @@ const express = require("express");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const cors = require("cors");
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 
@@ -11,7 +10,7 @@ const healthCheck = require("./middlewares/healthCheck");
 const globalErrorHandler = require("./middlewares/globalErrorHandler");
 const timerMiddleware = require("./middlewares/timerMiddleware");
 const bruteForce = require("./middlewares/bruteForce");
-const {generalLimiter, authLimiter} = require("./middlewares/rateLimiter");
+const {generalLimiter} = require("./middlewares/rateLimiter");
 const corsMiddleware = require("./middlewares/corsMiddleware");
 
 const authRoutes = require("./routes/authRoutes");
@@ -62,9 +61,6 @@ app.use(express.json({limit: '10mb'})); // Limiter la taille des requêtes
 
 // Middleware de limitation de requêtes
 app.use(generalLimiter);
-
-// Limiter les tentatives de connexion
-app.use(authLimiter);
 
 // Middleware de protection contre les attaques par force brute
 app.use(bruteForce);

@@ -90,10 +90,6 @@ const UserModel = {
             fields.push('email = ?');
             values.push(email);
         }
-        if (permissions) {
-            fields.push('permissions = ?');
-            values.push(permissions);
-        }
         if (password) {
             fields.push('password = ?');
             values.push(password);
@@ -118,16 +114,6 @@ const UserModel = {
         );
         return result.affectedRows > 0;
     },
-
-    async updatePermissions(userId, permissions) {
-        const [result] = await db.execute(
-            `UPDATE ${this.table}
-             SET permissions = ?
-             WHERE id = ?`,
-            [permissions, userId]
-        );
-        return result.affectedRows > 0;
-    }
 };
 
 module.exports = UserModel;

@@ -3,6 +3,7 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const requirePermissions = require('../middlewares/requirePermissionsMiddleware');
+const {authLimiter} = require('../middlewares/rateLimiter');
 
 /**
  * @swagger
@@ -123,7 +124,7 @@ const requirePermissions = require('../middlewares/requirePermissionsMiddleware'
  *                   type: string
  *                   example: "Erreur serveur lors de la connexion"
  */
-router.post('/login', authController.login);
+router.post('/login', authLimiter, authController.login);
 
 /**
  * @swagger
@@ -134,7 +135,7 @@ router.post('/login', authController.login);
  *       Crée un nouveau compte utilisateur dans le système Orientys.
  *       Valide l'email, la complexité du mot de passe et assigne automatiquement le rôle 'client'.
  *       Retourne immédiatement les tokens d'authentification pour une connexion automatique.
- *       
+ *
  *       **Règles de validation :**
  *       - Email: format valide requis
  *       - Mot de passe: minimum 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre
@@ -278,7 +279,7 @@ router.post('/login', authController.login);
  *                   type: string
  *                   example: "Erreur serveur lors de l'inscription"
  */
-router.post('/register', authController.register);
+router.post('/register', authLimiter, authController.register);
 
 /**
  * @swagger
@@ -288,7 +289,7 @@ router.post('/register', authController.register);
  *     description: |
  *       Génère un nouveau token d'accès à partir d'un refresh token valide.
  *       Utilisé pour maintenir l'authentification sans redemander les identifiants.
- *       
+ *
  *       **Comportement :**
  *       - Valide le refresh token fourni
  *       - Génère un nouveau access token (1h de validité)
@@ -402,64 +403,6 @@ router.post('/register', authController.register);
  */
 router.post('/refresh', authController.refresh);
 
-// Routes administrateur (protection admin requise)
-router.get('/admin/users', authMiddleware, requirePermissions('admin'), authController.getAllUsers);
-
-router.get('/admin/users/:id', authMiddleware, requirePermissions('admin'), authController.getUserById);
-
-/**
- * @swagger
- * /admin/users/{id}:
- *   put:
- *     summary: Mettre à jour un utilisateur (Admin uniquement)
- *     description: |
- *       Permet à un administrateur de modifier les informations d'un utilisateur existant.
- *       Tous les champs sont optionnels - seuls les champs fournis seront mis à jour.
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Identifiant unique de l'utilisateur à modifier
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 description: Nouvelle adresse email (optionnel)
- *               password:
- *                 type: string
- *                 description: Nouveau mot de passe (optionnel)
- *               permissions:
- *                 type: string
- *                 enum: [admin, client]
- *                 description: Nouveau rôle (optionnel)
- *     responses:
- *       200:
- *         description: Utilisateur mis à jour avec succès
- *       400:
- *         description: Données de requête invalides
- *       401:
- *         description: Non authentifié
- *       403:
- *         description: Accès refusé
- *       404:
- *         description: Utilisateur non trouvé
- *       500:
- *         description: Erreur serveur interne
- */
-router.put('/admin/users/:id', authMiddleware, requirePermissions('admin'), authController.updateUserById);
-
-router.delete('/admin/users/:id', authMiddleware, requirePermissions('admin'), authController.deleteUserById);
 /**
  * @swagger
  * /logout:
@@ -468,7 +411,7 @@ router.delete('/admin/users/:id', authMiddleware, requirePermissions('admin'), a
  *     description: |
  *       Déconnecte l'utilisateur en révoquant son refresh token.
  *       Après cette opération, l'utilisateur devra se reconnecter pour obtenir de nouveaux tokens.
- *       
+ *
  *       **Sécurité :**
  *       - Nécessite un token d'accès valide dans l'en-tête Authorization
  *       - Révoque définitivement le refresh token fourni
@@ -568,7 +511,6 @@ router.delete('/admin/users/:id', authMiddleware, requirePermissions('admin'), a
  *                   type: string
  *                   example: "Erreur serveur lors de la déconnexion"
  */
-
 router.post('/logout', authMiddleware, authController.logout);
 
 /**
@@ -579,10 +521,10 @@ router.post('/logout', authMiddleware, authController.logout);
  *     description: |
  *       Retourne la liste complète des utilisateurs enregistrés dans le système.
  *       Cette route est strictement réservée aux administrateurs.
- *       
+ *
  *       **Permissions requises :** Rôle admin
  *       **Authentification :** Token Bearer obligatoire
- *       
+ *
  *       Les mots de passe ne sont jamais inclus dans la réponse pour des raisons de sécurité.
  *     tags: [Utilisateur]
  *     security:
@@ -742,10 +684,10 @@ router.get('/users', authMiddleware, requirePermissions('admin'), authController
  *     description: |
  *       Retourne les informations détaillées d'un utilisateur spécifique.
  *       Cette route est strictement réservée aux administrateurs.
- *       
+ *
  *       **Permissions requises :** Rôle admin
  *       **Authentification :** Token Bearer obligatoire
- *       
+ *
  *       Le mot de passe n'est jamais inclus dans la réponse pour des raisons de sécurité.
  *     tags: [Utilisateur]
  *     security:
@@ -896,20 +838,11 @@ router.get('/users/:id', authMiddleware, authController.getUserById);
  * @swagger
  * /users/{id}:
  *   put:
- *     summary: Met à jour un utilisateur
+ *     summary: Mettre à jour un utilisateur (Admin uniquement)
  *     description: |
- *       Met à jour les informations d'un utilisateur existant.
- *       Cette route est strictement réservée aux administrateurs.
- *       
- *       **Permissions requises :** Rôle admin
- *       **Authentification :** Token Bearer obligatoire
- *       
- *       **Règles de validation :**
- *       - Email: format valide requis si fourni
- *       - Nom: non vide si fourni
- *       - Au moins un champ doit être fourni pour la mise à jour
- *       - L'email doit être unique dans le système
- *     tags: [Utilisateur]
+ *       Permet à un administrateur de modifier les informations d'un utilisateur existant.
+ *       Tous les champs sont optionnels - seuls les champs fournis seront mis à jour.
+ *     tags: [Auth]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -919,7 +852,6 @@ router.get('/users/:id', authMiddleware, authController.getUserById);
  *         schema:
  *           type: string
  *         description: Identifiant unique de l'utilisateur à modifier
- *         example: "usr_123456789"
  *     requestBody:
  *       required: true
  *       content:
@@ -927,154 +859,30 @@ router.get('/users/:id', authMiddleware, authController.getUserById);
  *           schema:
  *             type: object
  *             properties:
- *               name:
- *                 type: string
- *                 description: Nouveau nom complet de l'utilisateur
- *                 minLength: 1
- *                 maxLength: 255
- *                 example: "Jean-Claude Dupont"
  *               email:
  *                 type: string
  *                 format: email
- *                 description: Nouvelle adresse email (doit être unique)
- *                 example: "jean-claude.dupont@example.com"
+ *                 description: Nouvelle adresse email (optionnel)
+ *               password:
+ *                 type: string
+ *                 description: Nouveau mot de passe (optionnel)
  *               permissions:
  *                 type: string
  *                 enum: [admin, client]
- *                 description: Nouveau rôle de l'utilisateur
- *                 example: "client"
- *           examples:
- *             update_name:
- *               summary: Modification du nom uniquement
- *               value:
- *                 name: "Jean-Claude Dupont"
- *             update_email:
- *               summary: Modification de l'email uniquement
- *               value:
- *                 email: "nouveau.email@example.com"
- *             update_multiple:
- *               summary: Modification de plusieurs champs
- *               value:
- *                 name: "Marie-Claire Martin"
- *                 email: "marie-claire.martin@example.com"
- *                 permissions: "admin"
+ *                 description: Nouveau rôle (optionnel)
  *     responses:
  *       200:
  *         description: Utilisateur mis à jour avec succès
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Utilisateur mis à jour avec succès"
- *                 user:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       example: "usr_123456789"
- *                     name:
- *                       type: string
- *                       example: "Jean-Claude Dupont"
- *                     email:
- *                       type: string
- *                       format: email
- *                       example: "jean-claude.dupont@example.com"
- *                     permissions:
- *                       type: string
- *                       enum: [admin, client]
- *                       example: "client"
- *                     updatedAt:
- *                       type: string
- *                       format: date-time
- *                       description: Date de la mise à jour
- *                       example: "2024-01-20T15:30:00.000Z"
  *       400:
  *         description: Données de requête invalides
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *               examples:
- *                 no_fields:
- *                   summary: Aucun champ à mettre à jour
- *                   value:
- *                     error: "Au moins un champ doit être fourni pour la mise à jour"
- *                 invalid_email:
- *                   summary: Format email invalide
- *                   value:
- *                     error: "Format d'email invalide"
- *                 empty_name:
- *                   summary: Nom vide
- *                   value:
- *                     error: "Le nom ne peut pas être vide"
- *                 invalid_permissions:
- *                   summary: Rôle invalide
- *                   value:
- *                     error: "Rôle non autorisé"
  *       401:
- *         description: Token d'authentification manquant ou invalide
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *               examples:
- *                 missing_token:
- *                   summary: Token manquant
- *                   value:
- *                     error: "Token d'authentification manquant"
- *                 invalid_token:
- *                   summary: Token invalide
- *                   value:
- *                     error: "Token d'authentification invalide"
+ *         description: Non authentifié
  *       403:
- *         description: Accès refusé - privilèges administrateur requis
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Accès refusé - privilèges administrateur requis"
+ *         description: Accès refusé
  *       404:
  *         description: Utilisateur non trouvé
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Utilisateur non trouvé ou aucun champ à mettre à jour"
- *       409:
- *         description: Conflit - email déjà utilisé
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Cette adresse email est déjà utilisée"
  *       500:
  *         description: Erreur serveur interne
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Erreur lors de la mise à jour de l'utilisateur"
  */
 router.put('/users/:id', authMiddleware, requirePermissions('admin'), authController.updateUserById);
 
@@ -1086,12 +894,12 @@ router.put('/users/:id', authMiddleware, requirePermissions('admin'), authContro
  *     description: |
  *       Supprime définitivement un utilisateur du système.
  *       Cette route est strictement réservée aux administrateurs.
- *       
+ *
  *       **⚠️ ATTENTION :** Cette opération est irréversible !
- *       
+ *
  *       **Permissions requises :** Rôle admin
  *       **Authentification :** Token Bearer obligatoire
- *       
+ *
  *       **Effets de la suppression :**
  *       - Suppression définitive du compte utilisateur
  *       - Révocation de tous les tokens actifs
@@ -1219,407 +1027,5 @@ router.put('/users/:id', authMiddleware, requirePermissions('admin'), authContro
  *                   example: "Erreur lors de la suppression de l'utilisateur"
  */
 router.delete('/users/:id', authMiddleware, requirePermissions('admin'), authController.deleteUserById);
-
-/**
- * @swagger
- * /users/{id}/permissions:
- *   patch:
- *     summary: Met à jour le rôle d'un utilisateur
- *     description: |
- *       Modifie spécifiquement le rôle d'un utilisateur dans le système.
- *       Cette route est strictement réservée aux administrateurs.
- *
- *       **Permissions requises :** Rôle admin
- *       **Authentification :** Token Bearer obligatoire
- *
- *       **Règles métier :**
- *       - Seuls les administrateurs peuvent modifier les rôles
- *       - Un admin ne peut pas changer son propre rôle (sécurité)
- *       - Les rôles autorisés sont : 'admin', 'client'
- *       - Cette opération est tracée dans les logs système
- *     tags: [Utilisateur]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Identifiant unique de l'utilisateur dont le rôle doit être modifié
- *         example: "usr_123456789"
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - permissions
- *             properties:
- *               permissions:
- *                 type: string
- *                 enum: [admin, client]
- *                 description: |
- *                   Nouveau rôle à assigner à l'utilisateur
- *                   - 'admin': Accès complet à toutes les fonctionnalités
- *                   - 'client': Accès limité aux fonctionnalités utilisateur
- *                 example: admin
- *           examples:
- *             promote_to_admin:
- *               summary: Promouvoir en administrateur
- *               value:
- *                 permissions: "admin"
- *             demote_to_client:
- *               summary: Rétrograder en client
- *               value:
- *                 permissions: "client"
- *     responses:
- *       200:
- *         description: Rôle utilisateur mis à jour avec succès
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Rôle utilisateur mis à jour avec succès"
- *                 user:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       example: "usr_123456789"
- *                     name:
- *                       type: string
- *                       example: "Jean Dupont"
- *                     email:
- *                       type: string
- *                       format: email
- *                       example: "jean.dupont@example.com"
- *                     permissions:
- *                       type: string
- *                       enum: [admin, client]
- *                       description: Nouveau rôle assigné
- *                       example: "admin"
- *                     previousPermissions:
- *                       type: string
- *                       enum: [admin, client]
- *                       description: Ancien rôle (pour traçabilité)
- *                       example: "client"
- *                     updatedAt:
- *                       type: string
- *                       format: date-time
- *                       description: Date de la modification
- *                       example: "2024-01-20T17:15:00.000Z"
- *                     updatedBy:
- *                       type: string
- *                       description: ID de l'administrateur qui a effectué la modification
- *                       example: "usr_admin_001"
- *             examples:
- *               promoted_to_admin:
- *                 summary: Utilisateur promu administrateur
- *                 value:
- *                   message: "Rôle utilisateur mis à jour avec succès"
- *                   user:
- *                     id: "usr_123456789"
- *                     name: "Jean Dupont"
- *                     email: "jean.dupont@example.com"
- *                     permissions: "admin"
- *                     previousPermissions: "client"
- *                     updatedAt: "2024-01-20T17:15:00.000Z"
- *                     updatedBy: "usr_admin_001"
- *       400:
- *         description: Données de requête invalides
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *               examples:
- *                 missing_permissions:
- *                   summary: Rôle manquant
- *                   value:
- *                     error: "Rôle requis"
- *                 invalid_permissions:
- *                   summary: Rôle invalide
- *                   value:
- *                     error: "Rôle non autorisé"
- *                 self_modification:
- *                   summary: Auto-modification interdite
- *                   value:
- *                     error: "Vous ne pouvez pas modifier votre propre rôle"
- *                 same_permissions:
- *                   summary: Rôle identique
- *                   value:
- *                     error: "L'utilisateur a déjà ce rôle"
- *       401:
- *         description: Token d'authentification manquant ou invalide
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *               examples:
- *                 missing_token:
- *                   summary: Token manquant
- *                   value:
- *                     error: "Token d'authentification manquant"
- *                 invalid_token:
- *                   summary: Token invalide
- *                   value:
- *                     error: "Token d'authentification invalide"
- *       403:
- *         description: Accès refusé - privilèges administrateur requis
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Accès refusé - privilèges administrateur requis"
- *       404:
- *         description: Utilisateur non trouvé
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Utilisateur non trouvé"
- *       500:
- *         description: Erreur serveur interne
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Erreur lors de la mise à jour du rôle utilisateur"
- */
-router.patch('/users/:id/permissions', authMiddleware, requirePermissions('admin'), authController.updateUserPermissions);
-
-// /**
-//  * @swagger
-//  * /admin/create-admin:
-//  *   post:
-//  *     summary: Créer un utilisateur administrateur
-//  *     description: |
-//  *       Permet aux administrateurs existants de créer de nouveaux comptes administrateurs.
-//  *       Cette route est une fonctionnalité de gestion avancée strictement réservée aux administrateurs.
-//  *       
-//  *       **⚠️ SÉCURITÉ CRITIQUE :** Cette route permet de créer des comptes avec privilèges élevés
-//  *       
-//  *       **Permissions requises :** Rôle admin
-//  *       **Authentification :** Token Bearer obligatoire
-//  *       
-//  *       **Règles de validation strictes :**
-//  *       - Email : format valide et unique dans le système
-//  *       - Mot de passe : minimum 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre
-//  *       - Nom : obligatoire et non vide
-//  *       - Rôle : automatiquement défini à 'admin'
-//  *       
-//  *       **Traçabilité :** Toutes les créations d'admin sont enregistrées dans les logs d'audit
-//  *     tags: [Auth]
-//  *     security:
-//  *       - bearerAuth: []
-//  *     requestBody:
-//  *       required: true
-//  *       content:
-//  *         application/json:
-//  *           schema:
-//  *             type: object
-//  *             required:
-//  *               - name
-//  *               - email
-//  *               - password
-//  *             properties:
-//  *               name:
-//  *                 type: string
-//  *                 description: Nom complet du nouvel administrateur
-//  *                 minLength: 1
-//  *                 maxLength: 255
-//  *                 example: Admin Système
-//  *               email:
-//  *                 type: string
-//  *                 format: email
-//  *                 description: |
-//  *                   Adresse email unique pour le nouvel administrateur
-//  *                   (sera utilisée pour la connexion)
-//  *                 example: admin@orientys.com
-//  *               password:
-//  *                 type: string
-//  *                 description: |
-//  *                   Mot de passe sécurisé (min 8 chars, 1 maj, 1 min, 1 chiffre)
-//  *                   Recommandation : utiliser un gestionnaire de mots de passe
-//  *                 minLength: 8
-//  *                 pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$"
-//  *                 example: AdminSecurePass123
-//  *           examples:
-//  *             new_system_admin:
-//  *               summary: Nouvel administrateur système
-//  *               value:
-//  *                 name: "Administrateur Système"
-//  *                 email: "admin.system@orientys.com"
-//  *                 password: "SystemAdmin2024!"
-//  *             new_support_admin:
-//  *               summary: Administrateur support
-//  *               value:
-//  *                 name: "Marie Dubois - Support"
-//  *                 email: "marie.dubois@orientys.com"
-//  *                 password: "SupportAdmin123"
-//  *     responses:
-//  *       201:
-//  *         description: Utilisateur administrateur créé avec succès
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 message:
-//  *                   type: string
-//  *                   example: "Utilisateur admin créé avec succès"
-//  *                 user:
-//  *                   type: object
-//  *                   properties:
-//  *                     id:
-//  *                       type: string
-//  *                       description: Identifiant unique généré automatiquement
-//  *                       example: "usr_admin_789"
-//  *                     email:
-//  *                       type: string
-//  *                       format: email
-//  *                       example: "admin@orientys.com"
-//  *                     name:
-//  *                       type: string
-//  *                       example: "Admin Système"
-//  *                     permissions:
-//  *                       type: string
-//  *                       enum: [admin]
-//  *                       description: Rôle automatiquement défini à 'admin'
-//  *                       example: "admin"
-//  *                     createdAt:
-//  *                       type: string
-//  *                       format: date-time
-//  *                       description: Date de création du compte
-//  *                       example: "2024-01-20T18:00:00.000Z"
-//  *                     createdBy:
-//  *                       type: string
-//  *                       description: ID de l'administrateur créateur
-//  *                       example: "usr_admin_001"
-//  *                 auditLog:
-//  *                   type: object
-//  *                   description: Informations d'audit pour traçabilité
-//  *                   properties:
-//  *                     action:
-//  *                       type: string
-//  *                       example: "ADMIN_USER_CREATED"
-//  *                     timestamp:
-//  *                       type: string
-//  *                       format: date-time
-//  *                       example: "2024-01-20T18:00:00.000Z"
-//  *                     performedBy:
-//  *                       type: string
-//  *                       example: "usr_admin_001"
-//  *             examples:
-//  *               admin_created:
-//  *                 summary: Administrateur créé avec succès
-//  *                 value:
-//  *                   message: "Utilisateur admin créé avec succès"
-//  *                   user:
-//  *                     id: "usr_admin_789"
-//  *                     email: "admin@orientys.com"
-//  *                     name: "Admin Système"
-//  *                     permissions: "admin"
-//  *                     createdAt: "2024-01-20T18:00:00.000Z"
-//  *                     createdBy: "usr_admin_001"
-//  *                   auditLog:
-//  *                     action: "ADMIN_USER_CREATED"
-//  *                     timestamp: "2024-01-20T18:00:00.000Z"
-//  *                     performedBy: "usr_admin_001"
-//  *       400:
-//  *         description: Données de requête invalides
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 error:
-//  *                   type: string
-//  *               examples:
-//  *                 missing_fields:
-//  *                   summary: Champs obligatoires manquants
-//  *                   value:
-//  *                     error: "Tous les champs sont requis (name, email, password)"
-//  *                 invalid_email:
-//  *                   summary: Format email invalide
-//  *                   value:
-//  *                     error: "Format d'email invalide"
-//  *                 weak_password:
-//  *                   summary: Mot de passe trop faible
-//  *                   value:
-//  *                     error: "Le mot de passe doit faire au moins 8 caractères, contenir une majuscule, une minuscule et un chiffre"
-//  *                 empty_name:
-//  *                   summary: Nom vide
-//  *                   value:
-//  *                     error: "Le nom ne peut pas être vide"
-//  *       401:
-//  *         description: Token d'authentification manquant ou invalide
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 error:
-//  *                   type: string
-//  *               examples:
-//  *                 missing_token:
-//  *                   summary: Token manquant
-//  *                   value:
-//  *                     error: "Token d'authentification manquant"
-//  *                 invalid_token:
-//  *                   summary: Token invalide
-//  *                   value:
-//  *                     error: "Token d'authentification invalide"
-//  *       403:
-//  *         description: Accès refusé - privilèges administrateur requis
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 error:
-//  *                   type: string
-//  *                   example: "Accès refusé - seuls les administrateurs peuvent créer d'autres administrateurs"
-//  *       409:
-//  *         description: Conflit - utilisateur déjà existant
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 error:
-//  *                   type: string
-//  *                   example: "Un utilisateur avec cette adresse email existe déjà"
-//  *       500:
-//  *         description: Erreur serveur interne
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 error:
-//  *                   type: string
-//  *                   example: "Erreur lors de la création de l'utilisateur admin"
-//  */
-// router.post('/admin/create-admin', authMiddleware, requirePermissions('admin'), authController.createAdminUser);
 
 module.exports = router;

@@ -4,8 +4,8 @@ const validator = require('validator');
 const generatePassword = require('generate-password');
 
 exports.register = async (req, res) => {
-    const {email, password, permissions} = req.body;
-    console.log('📝 [Auth] Tentative inscription:', {email, password, permissions});
+    const {email, password} = req.body;
+    console.log('📝 [Auth] Tentative inscription:', {email, password});
 
     if (!email || !password) {
         console.log('⚠️ [Auth] Échec inscription: champs manquants');
@@ -23,13 +23,6 @@ exports.register = async (req, res) => {
         return res.status(400).json({error: 'Le mot de passe doit faire au moins 8 caractères, contenir une majuscule, une minuscule et un chiffre'});
     }
 
-    // Vérification du rôle si fourni
-    const allowedPermissions = ['admin', 'client'];
-    if (permissions && !allowedPermissions.includes(permissions)) {
-        console.log('⚠️ [Auth] Échec inscription: rôle non autorisé');
-        return res.status(400).json({error: 'Rôle non autorisé'});
-    }
-
     try {
         const existingUser = await UserModel.findByEmail(email);
         if (existingUser) {
@@ -37,7 +30,7 @@ exports.register = async (req, res) => {
             return res.status(409).json({error: 'Utilisateur déjà existant'});
         }
 
-        const userPermissions = permissions ? permissions : 'client'; // Par défaut, le rôle est 'client'
+        const userPermissions = 'client';
         const response = await AuthService.register({email, password, permissions: userPermissions});
         console.log('✅ [Auth] Utilisateur inscrit:', response.user.email);
         return res.status(201).json({
@@ -172,17 +165,16 @@ exports.getUserById = async (req, res) => {
 
 exports.updateUserById = async (req, res) => {
     try {
-        const {email, permissions, password} = req.body;
-        console.log('🛠️ [User] Mise à jour utilisateur:', req.params.id, {email, permissions, password: password ? '[HIDDEN]' : 'none'});
-        
+        const {email, password} = req.body;
+        console.log('🛠️ [User] Mise à jour utilisateur:', req.params.id, {email, password: password ? '[HIDDEN]' : 'none'});
         // Vérifier qu'au moins un champ est fourni
-        if (!email && !permissions && !password) {
+        if (!email && !password) {
             console.log('⚠️ [User] Aucun champ à mettre à jour');
             return res.status(400).json({error: 'Aucun champ à mettre à jour fourni'});
         }
-        
+
         const updateData = {};
-        
+
         // Validation et ajout de l'email
         if (email) {
             if (!validator.isEmail(email)) {
@@ -191,17 +183,7 @@ exports.updateUserById = async (req, res) => {
             }
             updateData.email = email;
         }
-        
-        // Validation et ajout du rôle
-        if (permissions) {
-            const allowedPermissions = ['admin', 'client'];
-            if (!allowedPermissions.includes(permissions)) {
-                console.log('⚠️ [User] Rôle non autorisé:', permissions);
-                return res.status(400).json({error: 'Rôle non autorisé'});
-            }
-            updateData.permissions = permissions;
-        }
-        
+
         // Validation et ajout du mot de passe
         if (password) {
             const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
@@ -213,17 +195,17 @@ exports.updateUserById = async (req, res) => {
             const bcrypt = require('bcrypt');
             updateData.password = await bcrypt.hash(password, 10);
         }
-        
+
         const updated = await UserModel.updateById(req.params.id, updateData);
         if (!updated) {
             console.log('⚠️ [User] Utilisateur non trouvé ou rien à mettre à jour:', req.params.id);
             return res.status(404).json({error: 'Utilisateur non trouvé ou aucun champ à mettre à jour'});
         }
-        
+
         console.log('✅ [User] Utilisateur mis à jour:', req.params.id);
         const updatedUser = await UserModel.findById(req.params.id);
         return res.status(200).json({
-            message: 'Utilisateur mis à jour', 
+            message: 'Utilisateur mis à jour',
             user: {
                 id: updatedUser.id,
                 email: updatedUser.email,
@@ -238,43 +220,26 @@ exports.updateUserById = async (req, res) => {
 
 exports.deleteUserById = async (req, res) => {
     try {
-        console.log('🗑️ [User] Suppression utilisateur:', req.params.id);
-        const deleted = await UserModel.deleteById(req.params.id);
+        // Récupère l'ID de l'utilisateur authentifié depuis le middleware
+        const authenticatedUserId = req.user.id;
+        const targetUserId = req.params.id;
+
+        if (authenticatedUserId === targetUserId) {
+            console.log('⚠️ [User] Auto-suppression interdite:', authenticatedUserId);
+            return res.status(400).json({error: 'Vous ne pouvez pas supprimer votre propre compte'});
+        }
+
+        console.log('🗑️ [User] Suppression utilisateur:', targetUserId);
+        const deleted = await UserModel.deleteById(targetUserId);
         if (!deleted) {
-            console.log('⚠️ [User] Utilisateur non trouvé pour suppression:', req.params.id);
+            console.log('⚠️ [User] Utilisateur non trouvé pour suppression:', targetUserId);
             return res.status(404).json({error: 'Utilisateur non trouvé'});
         }
-        console.log('✅ [User] Utilisateur supprimé:', req.params.id);
+        console.log('✅ [User] Utilisateur supprimé:', targetUserId);
         return res.status(200).json({message: 'Utilisateur supprimé'});
     } catch (error) {
         console.error('❌ [User] Erreur suppression utilisateur:', error);
         return res.status(500).json({error: 'Erreur lors de la suppression de l\'utilisateur'});
-    }
-};
-
-exports.updateUserPermissions = async (req, res) => {
-    try {
-        const {permissions} = req.body;
-        console.log('🛡️ [User] Mise à jour rôle utilisateur:', req.params.id, permissions);
-        if (!permissions) {
-            console.log('⚠️ [User] Rôle manquant pour mise à jour');
-            return res.status(400).json({error: 'Rôle requis'});
-        }
-        const allowedPermissions = ['admin', 'client'];
-        if (!allowedPermissions.includes(permissions)) {
-            console.log('⚠️ [User] Rôle non autorisé:', permissions);
-            return res.status(400).json({error: 'Rôle non autorisé'});
-        }
-        const updated = await UserModel.updatePermissions(req.params.id, permissions);
-        if (!updated) {
-            console.log('⚠️ [User] Utilisateur non trouvé pour mise à jour rôle:', req.params.id);
-            return res.status(404).json({error: 'Utilisateur non trouvé'});
-        }
-        console.log('✅ [User] Rôle utilisateur mis à jour:', req.params.id, permissions);
-        return res.status(200).json({message: 'Rôle utilisateur mis à jour'});
-    } catch (error) {
-        console.error('❌ [User] Erreur mise à jour rôle utilisateur:', error);
-        return res.status(500).json({error: 'Erreur lors de la mise à jour du rôle utilisateur'});
     }
 };
 
