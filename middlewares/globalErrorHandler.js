@@ -1,12 +1,9 @@
 const globalErrorHandler = (err, req, res, next) => {
     // Log de l'erreur
-    console.error(`🔥 Erreur: ${err.message || 'Erreur inconnue'}`);
+    console.error(`❌ Erreur: ${err.message || 'Erreur inconnue'}`);
     console.error(`📍 Route: ${req.method} ${req.originalUrl}`);
-    
-    // En développement, on affiche la stack trace
-    if (process.env.NODE_ENV === 'development') {
-        console.error('Stack:', err.stack);
-    }
+
+    console.error('Stack:', err.stack);
 
     // Déterminer le status code
     const statusCode = err.statusCode || err.status || 500;

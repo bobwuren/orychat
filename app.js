@@ -2,15 +2,6 @@ const express = require("express");
 const dotenv = require("dotenv");
 dotenv.config();
 
-/*// Désactiver les logs en production
-if (process.env.NODE_ENV === "production") {
-  console.log = () => {};
-  console.warn = () => {};
-  console.info = () => {};
-  // Optionally disable console.error in production, but not recommended for critical errors
-  // console.error = () => {};
-}*/
-
 const cors = require("cors");
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
@@ -19,6 +10,8 @@ const notFoundHandler = require("./middlewares/notFoundHandler");
 const healthCheck = require("./middlewares/healthCheck");
 const globalErrorHandler = require("./middlewares/globalErrorHandler");
 const timerMiddleware = require("./middlewares/timerMiddleware");
+const bruteForce = require("./middlewares/bruteForce");
+const {generalLimiter, authLimiter} = require("./middlewares/rateLimiter");
 
 const authRoutes = require("./routes/authRoutes");
 const noteRoutes = require("./routes/noteRoutes");
@@ -63,7 +56,7 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 // CORS
 if (process.env.NODE_ENV === "production") {
   app.use(cors({
-    origin: [process.env.CLIENT_URL, process.env.ADMIN_URL], // Ex: ["https://mondomaine.com", "https://admin.mondomaine.com"]
+    origin: [process.env.CLIENT_URL, process.env.ADMIN_URL],
     credentials: true
   }));
 } else {
@@ -73,13 +66,23 @@ if (process.env.NODE_ENV === "production") {
   }));
 }
 
-app.use(express.json());
+// Middleware de sécurité basique
+app.use(express.json({limit: '10mb'})); // Limiter la taille des requêtes
+
+// Middleware de limitation de requêtes
+app.use(generalLimiter);
+
+// Limiter les tentatives de connexion
+app.use(authLimiter);
+
+// Middleware de protection contre les attaques par force brute
+app.use(bruteForce);
 
 // Timer middleware
 app.use(timerMiddleware);
 
-// Documentation Swagger
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Documentation SEULEMENT en développement et PROTÉGÉE
+if (process.env.NODE_ENV !== "production") app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Health check
 app.get("/health", healthCheck);
