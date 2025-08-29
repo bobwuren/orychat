@@ -12,6 +12,7 @@ const globalErrorHandler = require("./middlewares/globalErrorHandler");
 const timerMiddleware = require("./middlewares/timerMiddleware");
 const bruteForce = require("./middlewares/bruteForce");
 const {generalLimiter, authLimiter} = require("./middlewares/rateLimiter");
+const corsMiddleware = require("./middlewares/corsMiddleware");
 
 const authRoutes = require("./routes/authRoutes");
 const noteRoutes = require("./routes/noteRoutes");
@@ -54,17 +55,7 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
 // CORS
-if (process.env.NODE_ENV === "production") {
-  app.use(cors({
-    origin: [process.env.CLIENT_URL, process.env.ADMIN_URL],
-    credentials: true
-  }));
-} else {
-  app.use(cors({
-    origin: true, // Allow all origins in development
-    credentials: true
-  }));
-}
+app.use(corsMiddleware);
 
 // Middleware de sécurité basique
 app.use(express.json({limit: '10mb'})); // Limiter la taille des requêtes
