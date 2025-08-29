@@ -24,13 +24,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Loader2, User, Mail, Shield, Key } from 'lucide-react';
 import { User as UserType } from '@/types/entities';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { updateUser } from '@/lib/services/usersAdminService';
@@ -185,50 +178,6 @@ export function UserFormDialog({
                         />
                       </FormControl>
                       <FormMessage/>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="permissions"
-                  render={({field}) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Shield className="h-4 w-4"/>
-                        Rôle *
-                      </FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                        disabled={isLoading || isCurrentUser}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionnez un rôle" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="client">
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4"/>
-                              Client
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="admin">
-                            <div className="flex items-center gap-2">
-                              <Shield className="h-4 w-4"/>
-                              Administrateur
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage/>
-                      {isCurrentUser && (
-                        <p className="text-xs text-muted-foreground">
-                          Vous ne pouvez pas modifier votre propre rôle
-                        </p>
-                      )}
                     </FormItem>
                   )}
                 />

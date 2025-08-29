@@ -18,49 +18,11 @@ export const getAllUsers = async (): Promise<User[]> => {
     }
 };
 
-// Récupérer un utilisateur par ID
-export const getUserById = async (id: number): Promise<User> => {
-    // console.log('🔎 [usersAdminService][GET BY ID]', id);
-    try {
-        const response = await apiServiceAdmin.get(`/api/auth/users/${id}`);
-        // console.log('✅ [usersAdminService][GET BY ID][SUCCESS]', response.data);
-        if (response.status === 200 && response.data?.user) {
-            return response.data.user;
-        }
-        throw new Error('Impossible de récupérer l\'utilisateur');
-    } catch (err) {
-        console.error('❌ [usersAdminService][GET BY ID][ERROR]', err);
-        throw new Error('Erreur lors de la récupération de l\'utilisateur');
-    }
-};
-
-// Créer un utilisateur
-export const createUser = async (data: Partial<User> & { password: string }): Promise<User> => {
-    // console.log('🆕 [usersAdminService][CREATE]', { ...data, password: '[HIDDEN]' });
-    try {
-        const response = await apiServiceAdmin.post('/api/auth/register', data);
-        // console.log('✅ [usersAdminService][CREATE][SUCCESS]', response.data);
-        if (response.status === 201 && response.data?.user) {
-            return response.data.user;
-        }
-        throw new Error('Impossible de créer l\'utilisateur');
-    } catch (err: any) {
-        console.error('❌ [usersAdminService][CREATE][ERROR]', err);
-        if (err.response?.status === 409) {
-            throw new Error('Un utilisateur avec cet email existe déjà');
-        }
-        if (err.response?.data?.error) {
-            throw new Error(err.response.data.error);
-        }
-        throw new Error('Erreur lors de la création de l\'utilisateur');
-    }
-};
-
 // Mettre à jour un utilisateur
 export const updateUser = async (id: number, data: Partial<User> & { password?: string }): Promise<User> => {
     // console.log('✏️ [usersAdminService][UPDATE]', id, { ...data, password: data.password ? '[HIDDEN]' : 'none' });
     try {
-        const response = await apiServiceAdmin.put(`/api/auth/admin/users/${id}`, data);
+        const response = await apiServiceAdmin.put(`/api/auth/users/${id}`, data);
         // console.log('✅ [usersAdminService][UPDATE][SUCCESS]', response.data);
         if (response.status === 200 && response.data?.user) {
             return response.data.user;
@@ -124,23 +86,5 @@ export const getCurrentUser = async (id: number): Promise<User> => {
             throw new Error(err.response.data.error);
         }
         throw new Error('Erreur lors de la récupération de l\'utilisateur');
-    }
-};
-
-// Mettre à jour le rôle d'un utilisateur
-export const updateUserPermissions = async (id: number, permissions: string): Promise<void> => {
-    // console.log('🛡️ [usersAdminService][UPDATE permissions]', id, permissions);
-    try {
-        const response = await apiServiceAdmin.put(`/api/auth/users/${id}/permissions`, { permissions });
-        // console.log('✅ [usersAdminService][UPDATE permissions][SUCCESS]', response.status);
-        if (response.status !== 200) {
-            throw new Error('Impossible de mettre à jour le rôle');
-        }
-    } catch (err: any) {
-        console.error('❌ [usersAdminService][UPDATE permissions][ERROR]', err);
-        if (err.response?.data?.error) {
-            throw new Error(err.response.data.error);
-        }
-        throw new Error('Erreur lors de la mise à jour du rôle');
     }
 };
