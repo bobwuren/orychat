@@ -23,8 +23,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "Orientys",
-    description: "Orientys web app",
+    title: "Orientys Admin",
+    description: "Orientys web app admin dashboard",
 };
 
 export default function RootLayout({
