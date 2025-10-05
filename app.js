@@ -11,7 +11,6 @@ const globalErrorHandler = require("./middlewares/globalErrorHandler");
 const timerMiddleware = require("./middlewares/timerMiddleware");
 const bruteForce = require("./middlewares/bruteForce");
 const {generalLimiter} = require("./middlewares/rateLimiter");
-const corsMiddleware = require("./middlewares/corsMiddleware");
 
 const authRoutes = require("./routes/authRoutes");
 const noteRoutes = require("./routes/noteRoutes");
@@ -53,8 +52,21 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
-// CORS
-app.use(corsMiddleware);
+// Cors configuration
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, permissions');
+  res.header('Access-Control-Allow-Credentials', 'true');
+
+  // Répondre immédiatement aux requêtes OPTIONS
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  next();
+});
+
 
 // Middleware de sécurité basique
 app.use(express.json({limit: '10mb'})); // Limiter la taille des requêtes
