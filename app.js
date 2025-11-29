@@ -19,6 +19,7 @@ const serieRoutes = require("./routes/serieRoutes");
 const subjectRoutes = require("./routes/subjectRoutes");
 const universityRoutes = require("./routes/universityRoutes");
 const degreeRoutes = require("./routes/degreeRoutes");
+const questionnaireRoutes = require('./routes/questionnaireRoutes');
 
 const app = express();
 
@@ -94,6 +95,7 @@ app.use("/api/series", serieRoutes);
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/universities", universityRoutes);
 app.use("/api/degrees", degreeRoutes);
+app.use('/api/questionnaire', questionnaireRoutes);
 
 // Gestion d'erreurs globale
 app.use(notFoundHandler);
