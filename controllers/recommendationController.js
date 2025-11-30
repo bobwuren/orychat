@@ -2,86 +2,98 @@ const RecommendationModel = require("../models/recommendationModel");
 const aiService = require("../services/aiService");
 const { Parser } = require("json2csv");
 
-exports.generateRecommendation = async (req, res) => {
-  const { serieId, notes } = req.body;
-  const userId = req.user.id;
-  console.log("🤖 [Reco] Generate recommendation:", { userId, serieId, notes });
-  if (!serieId || !Array.isArray(notes)) {
-    console.log("❗ [Reco] Invalid input data:", { serieId, notes });
-    return res
-      .status(400)
-      .json({ error: "Invalid input data. Please provide serieId and notes." });
-  }
-  // Calcul de la moyenne
-  console.log("❕❕❕ [Reco] Notes reçues:", notes);
-  const moyenne =
-    notes.length > 0
-      ? notes.reduce((acc, n) => acc + (n.value || 0), 0) / notes.length
-      : 0;
-  console.log("❕❕❕ [Reco] Moyenne calculée:", moyenne);
-  if (moyenne < 10) {
-    console.log("❌ [Reco] Moyenne insuffisante:", moyenne);
-    return res.status(400).json({
-      error:
-        "Moyenne insuffisante pour obtenir le BAC. Impossible de générer une recommandation d'orientations.",
-      moyenne,
-    });
-  }
-  try {
-    // 1. Sauvegarder les notes en base et récupérer leurs ids
-    const NoteModel = require("../models/noteModel");
-    const savedNoteIds = [];
-    for (const note of notes) {
-      const { userId: nUserId, subjectId, serieId: nSerieId, value } = note;
-      // On utilise l'userId du token si non fourni
-      const noteId = await NoteModel.save({
-        userId: nUserId || userId,
-        subjectId,
-        serieId: nSerieId || serieId,
-        value,
-      });
-      savedNoteIds.push(noteId);
-    }
-    // 2. Reconstituer les notes avec leurs ids
-    const notesWithIds = notes.map((note, idx) => ({ ...note, id: savedNoteIds[idx] }));
-    // 3. Générer la recommandation avec les notes sauvegardées
-    const recommendation = await aiService.getRecommendation({
-      userId,
-      serieId,
-      notes: notesWithIds,
-    });
-    // 4. Sauvegarder la recommandation
-    const recommendationId = await RecommendationModel.save({
-      userId: recommendation.userId,
-      serieId: recommendation.serieId,
-      orientations: recommendation.orientations,
-      noteIds: recommendation.noteIds,
-    });
-    const allSeries = await require("../models/serieModel").getAll();
-    const serieCode = allSeries.find(
-      (s) => s.id === recommendation.serieId
-    )?.code;
-    console.warn("\n💾💾Saved Recommendation: ", recommendationId);
-    // On récupère la recommandation complète pour la réponse
-    const savedReco = await RecommendationModel.getById(recommendationId);
-    console.log(
-      "✅ [Reco] Recommendation generated & saved:",
-      recommendationId
-    );
 
-    return res.status(200).json({
-      message: "Recommendation generated successfully",
-      recommendation: {
-        ...savedReco,
-        serieCode,
-      },
+/**
+ * Génère une recommandation d'orientation personnalisée
+ * [MISE À JOUR] Supporte maintenant le questionnaireId optionnel
+ *
+ * Route: POST /api/recommendations/generate
+ * Auth: client
+ */
+exports.generateRecommendation = async (req, res) => {
+    const { serieId, notes, questionnaireId } = req.body; // questionnaireId ajouté
+    const userId = req.user.id;
+    console.log("🤖 [Reco] Generate recommendation:", { userId, serieId, notes, questionnaireId });
+    if (!serieId || !Array.isArray(notes)) {
+        console.log("❗ [Reco] Invalid input data:", { serieId, notes });
+        return res
+            .status(400)
+            .json({ error: "Invalid input data. Please provide serieId and notes." });
+    }
+// Calcul de la moyenne
+    console.log("❕❕❕ [Reco] Notes reçues:", notes);
+    const moyenne =
+        notes.length > 0
+            ? notes.reduce((acc, n) => acc + (n.value || 0), 0) / notes.length
+            : 0;
+    console.log("❕❕❕ [Reco] Moyenne calculée:", moyenne);
+    if (moyenne < 10) {
+        console.log("❌ [Reco] Moyenne insuffisante:", moyenne);
+        return res.status(400).json({
+            error:
+                "Moyenne insuffisante pour obtenir le BAC. Impossible de générer une recommandation d'orientations.",
+            moyenne,
+        });
+    }
+    try {
+// 1. Sauvegarder les notes en base et récupérer leurs ids
+        const NoteModel = require("../models/noteModel");
+        const savedNoteIds = [];
+        for (const note of notes) {
+            const { userId: nUserId, subjectId, serieId: nSerieId, value } = note;
+            const noteId = await NoteModel.save({
+                userId: nUserId || userId,
+                subjectId,
+                serieId: nSerieId || serieId,
+                value,
+            });
+            savedNoteIds.push(noteId);
+        }
+// 2. Reconstituer les notes avec leurs ids
+        const notesWithIds = notes.map((note, idx) => ({ ...note, id: savedNoteIds[idx] }));
+
+// 3. Générer la recommandation avec questionnaireId optionnel
+        const recommendation = await aiService.getRecommendation({
+            userId,
+            serieId,
+            notes: notesWithIds,
+            questionnaireId // Passé à l'AI Service
+        });
+
+// 4. Sauvegarder la recommandation
+        const recommendationId = await RecommendationModel.save({
+            userId: recommendation.userId,
+            serieId: recommendation.serieId,
+            orientations: recommendation.orientations,
+            noteIds: recommendation.noteIds,
+        });
+        const allSeries = await require("../models/serieModel").getAll();
+        const serieCode = allSeries.find(
+            (s) => s.id === recommendation.serieId
+        )?.code;
+
+        console.warn("\n💾💾Saved Recommendation: ", recommendationId);
+
+// On récupère la recommandation complète pour la réponse
+        const savedReco = await RecommendationModel.getById(recommendationId);
+        console.log(
+            "✅ [Reco] Recommendation generated & saved:",
+            recommendationId
+        );
+
+        return res.status(200).json({
+            message: "Recommendation generated successfully",
+            recommendation: {
+                ...savedReco,
+                serieCode,
+            },
+        });
+    } catch (error) {
+        console.error("❌ [Reco] Error generating recommendation:", error);
+        return res.status(500).json({
+            error: `An error occurred while generating the recommendation: ${error.message}`,
     });
-  } catch (error) {
-    console.error("❌ [Reco] Error generating recommendation:", error);
-    return res.status(500).json({
-      error: `An error occurred while generating the recommendation: ${error.message}`,
-    });
-  }
+    }
 };
 
 exports.saveRecommendation = async (req, res) => {

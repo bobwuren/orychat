@@ -10,6 +10,177 @@
 
 const QuestionnaireModel = require('../models/questionnaireModel');
 
+
+/**
+ * Valeurs autorisées pour les questions QCM
+ */
+const VALID_QCM_VALUES = {
+    visionProfessionnelle: [
+        "Entrepreneur(e) / Créateur(trice) d'entreprise",
+        "Salarié(e) dans une grande entreprise",
+        "Freelance / Consultant(e) indépendant(e)",
+        "Chercheur(se) / Enseignant(e)",
+        "Je ne sais pas encore"
+    ],
+    styleApprentissage: [
+        "La pratique (projets, stages, travaux pratiques)",
+        "La théorie (cours magistraux, lectures, recherche)",
+        "Un équilibre entre théorie et pratique"
+    ],
+    domaineNumerique: [
+        "Créer des sites web et applications",
+        "Analyser des données et faire de l'IA",
+        "Gérer les réseaux sociaux et le marketing digital",
+        "Résoudre des problèmes techniques (cybersécurité, réseaux)",
+        "Design graphique et création de contenu",
+        "Autre / Je ne sais pas"
+    ],
+    prioriteFormation: [
+        "Durée courte de formation",
+        "Coût accessible",
+        "Prestige et réputation de l'école",
+        "Garantie de débouchés professionnels",
+        "Flexibilité (cours en ligne, horaires adaptés)"
+    ],
+    modeTravail: [
+        "Seul(e) sur tes projets",
+        "En équipe / collaboration",
+        "Ça dépend du contexte"
+    ]
+};
+
+/**
+
+ Valide les réponses QCM
+
+ @param {Object} qcmFields - Champs QCM à valider
+ @returns {Object} { valid: boolean, errors: Array }
+ */
+function validateQCMFields(qcmFields) {
+    const errors = [];
+    for (const [field, value] of Object.entries(qcmFields)) {
+// Si le champ est fourni et non vide
+        if (value && value.trim()) {
+            const validValues = VALID_QCM_VALUES[field];
+            if (validValues && !validValues.includes(value)) {
+                errors.push({
+                    field,
+                    message: `Valeur invalide pour ${field}. Valeurs acceptées: ${validValues.join(', ')}`
+                });
+            }
+        }
+    }
+    return {
+        valid: errors.length === 0,
+        errors
+    };
+}
+
+/**
+
+ Soumet un nouveau questionnaire d'orientation
+ [MISE À JOUR avec validation ENUM]
+ */
+exports.submitQuestionnaire = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const {
+            serieId,
+            visionProfessionnelle,
+            styleApprentissage,
+            domaineNumerique,
+            prioriteFormation,
+            modeTravail,
+            matieresPreferees,
+            passionsExtraScolaires,
+            messageLibre
+        } = req.body;
+        console.log('📝 [Questionnaire] Soumission pour userId:', userId);
+
+        // Validation des champs obligatoires
+        if (!serieId) {
+            console.log('⚠️ [Questionnaire] serieId manquant');
+            return res.status(400).json({
+                success: false,
+                error: 'Le champ serieId est obligatoire'
+            });
+        }
+
+        // Validation des réponses QCM
+        const qcmValidation = validateQCMFields({
+            visionProfessionnelle,
+            styleApprentissage,
+            domaineNumerique,
+            prioriteFormation,
+            modeTravail
+        });
+
+        if (!qcmValidation.valid) {
+            console.log('⚠️ [Questionnaire] Validation QCM échouée:', qcmValidation.errors);
+            return res.status(400).json({
+                success: false,
+                error: 'Valeurs QCM invalides',
+                details: qcmValidation.errors
+            });
+        }
+
+        // Validation des réponses ouvertes (longueur max)
+        if (matieresPreferees && matieresPreferees.length > 2000) {
+            console.log('⚠️ [Questionnaire] matieresPreferees trop long');
+            return res.status(400).json({
+                success: false,
+                error: 'Le champ matieresPreferees ne doit pas dépasser 2000 caractères'
+            });
+        }
+
+        if (passionsExtraScolaires && passionsExtraScolaires.length > 2000) {
+            console.log('⚠️ [Questionnaire] passionsExtraScolaires trop long');
+            return res.status(400).json({
+                success: false,
+                error: 'Le champ passionsExtraScolaires ne doit pas dépasser 2000 caractères'
+            });
+        }
+
+        if (messageLibre && messageLibre.length > 2000) {
+            console.log('⚠️ [Questionnaire] messageLibre trop long');
+            return res.status(400).json({
+                success: false,
+                error: 'Le champ messageLibre ne doit pas dépasser 2000 caractères'
+            });
+        }
+
+        // Sauvegarde du questionnaire
+        const questionnaireData = {
+            userId,
+            serieId,
+            visionProfessionnelle: visionProfessionnelle || null,
+            styleApprentissage: styleApprentissage || null,
+            domaineNumerique: domaineNumerique || null,
+            prioriteFormation: prioriteFormation || null,
+            modeTravail: modeTravail || null,
+            matieresPreferees: matieresPreferees || null,
+            passionsExtraScolaires: passionsExtraScolaires || null,
+            messageLibre: messageLibre || null
+        };
+
+        const questionnaireId = await QuestionnaireModel.save(questionnaireData);
+
+        console.log('✅ [Questionnaire] Sauvegardé avec succès, ID:', questionnaireId);
+
+        return res.status(201).json({
+            success: true,
+            message: 'Questionnaire soumis avec succès',
+            questionnaireId: questionnaireId
+        });
+    } catch (error) {
+        console.error('❌ [Questionnaire] Erreur lors de la soumission:', error);
+        return res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la soumission du questionnaire'
+        });
+    }
+};
+
 /**
  * Soumet un nouveau questionnaire d'orientation
  *

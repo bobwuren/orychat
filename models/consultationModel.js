@@ -377,6 +377,77 @@ const ConsultationModel = {
         );
 
         return result.affectedRows > 0;
+    },
+
+    /**
+     * Récupère les détails complets pour l'email au conseiller
+     * Inclut: consultation, étudiant, série, notes, questionnaire, recommandations
+     *
+     * @param {number} consultationId - ID de la consultation
+     * @returns {Promise<Object>} Données complètes pour l'email
+     */
+    async getFullDetailsForEmail(consultationId) {
+        try {
+            // 1. Récupérer la consultation
+            const consultation = await this.getById(consultationId);
+            if (!consultation) return null;
+            // 2. Récupérer l'étudiant
+            const UserModel = require('./userModel');
+            const student = await UserModel.findById(consultation.studentId);
+
+            // 3. Récupérer le questionnaire
+            const QuestionnaireModel = require('./questionnaireModel');
+            const questionnaire = await QuestionnaireModel.getById(consultation.questionnaireId);
+
+            // 4. Récupérer la recommandation
+            const RecommendationModel = require('./recommendationModel');
+            const recommendation = await RecommendationModel.getById(consultation.recommendationId);
+
+            // 5. Récupérer la série
+            const SerieModel = require('./serieModel');
+            const serie = await SerieModel.getById(questionnaire.serieId);
+
+            // 6. Récupérer les notes avec détails des matières
+            const NoteModel = require('./noteModel');
+            const SubjectModel = require('./subjectModel');
+
+            const notes = [];
+            if (recommendation.noteIds && Array.isArray(recommendation.noteIds)) {
+                for (const noteId of recommendation.noteIds) {
+                    const note = await NoteModel.getById(noteId);
+                    if (note) {
+                        const subject = await SubjectModel.getById(note.subjectId);
+                        const subjects = await SubjectModel.getBySerieId(questionnaire.serieId);
+                        const subjectWithCoef = subjects.find(s => s.id === note.subjectId);
+
+                        notes.push({
+                            id: note.id,
+                            value: note.value,
+                            subjectName: subject ? subject.name : 'Matière inconnue',
+                            coefficient: subjectWithCoef ? subjectWithCoef.coefficient : 1
+                        });
+                    }
+                }
+            }
+
+            // 7. Récupérer le conseiller
+            const CounselorModel = require('./counselorModel');
+            const counselor = await CounselorModel.getById(consultation.counselorId);
+
+            return {
+                consultation,
+                student,
+                serie,
+                notes,
+                questionnaire,
+                recommendation,
+                counselor
+            };
+
+        } catch (error) {
+            console.error('❌ [ConsultationModel] Erreur getFullDetailsForEmail:', error);
+            throw error;
+        }
     }
 };
 

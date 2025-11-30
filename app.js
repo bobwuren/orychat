@@ -20,6 +20,8 @@ const subjectRoutes = require("./routes/subjectRoutes");
 const universityRoutes = require("./routes/universityRoutes");
 const degreeRoutes = require("./routes/degreeRoutes");
 const counselorRoutes = require('./routes/counselorRoutes');
+const questionnaireRoutes = require('./routes/questionnaireRoutes');
+const consultationRoutes = require('./routes/consultationRoutes'); // AJOUTER
 
 const app = express();
 
@@ -97,6 +99,7 @@ app.use("/api/universities", universityRoutes);
 app.use("/api/degrees", degreeRoutes);
 app.use('/api/questionnaire', questionnaireRoutes);
 app.use('/api/counselors', counselorRoutes);
+app.use('/api/consultations', consultationRoutes);
 
 // Gestion d'erreurs globale
 app.use(notFoundHandler);
