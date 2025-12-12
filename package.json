@@ -26,6 +26,7 @@
     "nodemailer": "^7.0.5",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "twilio": "^5.10.7",
     "validator": "^13.15.15"
   },
   "devDependencies": {

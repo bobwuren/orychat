@@ -1,4 +1,3 @@
-
 /**
  * =====================================================
  * Email Service
@@ -30,35 +29,39 @@ try {
 } catch (error) {
     console.error('❌ [Email] Erreur initialisation SMTP:', error.message);
 }
+
 /**
-
- Envoie un email au conseiller lors de l'assignation
-
- @param {Object} data - Données complètes de la consultation
- @param {Object} data.consultation - Infos consultation
- @param {Object} data.student - Profil étudiant
- @param {Object} data.serie - Série académique
- @param {Array} data.notes - Notes détaillées
- @param {Object} data.questionnaire - Réponses questionnaire
- @param {Object} data.recommendation - Recommandations IA
- @param {Object} data.counselor - Infos conseiller
- @returns {Promise<Object>} Résultat de l'envoi
+ * Envoie un email au conseiller lors de l'assignation
+ *
+ * @param {Object} data - Données complètes de la consultation
+ * @param {Object} data.consultation - Infos consultation
+ * @param {Object} data.student - Profil étudiant
+ * @param {Object} data.serie - Série académique
+ * @param {Array} data.notes - Notes détaillées
+ * @param {Object} data.questionnaire - Réponses questionnaire
+ * @param {Object} data.recommendation - Recommandations IA
+ * @param {Object} data.counselor - Infos conseiller
+ * @returns {Promise<Object>} Résultat de l'envoi
  */
 exports.sendCounselorAssignment = async (data) => {
     console.log('📧 [Email] Envoi assignation au conseiller:', data.counselor.email);
+
     if (!transporter) {
         console.error('❌ [Email] Transporteur non initialisé');
         throw new Error('Service email non disponible - Vérifier configuration SMTP');
     }
-// Construction du template HTML
+
+    // Construction du template HTML
     const htmlContent = buildCounselorEmailTemplate(data);
-// Configuration de l'email
+
+    // Configuration de l'email
     const mailOptions = {
-        from: "Orientys - Plateforme d'Orientation ${process.env.SMTP_USER}",
-    to: data.counselor.email,
+        from: `Orientys - Plateforme d'Orientation ${process.env.SMTP_USER}`,
+        to: data.counselor.email,
         subject: `🎓 Nouvelle Assignation - ${data.student.name || 'Étudiant'}`,
-    html: htmlContent
-};
+        html: htmlContent
+    };
+
     try {
         const info = await transporter.sendMail(mailOptions);
         console.log('✅ [Email] Email envoyé, Message ID:', info.messageId);
@@ -74,11 +77,10 @@ exports.sendCounselorAssignment = async (data) => {
 };
 
 /**
-
- Construit le template HTML de l'email pour le conseiller
-
- @param {Object} data - Données complètes
- @returns {string} HTML formaté
+ * Construit le template HTML de l'email pour le conseiller
+ *
+ * @param {Object} data - Données complètes
+ * @returns {string} HTML formaté
  */
 function buildCounselorEmailTemplate(data) {
     const {
@@ -90,42 +92,59 @@ function buildCounselorEmailTemplate(data) {
         recommendation,
         counselor
     } = data;
-// Formatage des notes avec coefficients
-    const notesHtml = notes.map(note =>      <tr>          <td style="padding: 8px; border-bottom: 1px solid #252426;">              ${note.subjectName}          </td>          <td style="padding: 8px; border-bottom: 1px solid #252426; text-align: center;">              <span style="color: ${note.value >= 10 ? '#7c3aed' : '#ea7845'}; font-weight: bold;">                  ${note.value}/20              </span>          </td>          <td style="padding: 8px; border-bottom: 1px solid #252426; text-align: center;">              ${note.coefficient}          </td>      </tr> ).join('');
-// Calcul de la moyenne
+
+    // Formatage des notes avec coefficients - CORRECTION ICI
+    const notesHtml = notes.map(note =>
+        `<tr>
+            <td style="padding: 8px; border-bottom: 1px solid #252426;">
+                ${note.subjectName}
+            </td>
+            <td style="padding: 8px; border-bottom: 1px solid #252426; text-align: center;">
+                <span style="color: ${note.value >= 10 ? '#7c3aed' : '#ea7845'}; font-weight: bold;">
+                    ${note.value}/20
+                </span>
+            </td>
+            <td style="padding: 8px; border-bottom: 1px solid #252426; text-align: center;">
+                ${note.coefficient}
+            </td>
+        </tr>`
+    ).join('');
+
+    // Calcul de la moyenne
     const moyenne = notes.length > 0
         ? (notes.reduce((acc, n) => acc + n.value, 0) / notes.length).toFixed(2)
         : 'N/A';
-// Formatage des recommandations IA
+
+    // Formatage des recommandations IA
     const recommendationsHtml = recommendation.orientations.map((orientation, index) => `
 <div style="background-color: #18151c; border-left: 3px solid #7c3aed; padding: 20px; margin-bottom: 16px; border-radius: 6px;">
-<h4 style="margin: 0 0 12px; color: #7c3aed; font-size: 16px;">
-${index + 1}. ${orientation.name}
-</h4>
-<p style="margin: 0 0 16px; color: #b8b8ba; font-size: 14px; line-height: 1.6;">
-${orientation.why}
-</p>
-     ${orientation.degrees && orientation.degrees.length > 0 ? `
-         <div style="margin-bottom: 12px;">
-             <strong style="color: #f7f7f8; font-size: 13px;">Diplômes requis :</strong>
-             <ul style="margin: 8px 0; padding-left: 20px; color: #b8b8ba; font-size: 13px;">
-                 ${orientation.degrees.map(d => `<li>${d.name}</li>`).join('')}
-             </ul>
-         </div>
-     ` : ''}
-     
-     ${orientation.universities && orientation.universities.length > 0 ? `
-         <div>
-             <strong style="color: #f7f7f8; font-size: 13px;">Universités recommandées :</strong>
-             <ul style="margin: 8px 0; padding-left: 20px; color: #b8b8ba; font-size: 13px;">
-                 ${orientation.universities.map(u => `<li>${u.name}</li>`).join('')}
-             </ul>
-         </div>
-     ` : ''}
- </div>
+    <h4 style="margin: 0 0 12px; color: #7c3aed; font-size: 16px;">
+        ${index + 1}. ${orientation.name}
+    </h4>
+    <p style="margin: 0 0 16px; color: #b8b8ba; font-size: 14px; line-height: 1.6;">
+        ${orientation.why}
+    </p>
+    ${orientation.degrees && orientation.degrees.length > 0 ? `
+        <div style="margin-bottom: 12px;">
+            <strong style="color: #f7f7f8; font-size: 13px;">Diplômes requis :</strong>
+            <ul style="margin: 8px 0; padding-left: 20px; color: #b8b8ba; font-size: 13px;">
+                ${orientation.degrees.map(d => `<li>${d.name}</li>`).join('')}
+            </ul>
+        </div>
+    ` : ''}
+    
+    ${orientation.universities && orientation.universities.length > 0 ? `
+        <div>
+            <strong style="color: #f7f7f8; font-size: 13px;">Universités recommandées :</strong>
+            <ul style="margin: 8px 0; padding-left: 20px; color: #b8b8ba; font-size: 13px;">
+                ${orientation.universities.map(u => `<li>${u.name}</li>`).join('')}
+            </ul>
+        </div>
+    ` : ''}
+</div>
 `).join('');
-    return `
 
+    return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -247,10 +266,11 @@ ${orientation.why}
                                 <tr>
                                     <td style="padding: 12px 0; border-bottom: 1px solid #252426;">
                                         <strong style="color: #f7f7f8; display: block; margin-bottom: 4px;">Priorité dans la formation :</strong>
-<span style="color: #b8b8ba;">${questionnaire.prioriteFormation}</span>
-</td>
-</tr>
-` : ''}
+                                        <span style="color: #b8b8ba;">${questionnaire.prioriteFormation}</span>
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                
                                 ${questionnaire.modeTravail ? `
                                 <tr>
                                     <td style="padding: 12px 0; border-bottom: 1px solid #252426;">
@@ -386,21 +406,160 @@ ${orientation.why}
 </html>
     `;
 }
+
 /**
-
- Vérifie si le service email est disponible
-
- @returns {boolean} True si disponible
+ * Envoie un email de confirmation à l'étudiant
+ *
+ * @param {Object} data - Données de l'étudiant et du conseiller
+ * @param {string} data.studentEmail - Email de l'étudiant
+ * @param {string} data.studentName - Nom de l'étudiant
+ * @param {Object} data.counselor - Infos du conseiller
+ * @returns {Promise<Object>} Résultat de l'envoi
  */
-exports.isAvailable = () => {
-    return transporter !== undefined && transporter !== null;
+exports.sendStudentConfirmation = async (data) => {
+    console.log('📧 [Email] Envoi confirmation à l\'étudiant:', data.studentEmail);
+
+    if (!transporter) {
+        console.error('❌ [Email] Transporteur non initialisé');
+        throw new Error('Service email non disponible');
+    }
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation de Consultation - Orientys</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #0a0615; color: #f7f7f8;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width: 600px; background-color: #18151c; border-radius: 12px; border: 1px solid #252426;">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); padding: 40px; text-align: center; border-radius: 12px 12px 0 0;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">
+                                ✅ Consultation Confirmée
+                            </h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Contenu -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <h2 style="color: #f7f7f8; margin: 0 0 20px; font-size: 20px;">
+                                Bonjour ${data.studentName},
+                            </h2>
+                            
+                            <p style="color: #b8b8ba; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+                                Votre demande de consultation a été traitée et un conseiller vous a été assigné !
+                            </p>
+                            
+                            <div style="background-color: #0a0615; border: 1px solid #7c3aed; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+                                <h3 style="color: #7c3aed; margin: 0 0 16px; font-size: 18px;">
+                                    👤 Votre Conseiller
+                                </h3>
+                                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                    <tr>
+                                        <td style="padding: 8px 0; width: 120px;">
+                                            <strong style="color: #f7f7f8;">Nom :</strong>
+                                        </td>
+                                        <td style="padding: 8px 0; color: #b8b8ba;">
+                                            ${data.counselor.name}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <strong style="color: #f7f7f8;">Spécialité :</strong>
+                                        </td>
+                                        <td style="padding: 8px 0; color: #b8b8ba;">
+                                            ${data.counselor.specialty}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <strong style="color: #f7f7f8;">Expérience :</strong>
+                                        </td>
+                                        <td style="padding: 8px 0; color: #b8b8ba;">
+                                            ${data.counselor.experience}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <div style="background-color: #0a0615; border: 1px solid #252426; border-radius: 8px; padding: 24px;">
+                                <h3 style="color: #7c3aed; margin: 0 0 16px; font-size: 18px;">
+                                    📋 Prochaines Étapes
+                                </h3>
+                                <ol style="color: #b8b8ba; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
+                                    <li>Votre conseiller vous contactera sous peu par email ou téléphone</li>
+                                    <li>Il vous proposera des créneaux pour l'entretien d'orientation</li>
+                                    <li>Préparez vos questions et documents pertinents</li>
+                                    <li>L'entretien aura lieu en visioconférence ou en présentiel</li>
+                                </ol>
+                            </div>
+                            
+                            <p style="color: #b8b8ba; font-size: 14px; line-height: 1.6; margin-top: 24px;">
+                                Si vous avez des questions, vous pouvez répondre à cet email.
+                                <br>
+                                <strong>L'équipe Orientys 🚀</strong>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #0a0615; padding: 24px; text-align: center; border-top: 1px solid #252426; border-radius: 0 0 12px 12px;">
+                            <p style="color: #b8b8ba; font-size: 12px; margin: 0 0 8px;">
+                                Email envoyé automatiquement le ${new Date().toLocaleString('fr-FR')}
+                            </p>
+                            <p style="color: #b8b8ba; font-size: 12px; margin: 0;">
+                                © ${new Date().getFullYear()} Orientys - Tous droits réservés
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`;
+
+    const mailOptions = {
+        from: `Orientys - Plateforme d'Orientation ${process.env.SMTP_USER}`,
+        to: data.studentEmail,
+        subject: '✅ Votre conseiller Orientys vous a été assigné',
+        html: htmlContent
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log('✅ [Email] Confirmation envoyée à l\'étudiant');
+        return {
+            success: true,
+            messageId: info.messageId
+        };
+    } catch (error) {
+        console.error('❌ [Email] Erreur envoi confirmation étudiant:', error.message);
+        throw new Error(`Échec envoi confirmation: ${error.message}`);
+    }
 };
 
 /**
+ * Vérifie si le service email est disponible
+ *
+ * @returns {boolean} True si disponible
+ */
+exports.isAvailable = () => {
+    return transporter !== null;
+};
 
- Teste la connexion SMTP
-
- @returns {Promise<boolean>} True si connexion OK
+/**
+ * Teste la connexion SMTP
+ *
+ * @returns {Promise<boolean>} True si connexion OK
  */
 exports.testConnection = async () => {
     if (!transporter) {
