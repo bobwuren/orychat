@@ -22,6 +22,7 @@ export function useAuth() {
     isAuthenticated: false,
     isLoading: false,
   });
+  const [isRestored, setIsRestored] = useState(false);
 
   /**
    * Connexion
@@ -184,14 +185,19 @@ export function useAuth() {
           isAuthenticated: true,
           isLoading: false,
         });
+        setIsRestored(true);
       } catch (error) {
         console.error("Failed to restore session:", error);
+        setIsRestored(true);
       }
+    } else {
+      setIsRestored(true);
     }
   }, []);
 
   return {
     ...state,
+    isRestored,
     login,
     register,
     logout,
