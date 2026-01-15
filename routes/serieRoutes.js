@@ -9,7 +9,7 @@ router.use(authMiddleware);
 
 /**
  * @swagger
- * /series:
+ * /api/series:
  *   get:
  *     summary: Récupérer toutes les séries
  *     description: |
@@ -182,7 +182,7 @@ router.get('/', serieController.getAllSeries);
 
 /**
  * @swagger
- * /series/export:
+ * /api/series/export:
  *   get:
  *     summary: Exporter toutes les séries (CSV ou JSON)
  *     description: |
@@ -347,7 +347,7 @@ router.get('/export', requirePermissions('admin'), serieController.exportSeries)
 
 /**
  * @swagger
- * /series/{id}:
+ * /api/series/{id}:
  *   get:
  *     summary: Récupérer une série par ID
  *     description: |
@@ -557,7 +557,7 @@ router.get('/:id', serieController.getSerieById);
 
 /**
  * @swagger
- * /series:
+ * /api/series:
  *   post:
  *     summary: Créer une nouvelle série
  *     description: |
@@ -812,7 +812,7 @@ router.post('/', requirePermissions('admin'), serieController.createSerie);
 
 /**
  * @swagger
- * /series/{id}:
+ * /api/series/{id}:
  *   put:
  *     summary: Mettre à jour une série existante
  *     description: |
@@ -1114,7 +1114,7 @@ router.put('/:id', requirePermissions('admin'), serieController.updateSerie);
 
 /**
  * @swagger
- * /series/{id}:
+ * /api/series/{id}:
  *   delete:
  *     summary: Supprimer une série
  *     description: |

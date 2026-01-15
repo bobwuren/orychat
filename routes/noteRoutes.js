@@ -17,7 +17,7 @@ router.post('/save', saveNotes);
 
 /**
  * @swagger
- * /notes/user/{userId}:
+ * /api/notes/user/{userId}:
  *   get:
  *     summary: Récupérer toutes les notes d'un utilisateur
  *     tags: [Notes]
@@ -46,7 +46,7 @@ router.get('/user/:userId',requirePermissions('admin'), getNotesByUserId);
 
 /**
  * @swagger
- * /notes:
+ * /api/notes:
  *   get:
  *     summary: Récupérer toutes les notes
  *     tags: [Notes]
@@ -68,7 +68,7 @@ router.get('/', requirePermissions('admin'), getAllNotes);
 
 /**
  * @swagger
- * /notes:
+ * /api/notes:
  *   post:
  *     summary: Créer une note
  *     tags: [Notes]
@@ -101,7 +101,7 @@ router.post('/', requirePermissions('admin'), createNote);
 
 /**
  * @swagger
- * /notes/{id}:
+ * /api/notes/{id}:
  *   get:
  *     summary: Récupérer une note par ID
  *     tags: [Notes]

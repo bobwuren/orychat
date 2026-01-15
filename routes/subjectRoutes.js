@@ -9,7 +9,7 @@ router.use(authMiddleware);
 
 /**
  * @swagger
- * /subjects:
+ * /api/subjects:
  *   get:
  *     summary: Récupérer toutes les matières du système
  *     description: |
@@ -155,7 +155,7 @@ router.get('/', subjectController.getAllSubjects);
 
 /**
  * @swagger
- * /subjects/export:
+ * /api/subjects/export:
  *   get:
  *     summary: Exporter toutes les matières au format CSV ou JSON
  *     description: |
@@ -265,7 +265,7 @@ router.get('/export', requirePermissions('admin'), subjectController.exportSubje
 
 /**
  * @swagger
- * /subjects/{id}:
+ * /api/subjects/{id}:
  *   get:
  *     summary: Récupérer une matière spécifique par son ID
  *     description: |
@@ -398,7 +398,7 @@ router.get('/:id', subjectController.getSubjectById);
 
 /**
  * @swagger
- * /subjects/serie/{serieId}:
+ * /api/subjects/serie/{serieId}:
  *   get:
  *     summary: Récupérer toutes les matières assignées à une série spécifique
  *     description: |
@@ -534,7 +534,7 @@ router.get('/serie/:serieId', subjectController.getSubjectsBySerieId);
 
 /**
  * @swagger
- * /subjects:
+ * /api/subjects:
  *   post:
  *     summary: Créer une nouvelle matière dans le système
  *     description: |
@@ -757,7 +757,7 @@ router.post('/', requirePermissions('admin'), subjectController.createSubject);
 
 /**
  * @swagger
- * /subjects/{id}:
+ * /api/subjects/{id}:
  *   put:
  *     summary: Modifier une matière existante
  *     description: |
@@ -997,7 +997,7 @@ router.put('/:id', requirePermissions('admin'), subjectController.updateSubject)
 
 /**
  * @swagger
- * /subjects/{id}:
+ * /api/subjects/{id}:
  *   delete:
  *     summary: Supprimer définitivement une matière du système
  *     description: |

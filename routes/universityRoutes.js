@@ -9,7 +9,7 @@ router.use(authMiddleware);
 
 /**
  * @swagger
- * /universities:
+ * /api/universities:
  *   get:
  *     summary: Récupérer toutes les universités avec leurs diplômes associés
  *     description: |
@@ -174,7 +174,7 @@ router.get('/', universityController.getAll);
 
 /**
  * @swagger
- * /universities/sponsors:
+ * /api/universities/sponsors:
  *   get:
  *     summary: Récupérer toutes les universités sponsors du système
  *     description: |
@@ -301,7 +301,7 @@ router.get('/sponsors', universityController.getAllSponsors);
 
 /**
  * @swagger
- * /universities/{id}:
+ * /api/universities/{id}:
  *   get:
  *     summary: Récupérer une université spécifique par son ID
  *     description: |
@@ -463,7 +463,7 @@ router.get('/:id', universityController.getById);
 
 /**
  * @swagger
- * /universities:
+ * /api/universities:
  *   post:
  *     summary: Créer une nouvelle université dans le système
  *     description: |
@@ -718,7 +718,7 @@ router.post('/', requirePermissions('admin'), universityController.createUnivers
 
 /**
  * @swagger
- * /universities/{id}:
+ * /api/universities/{id}:
  *   put:
  *     summary: Modifier une université existante
  *     description: |
@@ -961,7 +961,7 @@ router.put('/:id', requirePermissions('admin'), universityController.updateUnive
 
 /**
  * @swagger
- * /universities/{id}:
+ * /api/universities/{id}:
  *   delete:
  *     summary: Supprimer définitivement une université du système
  *     description: |
@@ -1125,7 +1125,7 @@ router.delete('/:id', requirePermissions('admin'), universityController.delete);
 
 /**
  * @swagger
- * /universities/export:
+ * /api/universities/export:
  *   get:
  *     summary: Exporter toutes les universités avec leurs diplômes
  *     description: |
@@ -1276,7 +1276,7 @@ router.get('/export', universityController.exportAll);
 
 /**
  * @swagger
- * /universities/{id}/degrees:
+ * /api/universities/{id}/degrees:
  *   get:
  *     summary: Récupérer tous les diplômes proposés par une université
  *     description: |
@@ -1391,7 +1391,7 @@ router.get('/:id/degrees', universityController.getDegrees);
 
 /**
  * @swagger
- * /universities/degree/{degreeId}:
+ * /api/universities/degree/{degreeId}:
  *   get:
  *     summary: Récupérer toutes les universités proposant un diplôme spécifique
  *     description: |

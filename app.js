@@ -4,6 +4,7 @@ dotenv.config();
 
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+const cors = require('cors');
 
 const notFoundHandler = require("./middlewares/notFoundHandler");
 const healthCheck = require("./middlewares/healthCheck");
@@ -24,6 +25,17 @@ const questionnaireRoutes = require('./routes/questionnaireRoutes');
 const consultationRoutes = require('./routes/consultationRoutes'); // AJOUTER
 
 const app = express();
+
+// CORS: autoriser le frontend (NEXT_PUBLIC_API_URL ou FRONTEND_URL)
+const allowedOrigin = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3000}`;
+app.use(cors({
+  origin: allowedOrigin,
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
+  credentials: true,
+}));
+// Répondre aux préflights globalement
+app.options('*', cors());
 
 // Configuration Swagger
 const swaggerOptions = {
@@ -54,21 +66,6 @@ const swaggerOptions = {
 };
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
-
-// Cors configuration
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, permissions');
-  res.header('Access-Control-Allow-Credentials', 'true');
-
-  // Répondre immédiatement aux requêtes OPTIONS
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  next();
-});
 
 
 // Middleware de sécurité basique

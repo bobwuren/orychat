@@ -9,7 +9,7 @@ router.use(authMiddleware);
 
 /**
  * @swagger
- * /degrees:
+ * /api/degrees:
  *   get:
  *     summary: Récupérer tous les diplômes
  *     tags: [Degrees]
@@ -29,7 +29,7 @@ router.get('/', degreeController.getAll);
 
 /**
  * @swagger
- * /degrees/export:
+ * /api/degrees/export:
  *   get:
  *     summary: Exporter tous les diplômes (CSV ou JSON)
  *     tags: [Degrees]
@@ -64,7 +64,7 @@ router.get('/export', requirePermissions('admin'), degreeController.exportAll);
 
 /**
  * @swagger
- * /degrees/{id}:
+ * /api/degrees/{id}:
  *   get:
  *     summary: Récupérer un diplôme par ID
  *     tags: [Degrees]
@@ -91,7 +91,7 @@ router.get('/:id', degreeController.getById);
 
 /**
  * @swagger
- * /degrees:
+ * /api/degrees:
  *   post:
  *     summary: Créer un diplôme
  *     tags: [Degrees]
@@ -117,7 +117,7 @@ router.post('/', requirePermissions('admin'), degreeController.create);
 
 /**
  * @swagger
- * /degrees/{id}:
+ * /api/degrees/{id}:
  *   put:
  *     summary: Mettre à jour un diplôme
  *     tags: [Degrees]
@@ -152,7 +152,7 @@ router.put('/:id', requirePermissions('admin'), degreeController.update);
 
 /**
  * @swagger
- * /degrees/{id}:
+ * /api/degrees/{id}:
  *   delete:
  *     summary: Supprimer un diplôme
  *     tags: [Degrees]

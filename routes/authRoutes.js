@@ -7,7 +7,7 @@ const {authLimiter} = require('../middlewares/rateLimiter');
 
 /**
  * @swagger
- * /login:
+ * /api/auth/login:
  *   post:
  *     summary: Connexion utilisateur
  *     description: |
@@ -128,7 +128,7 @@ router.post('/login', authLimiter, authController.login);
 
 /**
  * @swagger
- * /register:
+ * /api/auth/register:
  *   post:
  *     summary: Inscription utilisateur
  *     description: |
@@ -283,7 +283,7 @@ router.post('/register', authLimiter, authController.register);
 
 /**
  * @swagger
- * /refresh:
+ * /api/auth/refresh:
  *   post:
  *     summary: Rafraîchir le token d'accès
  *     description: |
@@ -405,7 +405,7 @@ router.post('/refresh', authController.refresh);
 
 /**
  * @swagger
- * /logout:
+ * /api/auth/logout:
  *   post:
  *     summary: Déconnexion utilisateur
  *     description: |
@@ -515,7 +515,7 @@ router.post('/logout', authMiddleware, authController.logout);
 
 /**
  * @swagger
- * /users:
+ * /api/auth/users:
  *   get:
  *     summary: Liste tous les utilisateurs
  *     description: |
@@ -678,7 +678,7 @@ router.get('/users', authMiddleware, requirePermissions('admin'), authController
 
 /**
  * @swagger
- * /users/{id}:
+ * /api/auth/users/{id}:
  *   get:
  *     summary: Récupère un utilisateur par ID
  *     description: |
@@ -836,7 +836,7 @@ router.get('/users/:id', authMiddleware, authController.getUserById);
 
 /**
  * @swagger
- * /users/{id}:
+ * /api/auth/users/{id}:
  *   put:
  *     summary: Mettre à jour un utilisateur (Admin uniquement)
  *     description: |
@@ -888,7 +888,7 @@ router.put('/users/:id', authMiddleware, requirePermissions('admin'), authContro
 
 /**
  * @swagger
- * /users/{id}:
+ * /api/auth/users/{id}:
  *   delete:
  *     summary: Supprimer un utilisateur
  *     description: |
