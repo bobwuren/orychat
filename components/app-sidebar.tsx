@@ -2,8 +2,6 @@
 
 import * as React from "react"
 import {
-  ArrowUpCircleIcon,
-  BarChartIcon,
   CameraIcon,
   ClipboardListIcon,
   DatabaseIcon,
@@ -11,17 +9,10 @@ import {
   FileIcon,
   FileTextIcon,
   FolderIcon,
-  HelpCircleIcon,
-  LayoutDashboardIcon,
-  ListIcon,
-  SearchIcon,
-  SettingsIcon,
   UsersIcon,
 } from "lucide-react"
 
-import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
@@ -41,28 +32,43 @@ const data = {
   },
   navMain: [
     {
-      title: "Dashboard",
-      url: "#",
-      icon: LayoutDashboardIcon,
+      title: "Consultations",
+      url: "/admin/consultations",
+      icon: ClipboardListIcon,
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: ListIcon,
+      title: "Conseillers",
+      url: "/admin/counselors",
+      icon: UsersIcon,
     },
     {
-      title: "Analytics",
-      url: "#",
-      icon: BarChartIcon,
+      title: "Diplômes",
+      url: "/admin/degrees",
+      icon: FileTextIcon,
     },
     {
-      title: "Projects",
-      url: "#",
+      title: "Recommandations",
+      url: "/admin/recommendations",
+      icon: FileCodeIcon,
+    },
+    {
+      title: "Séries",
+      url: "/admin/series",
       icon: FolderIcon,
     },
     {
-      title: "Team",
-      url: "#",
+      title: "Matières",
+      url: "/admin/subjects",
+      icon: DatabaseIcon,
+    },
+    {
+      title: "Universités",
+      url: "/admin/universities",
+      icon: FileIcon,
+    },
+    {
+      title: "Utilisateurs",
+      url: "/admin/users",
       icon: UsersIcon,
     },
   ],
@@ -114,40 +120,8 @@ const data = {
       ],
     },
   ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: SettingsIcon,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: HelpCircleIcon,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: SearchIcon,
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: DatabaseIcon,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: ClipboardListIcon,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: FileIcon,
-    },
-  ],
+  navSecondary: [],
+  documents: [],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -161,8 +135,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="#">
-                <ArrowUpCircleIcon className="h-5 w-5" />
-                <span className="text-base font-semibold">Orientys</span>
+                <span className="text-base font-semibold">Orientys Admin</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -170,8 +143,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

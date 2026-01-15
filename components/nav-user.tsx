@@ -1,8 +1,6 @@
 "use client"
 
 import {
-  BellIcon,
-  CreditCardIcon,
   LogOutIcon,
   MoreVerticalIcon,
   UserCircleIcon,
@@ -86,21 +84,13 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <UserCircleIcon />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCardIcon />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <BellIcon />
-                Notifications
+                Compte
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <LogOutIcon />
-              Log out
+              Se déconnecter
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
