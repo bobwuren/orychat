@@ -21,4 +21,5 @@ export { recommendationsApi, RecommendationsApi } from "./recommendations.api";
 export { universitiesApi, UniversitiesApi } from "./universities.api";
 export { degreesApi, DegreesApi } from "./degrees.api";
 export { questionnaireApi, QuestionnaireApi } from "./questionnaire.api";
-export { consultationsApi } from "./counselors.api";
+export { counselorsApi, CounselorsApi } from "./counselors.api";
+export { consultationsApi, ConsultationsApi } from "./consultations.api";

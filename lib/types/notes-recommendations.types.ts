@@ -21,12 +21,12 @@ export interface Note {
 }
 
 // ========== RECOMMENDATION ==========
-export interface Degree {
+interface Degree {
   name: string;
   articleLink?: string;
 }
 
-export interface University {
+interface University {
   name: string;
   site?: string;
   website?: string;

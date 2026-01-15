@@ -1,124 +1,113 @@
 /**
  * =====================================================
- * API Client - Consultations
+ * API Client - Conseillers
  * =====================================================
- * Client pour les endpoints des consultations
+ * Client pour les endpoints des conseillers d'orientation
  *
- * @module lib/api/consultations.api
+ * @module lib/api/counselors.api
  * @version 1.0
  */
 
 import { apiClient } from "./client";
 import type {
-  RequestConsultationRequest,
-  AssignCounselorRequest,
-  UpdateConsultationStatusRequest,
-  RequestConsultationResponse,
-  ConsultationsListResponse,
-  ConsultationDetailsResponse,
-  AssignCounselorResponse,
-  UpdateConsultationStatusResponse,
-  ConsultationStatsResponse,
-  ConsultationStatus,
+  CreateCounselorRequest,
+  UpdateCounselorRequest,
+  CounselorsListResponse,
+  CounselorResponse,
+  CreateCounselorResponse,
+  UpdateCounselorResponse,
+  DeleteCounselorResponse,
 } from "../types";
 
-export class ConsultationsApi {
+export class CounselorsApi {
   private client = apiClient;
 
   /**
-   * Créer une demande de consultation
-   * POST /api/consultations/request
+   * Récupérer tous les conseillers actifs
+   * GET /api/counselors
    * Requiert: Bearer token
    */
-  async request(
-    data: RequestConsultationRequest
-  ): Promise<RequestConsultationResponse> {
-    return this.client.post<RequestConsultationResponse>(
-      "/api/consultations/request",
-      data
-    );
-  }
-
-  /**
-   * Liste toutes les consultations (Admin uniquement)
-   * GET /api/consultations
-   * Requiert: Bearer token + admin
-   */
   async getAll(params?: {
-    status?: ConsultationStatus;
-    counselorId?: string;
-  }): Promise<ConsultationsListResponse> {
-    return this.client.get<ConsultationsListResponse>(
-      "/api/consultations",
-      params
-    );
+    specialty?: string;
+  }): Promise<CounselorsListResponse> {
+    return this.client.get<CounselorsListResponse>("/api/counselors", params);
   }
 
   /**
-   * Récupérer les statistiques des consultations (Admin uniquement)
-   * GET /api/consultations/stats
+   * Récupérer tous les conseillers (actifs + inactifs) - Admin
+   * GET /api/counselors/all
    * Requiert: Bearer token + admin
    */
-  async getStats(): Promise<ConsultationStatsResponse> {
-    return this.client.get<ConsultationStatsResponse>(
-      "/api/consultations/stats"
-    );
+  async getAllAdmin(): Promise<CounselorsListResponse> {
+    return this.client.get<CounselorsListResponse>("/api/counselors/all");
   }
 
   /**
-   * Récupérer l'historique des consultations d'un utilisateur
-   * GET /api/consultations/user/:userId
-   * Requiert: Bearer token (admin ou user lui-même)
+   * Récupérer un conseiller par ID
+   * GET /api/counselors/:id
+   * Requiert: Bearer token
    */
-  async getUserConsultations(
-    userId: string
-  ): Promise<ConsultationsListResponse> {
-    return this.client.get<ConsultationsListResponse>(
-      `/api/consultations/user/${userId}`
-    );
+  async getById(counselorId: string): Promise<CounselorResponse> {
+    return this.client.get<CounselorResponse>(`/api/counselors/${counselorId}`);
   }
 
   /**
-   * Récupérer les détails d'une consultation (Admin uniquement)
-   * GET /api/consultations/:id
+   * Créer un conseiller (Admin uniquement)
+   * POST /api/counselors
    * Requiert: Bearer token + admin
    */
-  async getById(consultationId: string): Promise<ConsultationDetailsResponse> {
-    return this.client.get<ConsultationDetailsResponse>(
-      `/api/consultations/${consultationId}`
-    );
+  async create(data: CreateCounselorRequest): Promise<CreateCounselorResponse> {
+    return this.client.post<CreateCounselorResponse>("/api/counselors", data);
   }
 
   /**
-   * Assigner un conseiller (Admin uniquement)
-   * PUT /api/consultations/:id/assign
+   * Mettre à jour un conseiller (Admin uniquement)
+   * PUT /api/counselors/:id
    * Requiert: Bearer token + admin
    */
-  async assignCounselor(
-    consultationId: string,
-    data: AssignCounselorRequest
-  ): Promise<AssignCounselorResponse> {
-    return this.client.put<AssignCounselorResponse>(
-      `/api/consultations/${consultationId}/assign`,
+  async update(
+    counselorId: string,
+    data: UpdateCounselorRequest
+  ): Promise<UpdateCounselorResponse> {
+    return this.client.put<UpdateCounselorResponse>(
+      `/api/counselors/${counselorId}`,
       data
     );
   }
 
   /**
-   * Mettre à jour le statut (Admin uniquement)
-   * PATCH /api/consultations/:id/status
+   * Supprimer un conseiller (Admin uniquement)
+   * DELETE /api/counselors/:id
    * Requiert: Bearer token + admin
    */
-  async updateStatus(
-    consultationId: string,
-    data: UpdateConsultationStatusRequest
-  ): Promise<UpdateConsultationStatusResponse> {
-    return this.client.patch<UpdateConsultationStatusResponse>(
-      `/api/consultations/${consultationId}/status`,
-      data
+  async delete(counselorId: string): Promise<DeleteCounselorResponse> {
+    return this.client.delete<DeleteCounselorResponse>(
+      `/api/counselors/${counselorId}`
+    );
+  }
+
+  /**
+   * Désactiver un conseiller (Admin uniquement)
+   * PATCH /api/counselors/:id/deactivate
+   * Requiert: Bearer token + admin
+   */
+  async deactivate(counselorId: string): Promise<UpdateCounselorResponse> {
+    return this.client.patch<UpdateCounselorResponse>(
+      `/api/counselors/${counselorId}/deactivate`
+    );
+  }
+
+  /**
+   * Activer un conseiller (Admin uniquement)
+   * PATCH /api/counselors/:id/activate
+   * Requiert: Bearer token + admin
+   */
+  async activate(counselorId: string): Promise<UpdateCounselorResponse> {
+    return this.client.patch<UpdateCounselorResponse>(
+      `/api/counselors/${counselorId}/activate`
     );
   }
 }
 
 // Instance singleton exportée
-export const consultationsApi = new ConsultationsApi();
+export const counselorsApi = new CounselorsApi();

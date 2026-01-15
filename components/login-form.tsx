@@ -90,8 +90,8 @@ export function LoginForm({
           </form>
           <div className="relative hidden bg-muted md:block">
             <Image
-              width={500}
-              height={500}
+              width={400}
+              height={400}
               src="/favicon.ico"
               alt="Image"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
