@@ -16,6 +16,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
+import { BGPattern } from "@/components/bg-pattern";
 
 const universities = [
   {
@@ -72,10 +73,20 @@ const benefits = [
 
 export default function UniversitiesSection() {
   return (
-    <section className="py-20 md:py-28 bg-gradient-to-b from-secondary/20 to-background">
+    <section className="py-20 md:py-28 relative">
+      {/* Pattern de fond pour cette section */}
+      <div className="absolute inset-0 -z-10">
+        <BGPattern
+          variant="dots"
+          mask="fade-x"
+          size={40}
+          fill="hsl(var(--primary) / 0.03)"
+        />
+      </div>
+
       <div className="container px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm mb-4">
+          <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm mb-4 backdrop-blur-sm">
             <Building className="mr-2 h-4 w-4" />
             <span>Partenariats exclusifs</span>
           </div>
@@ -97,14 +108,14 @@ export default function UniversitiesSection() {
           {universities.map((uni) => (
             <Card
               key={uni.name}
-              className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+              className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-background/80 backdrop-blur-sm"
             >
               <CardHeader>
                 <div className="flex items-center justify-between mb-4">
                   <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
                     <Building className="h-6 w-6 text-primary" />
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm">
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm backdrop-blur-sm">
                     <Award className="h-3 w-3" />
                     <span>{uni.ranking} France</span>
                   </div>
@@ -134,7 +145,7 @@ export default function UniversitiesSection() {
                   >
                     <Button
                       variant="outline"
-                      className="w-full group-hover:border-primary"
+                      className="w-full group-hover:border-primary backdrop-blur-sm"
                     >
                       Voir les formations
                       <ArrowRight className="ml-2 h-4 w-4" />
@@ -170,7 +181,17 @@ export default function UniversitiesSection() {
             </div>
           </div>
 
-          <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 p-8">
+          <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 p-8 backdrop-blur-sm relative overflow-hidden">
+            {/* Pattern à l'intérieur */}
+            <div className="absolute inset-0 -z-10">
+              <BGPattern
+                variant="dots"
+                mask="fade-edges"
+                size={16}
+                fill="hsl(var(--primary) / 0.1)"
+              />
+            </div>
+
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
@@ -186,15 +207,15 @@ export default function UniversitiesSection() {
 
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center p-4 rounded-lg bg-background">
+                  <div className="text-center p-4 rounded-lg bg-background/80 backdrop-blur-sm">
                     <div className="text-2xl font-bold text-primary">50+</div>
                     <p className="text-xs text-muted-foreground">Pays</p>
                   </div>
-                  <div className="text-center p-4 rounded-lg bg-background">
+                  <div className="text-center p-4 rounded-lg bg-background/80 backdrop-blur-sm">
                     <div className="text-2xl font-bold text-primary">200+</div>
                     <p className="text-xs text-muted-foreground">Universités</p>
                   </div>
-                  <div className="text-center p-4 rounded-lg bg-background">
+                  <div className="text-center p-4 rounded-lg bg-background/80 backdrop-blur-sm">
                     <div className="text-2xl font-bold text-primary">15%</div>
                     <p className="text-xs text-muted-foreground">Bourses</p>
                   </div>
@@ -203,7 +224,7 @@ export default function UniversitiesSection() {
 
               <div className="pt-4">
                 <Link href="/international">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full backdrop-blur-sm">
                     Explorer les opportunités internationales
                   </Button>
                 </Link>
@@ -214,10 +235,10 @@ export default function UniversitiesSection() {
 
         {/* CTA */}
         <div className="mt-16 text-center">
-          <div className="inline-block rounded-2xl bg-gradient-to-r from-primary to-primary/60 p-1">
-            <div className="rounded-xl bg-background p-8">
+          <div className="inline-block rounded-2xl bg-gradient-to-r from-primary to-primary/60 p-1 backdrop-blur-sm">
+            <div className="rounded-xl bg-background/90 p-8 backdrop-blur-sm">
               <h3 className="text-2xl font-bold mb-4">
-                Maximisez vos chances d&apos;admission
+                Maximisez vos chances d'admission
               </h3>
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
                 Nos conseillers vous aident à préparer vos candidatures et à
@@ -231,7 +252,11 @@ export default function UniversitiesSection() {
                   </Button>
                 </Link>
                 <Link href="/admissions">
-                  <Button size="lg" variant="outline">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="backdrop-blur-sm"
+                  >
                     En savoir plus sur les admissions
                   </Button>
                 </Link>

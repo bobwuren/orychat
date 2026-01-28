@@ -1,28 +1,32 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { AppSidebar } from "@/components/app-sidebar"
-import { SiteHeader } from "@/components/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { useAuth } from "@/lib/hooks"
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter()
-  const { isAuthenticated, isLoading, isRestored, restoreSession } = useAuth()
+  const router = useRouter();
+  const { user, isAuthenticated, loading, role } = useAuth();
 
   useEffect(() => {
-    restoreSession()
-  }, [restoreSession])
+    if (loading) return;
 
-  useEffect(() => {
-    if (isRestored && !isAuthenticated && !isLoading) {
-      router.push("/login")
+    // Pas connecté → login
+    if (!isAuthenticated) {
+      router.replace("/login");
+      return;
     }
-  }, [isRestored, isAuthenticated, isLoading, router])
 
-  if (!isRestored) return null
-  if (isRestored && !isAuthenticated) return null
+    // Connecté mais PAS admin → partie publique
+    if (role !== "admin") {
+      router.replace("/");
+    }
+  }, [loading, isAuthenticated, role, router]);
+
+  if (loading || !isAuthenticated || role !== "admin") return null;
 
   return (
     <SidebarProvider>
@@ -32,5 +36,5 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {children}
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

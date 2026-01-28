@@ -15,7 +15,8 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter();
-  const { login, isLoading } = useAuth();
+  const { login, loading } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -23,13 +24,20 @@ export function LoginForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    try {
-      await login({ email, password });
-      router.push("/admin");
-    } catch (err: any) {
-      setError(err?.message || "Échec de la connexion");
+
+    const res = await login({ email, password });
+
+    if (res.success) {
+      if (res.data.user.permissions === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/"); // page publique
+      }
+    } else {
+      setError(res.error || "Échec de la connexion");
     }
   };
+
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -43,27 +51,20 @@ export function LoginForm({
                   Connectez-vous à votre compte Orientys
                 </p>
               </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
+
               <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <a
-                    href="#"
-                    className="ml-auto text-sm underline-offset-2 hover:underline"
-                  >
-                    Mot de passe oublié?
-                  </a>
-                </div>
+                <Label htmlFor="password">Mot de passe</Label>
                 <Input
                   id="password"
                   type="password"
@@ -72,22 +73,26 @@ export function LoginForm({
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+
               {error && (
                 <div className="text-sm text-destructive text-center">
                   {error}
                 </div>
               )}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Connexion..." : "Login"}
+
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Connexion..." : "Se connecter"}
               </Button>
+
               <div className="text-center text-sm">
-                Pas encore de compte?{" "}
+                Pas encore de compte ?{" "}
                 <a href="/signin" className="underline underline-offset-4">
                   Inscrivez-vous
                 </a>
               </div>
             </div>
           </form>
+
           <div className="relative hidden bg-muted md:block">
             <Image
               width={400}
@@ -99,11 +104,6 @@ export function LoginForm({
           </div>
         </CardContent>
       </Card>
-      <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
-        En cliquant, vous acceptez nos{" "}
-        <a href="#">Conditions d&apos;utilisation</a> et notre{" "}
-        <a href="#">Politique de confidentialité</a>.
-      </div>
     </div>
   );
 }

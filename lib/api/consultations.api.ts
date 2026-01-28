@@ -8,7 +8,7 @@
  * @version 1.0
  */
 
-import { apiClient } from "./client";
+import { ApiClient } from "./client";
 import type {
   RequestConsultationRequest,
   AssignCounselorRequest,
@@ -23,7 +23,7 @@ import type {
 } from "../types";
 
 export class ConsultationsApi {
-  private client = apiClient;
+  private client = ApiClient;
 
   /**
    * Créer une demande de consultation

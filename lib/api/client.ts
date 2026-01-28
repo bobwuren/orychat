@@ -9,246 +9,182 @@
  * @version 1.0
  */
 
-export interface ApiResponse<T = any> {
-  success?: boolean;
+export interface ApiSuccess<T> {
+  success: true;
+  data: T;
   message?: string;
-  error?: string;
-  data?: T;
 }
 
+export interface ApiFailure {
+  success: false;
+  error: string;
+  code?: string;
+  status?: number;
+}
+
+export type ApiResponse<T> = ApiSuccess<T> | ApiFailure;
+
 export class ApiError extends Error {
-  constructor(message: string, public status: number, public code?: string) {
+  constructor(
+    message: string,
+    public status?: number,
+    public code?: string,
+    public details?: unknown
+  ) {
     super(message);
     this.name = "ApiError";
   }
 }
 
+type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+
+interface RequestOptions<B = unknown> {
+  body?: B;
+  headers?: Record<string, string>;
+  timeoutMs?: number;
+}
+
 export class ApiClient {
   private baseURL: string;
   private accessToken: string | null = null;
-  private refreshToken: string | null = null;
 
-  constructor(baseURL?: string) {
-    this.baseURL =
-      baseURL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+  private isDev = process.env.NODE_ENV !== "production";
+
+  constructor(baseURL: string) {
+    this.baseURL = baseURL.replace(/\/$/, ""); // enlève slash final
   }
 
-  /**
-   * Définit les tokens d'authentification
-   */
-  setTokens(accessToken: string, refreshToken?: string) {
-    this.accessToken = accessToken;
-    if (refreshToken) {
-      this.refreshToken = refreshToken;
-    }
+  setAccessToken(token: string | null) {
+    this.accessToken = token;
   }
 
-  /**
-   * Récupère le token d'accès actuel
-   */
-  getAccessToken(): string | null {
-    return this.accessToken;
-  }
+  private async request<TResponse, TBody = unknown>(
+    method: HttpMethod,
+    endpoint: string,
+    options: RequestOptions<TBody> = {}
+  ): Promise<ApiResponse<TResponse>> {
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      options.timeoutMs ?? 15000
+    );
 
-  /**
-   * Récupère le refresh token actuel
-   */
-  getRefreshToken(): string | null {
-    return this.refreshToken;
-  }
+    const url = `${this.baseURL}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
 
-  /**
-   * Supprime les tokens (logout)
-   */
-  clearTokens() {
-    this.accessToken = null;
-    this.refreshToken = null;
-  }
-
-  /**
-   * Construit les headers pour les requêtes
-   */
-  private buildHeaders(customHeaders?: HeadersInit): HeadersInit {
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...customHeaders,
+      ...options.headers,
     };
 
     if (this.accessToken) {
       headers["Authorization"] = `Bearer ${this.accessToken}`;
     }
 
-    return headers;
-  }
+    const config: RequestInit = {
+      method,
+      headers,
+      signal: controller.signal,
+    };
 
-  /**
-   * Gère les erreurs HTTP
-   */
-  private async handleResponse<T>(response: Response): Promise<T> {
-    if (!response.ok) {
-      let errorMessage = `HTTP Error: ${response.status}`;
-      let errorCode: string | undefined;
+    if (options.body !== undefined) {
+      config.body = JSON.stringify(options.body);
+    }
 
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.error || errorData.message || errorMessage;
-        errorCode = errorData.code;
-      } catch {
-        // Si parsing JSON échoue, on garde le message par défaut
+    try {
+      if (this.isDev) {
+        console.log("📤 API REQUEST", {
+          method,
+          url,
+          body: options.body,
+        });
       }
 
-      throw new ApiError(errorMessage, response.status, errorCode);
-    }
+      const response = await fetch(url, config);
+      clearTimeout(timeout);
 
-    // Gestion des réponses vides (204 No Content)
-    if (response.status === 204) {
-      return {} as T;
-    }
+      const text = await response.text();
+      const data = text ? safeJsonParse(text) : null;
 
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.includes("application/json")) {
-      return response.json();
-    }
+      if (this.isDev) {
+        console.log("📥 API RESPONSE", {
+          url,
+          status: response.status,
+          data,
+        });
+      }
 
-    // Pour les réponses non-JSON (CSV, texte, etc.)
-    return response.text() as unknown as T;
+      if (!response.ok) {
+        throw new ApiError(
+          (data as any)?.message || "HTTP Error",
+          response.status,
+          (data as any)?.code,
+          data
+        );
+      }
+
+      return {
+        success: true,
+        data: data as TResponse,
+      };
+    } catch (error) {
+      clearTimeout(timeout);
+
+      if (this.isDev) {
+        console.error("💥 API ERROR", error);
+      }
+
+      if (error instanceof ApiError) {
+        return {
+          success: false,
+          error: error.message,
+          code: error.code,
+          status: error.status,
+        };
+      }
+
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return {
+          success: false,
+          error: "Request timeout",
+        };
+      }
+
+      return {
+        success: false,
+        error: "Network error",
+      };
+    }
   }
 
-  /**
-   * Requête GET
-   */
-  async get<T = any>(
-    endpoint: string,
-    params?: Record<string, string | number | boolean>,
-    customHeaders?: HeadersInit
-  ): Promise<T> {
-    const url = new URL(`${this.baseURL}${endpoint}`);
+  // ========= HTTP METHODS =========
 
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        url.searchParams.append(key, String(value));
-      });
-    }
-
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      headers: this.buildHeaders(customHeaders),
-    });
-
-    return this.handleResponse<T>(response);
+  get<T>(endpoint: string, headers?: Record<string, string>) {
+    return this.request<T>("GET", endpoint, { headers });
   }
 
-  /**
-   * Requête POST
-   */
-  async post<T = any>(
-    endpoint: string,
-    body?: any,
-    customHeaders?: HeadersInit
-  ): Promise<T> {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: "POST",
-      headers: this.buildHeaders(customHeaders),
-      body: JSON.stringify(body),
-    });
-
-    return this.handleResponse<T>(response);
+  post<T, B = unknown>(endpoint: string, body: B, headers?: Record<string, string>) {
+    return this.request<T, B>("POST", endpoint, { body, headers });
   }
 
-  /**
-   * Requête PUT
-   */
-  async put<T = any>(
-    endpoint: string,
-    body?: any,
-    customHeaders?: HeadersInit
-  ): Promise<T> {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: "PUT",
-      headers: this.buildHeaders(customHeaders),
-      body: JSON.stringify(body),
-    });
-
-    return this.handleResponse<T>(response);
+  put<T, B = unknown>(endpoint: string, body: B, headers?: Record<string, string>) {
+    return this.request<T, B>("PUT", endpoint, { body, headers });
   }
 
-  /**
-   * Requête PATCH
-   */
-  async patch<T = any>(
-    endpoint: string,
-    body?: any,
-    customHeaders?: HeadersInit
-  ): Promise<T> {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: "PATCH",
-      headers: this.buildHeaders(customHeaders),
-      body: JSON.stringify(body),
-    });
-
-    return this.handleResponse<T>(response);
+  patch<T, B = unknown>(endpoint: string, body: B, headers?: Record<string, string>) {
+    return this.request<T, B>("PATCH", endpoint, { body, headers });
   }
 
-  /**
-   * Requête DELETE
-   */
-  async delete<T = any>(
-    endpoint: string,
-    customHeaders?: HeadersInit
-  ): Promise<T> {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: "DELETE",
-      headers: this.buildHeaders(customHeaders),
-    });
-
-    return this.handleResponse<T>(response);
-  }
-
-  /**
-   * Téléchargement de fichier (export CSV, etc.)
-   */
-  async download(
-    endpoint: string,
-    params?: Record<string, string | number | boolean>,
-    filename?: string
-  ): Promise<Blob> {
-    const url = new URL(`${this.baseURL}${endpoint}`);
-
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        url.searchParams.append(key, String(value));
-      });
-    }
-
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      headers: this.buildHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new ApiError(
-        `Download failed: ${response.statusText}`,
-        response.status
-      );
-    }
-
-    const blob = await response.blob();
-
-    // Téléchargement automatique si filename est fourni
-    if (filename && typeof window !== "undefined") {
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(downloadUrl);
-    }
-
-    return blob;
+  delete<T>(endpoint: string, headers?: Record<string, string>) {
+    return this.request<T>("DELETE", endpoint, { headers });
   }
 }
 
-// Instance singleton exportée
-export const apiClient = new ApiClient();
+/* ================= Helpers ================= */
+
+function safeJsonParse(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}

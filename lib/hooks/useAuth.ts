@@ -1,207 +1,156 @@
-/**
- * =====================================================
- * Hook - Authentification
- * =====================================================
- * Hook React pour la gestion de l'authentification
- *
- * @module lib/hooks/useAuth
- * @version 1.0
- */
-
 "use client";
 
-import { useState, useCallback } from "react";
-import { authApi, apiClient } from "../api";
-import type { User, LoginRequest, RegisterRequest, AuthState } from "../types";
+import { useState, useEffect, useCallback } from "react";
+import {
+  login as loginApi,
+  register as registerApi,
+  logout as logoutApi,
+  refreshToken as refreshTokenApi,
+  setAuthToken,
+} from "../api/auth.api";
+
+import type {
+  AuthUser,
+  LoginRequest,
+  RegisterRequest,
+} from "../types/auth.types";
+
+interface AuthState {
+  user: AuthUser | null;
+  loading: boolean;
+  isAuthenticated: boolean;
+}
+
+const ACCESS_TOKEN_KEY = "accessToken";
+const REFRESH_TOKEN_KEY = "refreshToken";
+const USER_KEY = "user";
 
 export function useAuth() {
   const [state, setState] = useState<AuthState>({
     user: null,
-    accessToken: null,
-    refreshToken: null,
+    loading: true,
     isAuthenticated: false,
-    isLoading: false,
   });
-  const [isRestored, setIsRestored] = useState(false);
 
-  /**
-   * Connexion
-   */
-  const login = useCallback(async (credentials: LoginRequest) => {
-    setState((prev) => ({ ...prev, isLoading: true }));
+  /* ================= INIT (au chargement) ================= */
 
-    try {
-      const response = await authApi.login(credentials);
+  useEffect(() => {
+    const initAuth = async () => {
+      const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+      const user = localStorage.getItem(USER_KEY);
 
-      // Mettre à jour les tokens dans le client API
-      apiClient.setTokens(response.accessToken, response.refreshToken);
-
-      setState({
-        user: response.user,
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      // Stocker en localStorage (optionnel)
-      if (typeof window !== "undefined") {
-        localStorage.setItem("accessToken", response.accessToken);
-        localStorage.setItem("refreshToken", response.refreshToken);
-        localStorage.setItem("user", JSON.stringify(response.user));
-      }
-
-      return response;
-    } catch (error) {
-      setState((prev) => ({ ...prev, isLoading: false }));
-      throw error;
-    }
-  }, []);
-
-  /**
-   * Inscription
-   */
-  const register = useCallback(async (data: RegisterRequest) => {
-    setState((prev) => ({ ...prev, isLoading: true }));
-
-    try {
-      const response = await authApi.register(data);
-
-      // Mettre à jour les tokens dans le client API
-      apiClient.setTokens(response.accessToken, response.refreshToken);
-
-      setState({
-        user: response.user,
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      // Stocker en localStorage (optionnel)
-      if (typeof window !== "undefined") {
-        localStorage.setItem("accessToken", response.accessToken);
-        localStorage.setItem("refreshToken", response.refreshToken);
-        localStorage.setItem("user", JSON.stringify(response.user));
-      }
-
-      return response;
-    } catch (error) {
-      setState((prev) => ({ ...prev, isLoading: false }));
-      throw error;
-    }
-  }, []);
-
-  /**
-   * Déconnexion
-   */
-  const logout = useCallback(async () => {
-    setState((prev) => ({ ...prev, isLoading: true }));
-
-    try {
-      if (state.refreshToken) {
-        await authApi.logout({ refreshToken: state.refreshToken });
-      }
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      // Nettoyer l'état et le localStorage
-      apiClient.clearTokens();
-      setState({
-        user: null,
-        accessToken: null,
-        refreshToken: null,
-        isAuthenticated: false,
-        isLoading: false,
-      });
-
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("user");
-      }
-    }
-  }, [state.refreshToken]);
-
-  /**
-   * Rafraîchir le token
-   */
-  const refreshToken = useCallback(async () => {
-    if (!state.refreshToken) {
-      throw new Error("No refresh token available");
-    }
-
-    try {
-      const response = await authApi.refreshToken({
-        refreshToken: state.refreshToken,
-      });
-
-      // Mettre à jour les tokens
-      apiClient.setTokens(response.accessToken, response.refreshToken);
-
-      setState((prev) => ({
-        ...prev,
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-        user: response.user || prev.user,
-      }));
-
-      // Mettre à jour le localStorage
-      if (typeof window !== "undefined") {
-        localStorage.setItem("accessToken", response.accessToken);
-        localStorage.setItem("refreshToken", response.refreshToken);
-        if (response.user) {
-          localStorage.setItem("user", JSON.stringify(response.user));
-        }
-      }
-
-      return response;
-    } catch (error) {
-      // En cas d'erreur, déconnecter l'utilisateur
-      await logout();
-      throw error;
-    }
-  }, [state.refreshToken, logout]);
-
-  /**
-   * Restaurer la session depuis le localStorage
-   */
-  const restoreSession = useCallback(() => {
-    if (typeof window === "undefined") return;
-
-    const accessToken = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
-    const userStr = localStorage.getItem("user");
-
-    if (accessToken && refreshToken && userStr) {
-      try {
-        const user: User = JSON.parse(userStr);
-        apiClient.setTokens(accessToken, refreshToken);
-
+      if (accessToken && user) {
+        setAuthToken(accessToken);
         setState({
-          user,
-          accessToken,
-          refreshToken,
+          user: JSON.parse(user),
+          loading: false,
           isAuthenticated: true,
-          isLoading: false,
         });
-        setIsRestored(true);
-      } catch (error) {
-        console.error("Failed to restore session:", error);
-        setIsRestored(true);
+        return;
       }
-    } else {
-      setIsRestored(true);
-    }
+
+      // Si access token absent mais refresh présent → tentative refresh
+      if (!accessToken && refreshToken) {
+        const res = await refreshTokenApi({ refreshToken });
+
+        if (res.success) {
+          localStorage.setItem(ACCESS_TOKEN_KEY, res.data.accessToken);
+          localStorage.setItem(REFRESH_TOKEN_KEY, res.data.refreshToken);
+          setAuthToken(res.data.accessToken);
+
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            isAuthenticated: true,
+          }));
+        } else {
+          clearStorage();
+          setState({ user: null, loading: false, isAuthenticated: false });
+        }
+        return;
+      }
+
+      setState({ user: null, loading: false, isAuthenticated: false });
+    };
+
+    initAuth();
   }, []);
+
+  /* ================= HELPERS ================= */
+
+  const saveSession = (user: AuthUser, accessToken: string, refreshToken: string) => {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    setAuthToken(accessToken);
+
+    setState({
+      user,
+      loading: false,
+      isAuthenticated: true,
+    });
+  };
+
+  const clearStorage = () => {
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    setAuthToken(null);
+  };
+
+  /* ================= ACTIONS ================= */
+
+  const login = useCallback(async (data: LoginRequest) => {
+    setState(prev => ({ ...prev, loading: true }));
+
+    const res = await loginApi(data);
+
+    if (res.success) {
+      saveSession(res.data.user, res.data.accessToken, res.data.refreshToken);
+    } else {
+      setState(prev => ({ ...prev, loading: false }));
+    }
+
+    return res;
+  }, []);
+
+  const register = useCallback(async (data: RegisterRequest) => {
+    setState(prev => ({ ...prev, loading: true }));
+
+    const res = await registerApi(data);
+
+    if (res.success) {
+      saveSession(res.data.user, res.data.accessToken, res.data.refreshToken);
+    } else {
+      setState(prev => ({ ...prev, loading: false }));
+    }
+
+    return res;
+  }, []);
+
+  const logout = useCallback(async () => {
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+
+    if (refreshToken) {
+      await logoutApi({ refreshToken });
+    }
+
+    clearStorage();
+    setState({ user: null, loading: false, isAuthenticated: false });
+
+    // redirection safe côté client
+    window.location.href = "/login";
+  }, []);
+
+  /* ================= RETURN ================= */
 
   return {
-    ...state,
-    isRestored,
-    login,
-    register,
-    logout,
-    refreshToken,
-    restoreSession,
-  };
+  ...state,
+  role: state.user?.permissions ?? null,
+  login,
+  register,
+  logout,
+};
+
 }

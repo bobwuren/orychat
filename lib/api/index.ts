@@ -9,11 +9,11 @@
  */
 
 // Client principal
-export { apiClient, ApiClient, ApiError } from "./client";
+export { ApiClient, ApiError } from "./client";
 export type { ApiResponse } from "./client";
 
 // Clients API par catégorie
-export { authApi, AuthApi } from "./auth.api";
+export * from "./auth.api";
 export { seriesApi, SeriesApi } from "./series.api";
 export { subjectsApi, SubjectsApi } from "./subjects.api";
 export { notesApi, NotesApi } from "./notes.api";

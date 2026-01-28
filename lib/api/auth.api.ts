@@ -1,127 +1,87 @@
-/**
- * =====================================================
- * API Client - Authentification
- * =====================================================
- * Client pour les endpoints d'authentification
- *
- * @module lib/api/auth.api
- * @version 1.0
- */
-
-import { apiClient } from "./client";
+import { ApiClient } from "./client";
 import type {
   RegisterRequest,
   LoginRequest,
   RefreshTokenRequest,
   LogoutRequest,
-  UpdateUserRequest,
-  CreateAdminRequest,
-  AuthResponse,
+  AuthSuccessResponse,
   RefreshTokenResponse,
   LogoutResponse,
-  CreateAdminResponse,
-  UsersListResponse,
-  UserResponse,
+  GetUserResponse,
+  GetUsersResponse,
+  UpdateUserRequest,
   UpdateUserResponse,
   DeleteUserResponse,
-} from "../types";
+  ListUsersQuery,
+} from "../types/auth.types";
 
-export class AuthApi {
-  private client = apiClient;
+const api = new ApiClient(`${process.env.NEXT_PUBLIC_API_URL!}/auth`);
 
-  /**
-   * Inscription d'un nouvel utilisateur
-   * POST /api/auth/register
-   */
-  async register(data: RegisterRequest): Promise<AuthResponse> {
-    return this.client.post<AuthResponse>("/api/auth/register", data);
-  }
+/* =========================================================
+   Helpers
+   ========================================================= */
 
-  /**
-   * Connexion utilisateur
-   * POST /api/auth/login
-   */
-  async login(data: LoginRequest): Promise<AuthResponse> {
-    return this.client.post<AuthResponse>("/api/auth/login", data);
-  }
+function buildQuery(params?: ListUsersQuery): string {
+  if (!params) return "";
 
-  /**
-   * Rafraîchir le token d'accès
-   * POST /api/auth/refresh
-   */
-  async refreshToken(data: RefreshTokenRequest): Promise<RefreshTokenResponse> {
-    return this.client.post<RefreshTokenResponse>("/api/auth/refresh", data);
-  }
+  const searchParams = new URLSearchParams();
 
-  /**
-   * Déconnexion utilisateur
-   * POST /api/auth/logout
-   * Requiert: Bearer token
-   */
-  async logout(data: LogoutRequest): Promise<LogoutResponse> {
-    return this.client.post<LogoutResponse>("/api/auth/logout", data);
-  }
+  if (params.page) searchParams.append("page", String(params.page));
+  if (params.limit) searchParams.append("limit", String(params.limit));
+  if (params.permissions) searchParams.append("permissions", params.permissions);
 
-  /**
-   * Liste tous les utilisateurs (Admin uniquement)
-   * GET /api/auth/users
-   * Requiert: Bearer token + admin
-   */
-  async getAllUsers(params?: {
-    page?: number;
-    limit?: number;
-    permissions?: string;
-  }): Promise<UsersListResponse> {
-    return this.client.get<UsersListResponse>("/api/auth/users", params);
-  }
-
-  /**
-   * Récupérer un utilisateur par ID
-   * GET /api/auth/users/:id
-   * Requiert: Bearer token
-   */
-  async getUserById(userId: string): Promise<UserResponse> {
-    return this.client.get<UserResponse>(`/api/auth/users/${userId}`);
-  }
-
-  /**
-   * Mettre à jour un utilisateur (Admin uniquement)
-   * PUT /api/auth/users/:id
-   * Requiert: Bearer token + admin
-   */
-  async updateUser(
-    userId: string,
-    data: UpdateUserRequest
-  ): Promise<UpdateUserResponse> {
-    return this.client.put<UpdateUserResponse>(
-      `/api/auth/users/${userId}`,
-      data
-    );
-  }
-
-  /**
-   * Supprimer un utilisateur (Admin uniquement)
-   * DELETE /api/auth/users/:id
-   * Requiert: Bearer token + admin
-   */
-  async deleteUser(userId: string): Promise<DeleteUserResponse> {
-    return this.client.delete<DeleteUserResponse>(`/api/auth/users/${userId}`);
-  }
-
-  /**
-   * Créer un utilisateur admin (Admin uniquement)
-   * POST /api/auth/admin/create
-   * Requiert: Bearer token + admin
-   */
-  async createAdminUser(
-    data: CreateAdminRequest
-  ): Promise<CreateAdminResponse> {
-    return this.client.post<CreateAdminResponse>(
-      "/api/auth/admin/create",
-      data
-    );
-  }
+  const query = searchParams.toString();
+  return query ? `?${query}` : "";
 }
 
-// Instance singleton exportée
-export const authApi = new AuthApi();
+/* =========================================================
+   AUTH — PUBLIC
+   ========================================================= */
+
+export const register = async (data: RegisterRequest) => {
+  return api.post<AuthSuccessResponse, RegisterRequest>("/register", data);
+};
+
+export const login = async (data: LoginRequest) => {
+  return api.post<AuthSuccessResponse, LoginRequest>("/login", data);
+};
+
+export const refreshToken = async (data: RefreshTokenRequest) => {
+  return api.post<RefreshTokenResponse, RefreshTokenRequest>("/refresh", data);
+};
+
+/* =========================================================
+   AUTH — PROTECTED
+   ========================================================= */
+
+export const logout = async (data: LogoutRequest) => {
+  return api.post<LogoutResponse, LogoutRequest>("/logout", data);
+};
+
+/* =========================================================
+   USERS — ADMIN / SELF
+   ========================================================= */
+
+export const getUsers = async (query?: ListUsersQuery) => {
+  return api.get<GetUsersResponse>(`/users${buildQuery(query)}`);
+};
+
+export const getUserById = async (userId: string) => {
+  return api.get<GetUserResponse>(`/users/${userId}`);
+};
+
+export const updateUser = async (userId: string, data: UpdateUserRequest) => {
+  return api.put<UpdateUserResponse, UpdateUserRequest>(`/users/${userId}`, data);
+};
+
+export const deleteUser = async (userId: string) => {
+  return api.delete<DeleteUserResponse>(`/users/${userId}`);
+};
+
+/* =========================================================
+   TOKEN MANAGEMENT (OPTIONAL HELPERS)
+   ========================================================= */
+
+export const setAuthToken = (token: string | null) => {
+  api.setAccessToken(token);
+};

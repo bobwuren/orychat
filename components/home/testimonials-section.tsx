@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Star,
@@ -10,6 +10,7 @@ import {
   Globe,
 } from "lucide-react";
 import Link from "next/link";
+import { BGPattern } from "@/components/bg-pattern";
 
 const testimonials = [
   {
@@ -17,7 +18,7 @@ const testimonials = [
     role: "Étudiante en Data Science",
     avatar: "MD",
     quote:
-      "Grâce à Orientys, j'ai découvert la data science alors que je pensais m'orienter vers le marketing. Aujourd'hui, je suis en master et j'ai déjà une alternance chez Google !",
+      "Grâce à OrientaFuture, j'ai découvert la data science alors que je pensais m'orienter vers le marketing. Aujourd'hui, je suis en master et j'ai déjà une alternance chez Google !",
     rating: 5,
     before: "Étudiante indécise",
     after: "Data Scientist en formation",
@@ -60,10 +61,20 @@ const testimonials = [
 
 export default function TestimonialsSection() {
   return (
-    <section className="py-20 md:py-28 bg-gradient-to-b from-background to-secondary/30">
+    <section className="py-20 md:py-28 relative">
+      {/* Pattern de fond pour cette section */}
+      <div className="absolute inset-0 -z-10">
+        <BGPattern
+          variant="dots"
+          mask="fade-y"
+          size={36}
+          fill="hsl(var(--primary) / 0.04)"
+        />
+      </div>
+
       <div className="container px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm mb-4">
+          <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm mb-4 backdrop-blur-sm">
             <Quote className="mr-2 h-4 w-4" />
             <span>Témoignages</span>
           </div>
@@ -84,7 +95,7 @@ export default function TestimonialsSection() {
           {testimonials.map((testimonial) => (
             <Card
               key={testimonial.name}
-              className="group hover:shadow-lg transition-all duration-300"
+              className="group hover:shadow-lg transition-all duration-300 bg-background/80 backdrop-blur-sm"
             >
               <CardContent className="p-6">
                 {/* Quote Icon */}
@@ -94,7 +105,7 @@ export default function TestimonialsSection() {
 
                 {/* Quote */}
                 <p className="text-muted-foreground mb-6 italic">
-                  &quot;{testimonial.quote}&quot;
+                  "{testimonial.quote}"
                 </p>
 
                 {/* User Info */}
@@ -157,18 +168,28 @@ export default function TestimonialsSection() {
 
         {/* CTA */}
         <div className="mt-16 text-center">
-          <div className="inline-flex flex-col sm:flex-row items-center gap-4 p-6 rounded-2xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20">
+          <div className="inline-flex flex-col sm:flex-row items-center gap-4 p-6 rounded-2xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 backdrop-blur-sm relative overflow-hidden">
+            {/* Pattern à l'intérieur du CTA */}
+            <div className="absolute inset-0 -z-10">
+              <BGPattern
+                variant="dots"
+                mask="fade-center"
+                size={16}
+                fill="hsl(var(--primary) / 0.1)"
+              />
+            </div>
+
             <div className="text-left">
               <h3 className="text-xl font-bold mb-2">
                 Prêt à écrire votre propre succès ?
               </h3>
               <p className="text-muted-foreground">
-                Rejoignez les milliers d&apos;étudiants qui ont trouvé leur voie
+                Rejoignez les milliers d'étudiants qui ont trouvé leur voie
                 grâce à notre plateforme.
               </p>
             </div>
             <Link href="/signup">
-              <Button size="lg" className="gap-2">
+              <Button size="lg" className="gap-2 backdrop-blur-sm">
                 Commencer maintenant
                 <ArrowRight className="h-4 w-4" />
               </Button>

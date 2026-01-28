@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Brain, Users, BarChart3, Shield, Zap, Globe } from "lucide-react";
+import { BGPattern } from "@/components/bg-pattern";
 
 const features = [
   {
@@ -60,13 +61,23 @@ const features = [
 
 export default function FeaturesSection() {
   return (
-    <section className="py-20 md:py-28 bg-gradient-to-b from-secondary/20 to-background">
+    <section className="py-20 md:py-28 relative">
+      {/* Pattern de fond pour cette section */}
+      <div className="absolute inset-0 -z-10">
+        <BGPattern
+          variant="dots"
+          mask="fade-center"
+          size={48}
+          fill="hsl(var(--primary) / 0.05)"
+        />
+      </div>
+
       <div className="container px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4">
             Pourquoi choisir{" "}
             <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              Orientys ?
+              OrientaFuture ?
             </span>
           </h2>
           <p className="text-xl text-muted-foreground">
@@ -79,7 +90,7 @@ export default function FeaturesSection() {
           {features.map((feature) => (
             <Card
               key={feature.title}
-              className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50"
+              className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50 bg-background/80 backdrop-blur-sm"
             >
               <CardHeader>
                 <div className="flex items-center gap-4">
@@ -101,7 +112,17 @@ export default function FeaturesSection() {
         </div>
 
         {/* Stats Banner */}
-        <div className="mt-16 rounded-2xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 p-8">
+        <div className="mt-16 rounded-2xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 p-8 backdrop-blur-sm relative overflow-hidden">
+          {/* Pattern à l'intérieur du banner */}
+          <div className="absolute inset-0 -z-10">
+            <BGPattern
+              variant="dots"
+              mask="none"
+              size={20}
+              fill="hsl(var(--primary) / 0.08)"
+            />
+          </div>
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
               <div className="text-4xl font-bold text-primary">98%</div>
