@@ -42,7 +42,7 @@ router.post('/save', saveNotes);
  *       500:
  *         description: Erreur serveur
  */
-router.get('/user/:userId',requirePermissions('admin'), getNotesByUserId);
+router.get('/user/:userId', requirePermissions('admin'), getNotesByUserId);
 
 /**
  * @swagger
