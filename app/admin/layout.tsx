@@ -1,32 +1,30 @@
-"use client";
+"use client"
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { AppSidebar } from "@/components/app-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { useAuth } from "@/lib/hooks/useAuth";
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { AppSidebar } from "@/components/app-sidebar"
+import { SiteHeader } from "@/components/site-header"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { useAuth } from "@/lib/hooks/useAuth"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const { user, isAuthenticated, loading, role } = useAuth();
+  const router = useRouter()
+  const { isAuthenticated, loading, role } = useAuth()
 
   useEffect(() => {
-    if (loading) return;
+    if (loading) return
 
-    // Pas connecté → login
     if (!isAuthenticated) {
-      router.replace("/login");
-      return;
+      router.replace("/login")
+      return
     }
 
-    // Connecté mais PAS admin → partie publique
     if (role !== "admin") {
-      router.replace("/");
+      router.replace("/") // partie publique
     }
-  }, [loading, isAuthenticated, role, router]);
+  }, [loading, isAuthenticated, role, router])
 
-  if (loading || !isAuthenticated || role !== "admin") return null;
+  if (loading || !isAuthenticated || role !== "admin") return null
 
   return (
     <SidebarProvider>
@@ -36,5 +34,5 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {children}
       </SidebarInset>
     </SidebarProvider>
-  );
+  )
 }
