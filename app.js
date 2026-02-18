@@ -26,8 +26,8 @@ const consultationRoutes = require('./routes/consultationRoutes'); // AJOUTER
 
 const app = express();
 
-// CORS: autoriser le frontend (NEXT_PUBLIC_API_URL ou FRONTEND_URL)
-const allowedOrigin = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3000}`;
+// CORS: autoriser le frontend à accéder à l'API
+const allowedOrigin = process.env.FRONTEND_URL;
 app.use(cors({
   origin: allowedOrigin,
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
