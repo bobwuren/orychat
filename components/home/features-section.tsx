@@ -77,7 +77,7 @@ export default function FeaturesSection() {
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4">
             Pourquoi choisir{" "}
             <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              OrientaFuture ?
+              Orientys ?
             </span>
           </h2>
           <p className="text-xl text-muted-foreground">

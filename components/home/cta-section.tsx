@@ -113,7 +113,7 @@ export default function CTASection() {
               <p className="text-muted-foreground italic mb-4">
                 "En 15 minutes, j'ai découvert des métiers que je ne connaissais
                 même pas. Aujourd'hui, je suis en école d'ingénieurs grâce à
-                OrientaFuture !"
+                Orientys !"
               </p>
               <div className="flex items-center justify-between">
                 <div>

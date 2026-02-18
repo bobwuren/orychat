@@ -176,7 +176,7 @@ export default function HeroSection() {
             <div className="absolute -bottom-6 -left-6 hidden lg:block">
               <div className="rounded-xl bg-background/80 p-4 shadow-lg border backdrop-blur-sm max-w-xs">
                 <p className="font-medium">
-                  "Grâce à OrientaFuture, j'ai découvert ma passion pour la data
+                  "Grâce à Orientys, j'ai découvert ma passion pour la data
                   science!"
                 </p>
                 <p className="text-sm text-muted-foreground mt-2">

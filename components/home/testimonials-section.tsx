@@ -18,7 +18,7 @@ const testimonials = [
     role: "Étudiante en Data Science",
     avatar: "MD",
     quote:
-      "Grâce à OrientaFuture, j'ai découvert la data science alors que je pensais m'orienter vers le marketing. Aujourd'hui, je suis en master et j'ai déjà une alternance chez Google !",
+      "Grâce à Orientys, j'ai découvert la data science alors que je pensais m'orienter vers le marketing. Aujourd'hui, je suis en master et j'ai déjà une alternance chez Google !",
     rating: 5,
     before: "Étudiante indécise",
     after: "Data Scientist en formation",
