@@ -107,7 +107,7 @@ export default function RecommendationPage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => router.push("/history")}
+          onClick={() => router.push("/dashboard/history")}
         >
           <History className="mr-1.5 h-4 w-4" /> Historique
         </Button>
@@ -206,7 +206,7 @@ export default function RecommendationPage() {
         >
           Nouvelle analyse
         </Button>
-        <Button onClick={() => router.push("/history")} className="flex-1">
+        <Button onClick={() => router.push("/dashboard/history")} className="flex-1">
           <History className="mr-2 h-4 w-4" /> Voir l&apos;historique
         </Button>
       </div>

@@ -73,7 +73,7 @@ export default function NotesPage() {
         1,
     }));
     sessionStorage.setItem("notesPayload", JSON.stringify(notesPayload));
-    router.push("/recommendation");
+    router.push("/dashboard/recommendation");
   };
 
   if (loading)

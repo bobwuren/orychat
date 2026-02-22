@@ -46,7 +46,7 @@ export default function DashboardPage() {
 
   const handleSelect = (serie: Serie) => {
     sessionStorage.setItem("selectedSerie", JSON.stringify(serie));
-    router.push("/notes");
+    router.push("/dashboard/notes");
   };
 
   return (

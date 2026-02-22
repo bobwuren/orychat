@@ -36,7 +36,7 @@ export default function ClientLayout({
           </Link>
           <nav className="flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/history">
+              <Link href="/dashboard/history">
                 <History className="h-4 w-4 mr-1.5" />
                 Historique
               </Link>
