@@ -52,7 +52,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  const isAuthRoute = pathname === "/login" || pathname === "/signup";
+  // Routes publiques inaccessibles quand connecté (login, signup, homepage)
+  const isAuthRoute =
+    pathname === "/login" || pathname === "/signup" || pathname === "/";
 
   if (isAuthRoute && sessionExists) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
@@ -83,5 +85,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/login", "/signup"],
+  matcher: ["/", "/dashboard/:path*", "/admin/:path*", "/login", "/signup"],
 };
