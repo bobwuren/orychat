@@ -1,11 +1,11 @@
 /**
  * =====================================================
- * API Client - Recommandations
+ * API Client - Recommandations - CORRIGÉ
  * =====================================================
  * Client pour les endpoints des recommandations
  *
  * @module lib/api/recommendations.api
- * @version 1.0
+ * @version 1.1
  */
 
 import { apiClient } from "./client";
@@ -24,76 +24,81 @@ export class RecommendationsApi {
   /**
    * Générer une recommandation avec IA
    * POST /api/recommendations/generate
-   * Requiert: Bearer token
    */
   async generate(
-    data: GenerateRecommendationRequest
+    data: GenerateRecommendationRequest,
   ): Promise<GenerateRecommendationResponse> {
-    return this.client.post<GenerateRecommendationResponse>(
-      "/api/recommendations/generate",
-      data
-    );
+    return this.client.post<
+      GenerateRecommendationResponse,
+      GenerateRecommendationRequest
+    >("/recommendations/generate", data);
   }
 
   /**
    * Sauvegarder une recommandation manuelle
    * POST /api/recommendations/save
-   * Requiert: Bearer token
    */
   async save(
-    data: SaveRecommendationRequest
+    data: SaveRecommendationRequest,
   ): Promise<SaveRecommendationResponse> {
-    return this.client.post<SaveRecommendationResponse>(
-      "/api/recommendations/save",
-      data
-    );
+    return this.client.post<
+      SaveRecommendationResponse,
+      SaveRecommendationRequest
+    >("/recommendations/save", data);
   }
 
   /**
    * Récupérer l'historique des recommandations de l'utilisateur
    * GET /api/recommendations
-   * Requiert: Bearer token
    */
   async getUserRecommendations(): Promise<RecommendationsListResponse> {
-    return this.client.get<RecommendationsListResponse>("/api/recommendations");
+    return this.client.get<RecommendationsListResponse>("/recommendations");
   }
 
   /**
    * Récupérer toutes les recommandations (Admin uniquement)
    * GET /api/recommendations/all
-   * Requiert: Bearer token + admin
    */
-  async getAll(): Promise<RecommendationsListResponse> {
+  async getAll(params?: {
+    isManual?: boolean;
+    userId?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<RecommendationsListResponse> {
     return this.client.get<RecommendationsListResponse>(
-      "/api/recommendations/all"
+      "/recommendations/all",
+      params,
     );
   }
 
   /**
    * Récupérer une recommandation par ID (Admin uniquement)
    * GET /api/recommendations/:id
-   * Requiert: Bearer token + admin
    */
   async getById(recommendationId: string): Promise<RecommendationResponse> {
     return this.client.get<RecommendationResponse>(
-      `/api/recommendations/${recommendationId}`
+      `/recommendations/${recommendationId}`,
     );
   }
 
   /**
    * Exporter toutes les recommandations (Admin uniquement)
    * GET /api/recommendations/export
-   * Requiert: Bearer token + admin
    */
-  async export(params?: { format?: "csv" | "json" }): Promise<Blob> {
+  async export(params?: {
+    format?: "csv" | "json";
+    isManual?: boolean;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<Blob> {
     const format = params?.format || "csv";
     const filename = `recommendations_export_${
       new Date().toISOString().split("T")[0]
     }.${format}`;
     return this.client.download(
-      "/api/recommendations/export",
-      { format },
-      filename
+      "/recommendations/export",
+      { ...params, format },
+      filename,
     );
   }
 }

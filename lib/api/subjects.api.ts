@@ -1,11 +1,11 @@
 /**
  * =====================================================
- * API Client - Matières
+ * API Client - Matières - CORRIGÉ
  * =====================================================
  * Client pour les endpoints des matières
  *
  * @module lib/api/subjects.api
- * @version 1.0
+ * @version 1.1
  */
 
 import { apiClient } from "./client";
@@ -25,82 +25,74 @@ export class SubjectsApi {
   /**
    * Récupérer toutes les matières
    * GET /api/subjects
-   * Requiert: Bearer token
    */
   async getAll(params?: {
     page?: number;
     limit?: number;
     search?: string;
   }): Promise<SubjectsListResponse> {
-    return this.client.get<SubjectsListResponse>("/api/subjects", params);
+    return this.client.get<SubjectsListResponse>("/subjects", params);
   }
 
   /**
    * Récupérer une matière par ID
    * GET /api/subjects/:id
-   * Requiert: Bearer token
    */
   async getById(subjectId: string): Promise<SubjectResponse> {
-    return this.client.get<SubjectResponse>(`/api/subjects/${subjectId}`);
+    return this.client.get<SubjectResponse>(`/subjects/${subjectId}`);
   }
 
   /**
    * Récupérer les matières d'une série
    * GET /api/subjects/serie/:serieId
-   * Requiert: Bearer token
    */
   async getBySerie(serieId: string): Promise<SubjectsListResponse> {
-    return this.client.get<SubjectsListResponse>(
-      `/api/subjects/serie/${serieId}`
-    );
+    return this.client.get<SubjectsListResponse>(`/subjects/serie/${serieId}`);
   }
 
   /**
    * Créer une nouvelle matière (Admin uniquement)
    * POST /api/subjects
-   * Requiert: Bearer token + admin
    */
   async create(data: CreateSubjectRequest): Promise<CreateSubjectResponse> {
-    return this.client.post<CreateSubjectResponse>("/api/subjects", data);
+    return this.client.post<CreateSubjectResponse, CreateSubjectRequest>(
+      "/subjects",
+      data,
+    );
   }
 
   /**
    * Mettre à jour une matière (Admin uniquement)
    * PUT /api/subjects/:id
-   * Requiert: Bearer token + admin
    */
   async update(
     subjectId: string,
-    data: UpdateSubjectRequest
+    data: UpdateSubjectRequest,
   ): Promise<UpdateSubjectResponse> {
-    return this.client.put<UpdateSubjectResponse>(
-      `/api/subjects/${subjectId}`,
-      data
+    return this.client.put<UpdateSubjectResponse, UpdateSubjectRequest>(
+      `/subjects/${subjectId}`,
+      data,
     );
   }
 
   /**
    * Supprimer une matière (Admin uniquement)
    * DELETE /api/subjects/:id
-   * Requiert: Bearer token + admin
    */
   async delete(subjectId: string): Promise<DeleteSubjectResponse> {
-    return this.client.delete<DeleteSubjectResponse>(
-      `/api/subjects/${subjectId}`
-    );
+    return this.client.delete<DeleteSubjectResponse>(`/subjects/${subjectId}`);
   }
 
   /**
    * Exporter toutes les matières (Admin uniquement)
    * GET /api/subjects/export
-   * Requiert: Bearer token + admin
    */
   async export(params?: { format?: "csv" | "json" }): Promise<Blob> {
     const format = params?.format || "csv";
     const filename = `subjects_export_${
       new Date().toISOString().split("T")[0]
     }.${format}`;
-    return this.client.download("/api/subjects/export", { format }, filename);
+    return this.client.download("/subjects/export", { format }, filename);
   }
 }
 

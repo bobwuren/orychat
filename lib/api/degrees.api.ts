@@ -1,11 +1,11 @@
 /**
  * =====================================================
- * API Client - Diplômes
+ * API Client - Diplômes - CORRIGÉ
  * =====================================================
  * Client pour les endpoints des diplômes
  *
  * @module lib/api/degrees.api
- * @version 1.0
+ * @version 1.1
  */
 
 import { apiClient } from "./client";
@@ -24,65 +24,67 @@ export class DegreesApi {
   /**
    * Récupérer tous les diplômes
    * GET /api/degrees
-   * Requiert: Bearer token
    */
-  async getAll(): Promise<DegreesListResponse> {
-    return this.client.get<DegreesListResponse>("/api/degrees");
+  async getAll(params?: {
+    search?: string;
+    universityId?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<DegreesListResponse> {
+    return this.client.get<DegreesListResponse>("/degrees", params);
   }
 
   /**
    * Récupérer un diplôme par ID
    * GET /api/degrees/:id
-   * Requiert: Bearer token
    */
   async getById(degreeId: string): Promise<DegreeResponse> {
-    return this.client.get<DegreeResponse>(`/api/degrees/${degreeId}`);
+    return this.client.get<DegreeResponse>(`/degrees/${degreeId}`);
   }
 
   /**
    * Créer un diplôme (Admin uniquement)
    * POST /api/degrees
-   * Requiert: Bearer token + admin
    */
   async create(data: CreateDegreeRequest): Promise<CreateDegreeResponse> {
-    return this.client.post<CreateDegreeResponse>("/api/degrees", data);
+    return this.client.post<CreateDegreeResponse, CreateDegreeRequest>(
+      "/degrees",
+      data,
+    );
   }
 
   /**
    * Mettre à jour un diplôme (Admin uniquement)
    * PUT /api/degrees/:id
-   * Requiert: Bearer token + admin
    */
   async update(
     degreeId: string,
-    data: UpdateDegreeRequest
+    data: UpdateDegreeRequest,
   ): Promise<UpdateDegreeResponse> {
-    return this.client.put<UpdateDegreeResponse>(
-      `/api/degrees/${degreeId}`,
-      data
+    return this.client.put<UpdateDegreeResponse, UpdateDegreeRequest>(
+      `/degrees/${degreeId}`,
+      data,
     );
   }
 
   /**
    * Supprimer un diplôme (Admin uniquement)
    * DELETE /api/degrees/:id
-   * Requiert: Bearer token + admin
    */
   async delete(degreeId: string): Promise<void> {
-    return this.client.delete<void>(`/api/degrees/${degreeId}`);
+    return this.client.delete<void>(`/degrees/${degreeId}`);
   }
 
   /**
    * Exporter tous les diplômes (Admin uniquement)
    * GET /api/degrees/export
-   * Requiert: Bearer token + admin
    */
   async export(params?: { format?: "csv" | "json" }): Promise<Blob> {
     const format = params?.format || "csv";
     const filename = `degrees_export_${
       new Date().toISOString().split("T")[0]
     }.${format}`;
-    return this.client.download("/api/degrees/export", { format }, filename);
+    return this.client.download("/degrees/export", { format }, filename);
   }
 }
 

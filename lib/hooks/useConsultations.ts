@@ -1,11 +1,11 @@
 /**
  * =====================================================
- * Hook - Consultations & Questionnaire
+ * Hook - Consultations & Questionnaire - CORRIGÉ
  * =====================================================
  * Hook React pour la gestion des consultations
  *
  * @module lib/hooks/useConsultations
- * @version 1.0
+ * @version 1.1
  */
 
 "use client";
@@ -32,13 +32,10 @@ export function useConsultations() {
     useState<Questionnaire | null>(null);
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // ========== QUESTIONNAIRE ==========
 
-  /**
-   * Soumettre un questionnaire
-   */
   const submitQuestionnaire = useCallback(
     async (data: SubmitQuestionnaireRequest) => {
       setIsLoading(true);
@@ -47,40 +44,36 @@ export function useConsultations() {
       try {
         const response = await questionnaireApi.submit(data);
         return response;
-      } catch (err) {
-        const error = err as Error;
-        setError(error);
-        throw error;
+      } catch (err: any) {
+        const errorMessage =
+          err.message || "Erreur lors de la soumission du questionnaire";
+        setError(errorMessage);
+        throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
-  /**
-   * Récupérer les questionnaires d'un utilisateur
-   */
   const fetchUserQuestionnaires = useCallback(async (userId: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await questionnaireApi.getUserQuestionnaires(userId);
-      setQuestionnaires(response.questionnaires);
+      setQuestionnaires(response.questionnaires || []);
       return response;
-    } catch (err) {
-      const error = err as Error;
-      setError(error);
-      throw error;
+    } catch (err: any) {
+      const errorMessage =
+        err.message || "Erreur lors du chargement des questionnaires";
+      setError(errorMessage);
+      throw err;
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  /**
-   * Récupérer le dernier questionnaire d'un utilisateur
-   */
   const fetchLatestQuestionnaire = useCallback(async (userId: string) => {
     setIsLoading(true);
     setError(null);
@@ -89,10 +82,11 @@ export function useConsultations() {
       const response = await questionnaireApi.getLatestQuestionnaire(userId);
       setCurrentQuestionnaire(response.questionnaire);
       return response.questionnaire;
-    } catch (err) {
-      const error = err as Error;
-      setError(error);
-      throw error;
+    } catch (err: any) {
+      const errorMessage =
+        err.message || "Erreur lors du chargement du questionnaire";
+      setError(errorMessage);
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -100,9 +94,6 @@ export function useConsultations() {
 
   // ========== CONSULTATIONS ==========
 
-  /**
-   * Demander une consultation
-   */
   const requestConsultation = useCallback(
     async (data: RequestConsultationRequest) => {
       setIsLoading(true);
@@ -111,43 +102,44 @@ export function useConsultations() {
       try {
         const response = await consultationsApi.request(data);
         return response;
-      } catch (err) {
-        const error = err as Error;
-        setError(error);
-        throw error;
+      } catch (err: any) {
+        const errorMessage =
+          err.message || "Erreur lors de la demande de consultation";
+        setError(errorMessage);
+        throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
-  /**
-   * Récupérer toutes les consultations (Admin)
-   */
   const fetchAllConsultations = useCallback(
-    async (params?: { status?: ConsultationStatus; counselorId?: string }) => {
+    async (params?: {
+      status?: ConsultationStatus;
+      counselorId?: string;
+      page?: number;
+      limit?: number;
+    }) => {
       setIsLoading(true);
       setError(null);
 
       try {
         const response = await consultationsApi.getAll(params);
-        setConsultations(response.consultations);
+        setConsultations(response.consultations || []);
         return response;
-      } catch (err) {
-        const error = err as Error;
-        setError(error);
-        throw error;
+      } catch (err: any) {
+        const errorMessage =
+          err.message || "Erreur lors du chargement des consultations";
+        setError(errorMessage);
+        throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
-  /**
-   * Récupérer les statistiques (Admin)
-   */
   const fetchStats = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -156,38 +148,34 @@ export function useConsultations() {
       const response = await consultationsApi.getStats();
       setStats(response.stats);
       return response;
-    } catch (err) {
-      const error = err as Error;
-      setError(error);
-      throw error;
+    } catch (err: any) {
+      const errorMessage =
+        err.message || "Erreur lors du chargement des statistiques";
+      setError(errorMessage);
+      throw err;
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  /**
-   * Récupérer l'historique des consultations d'un utilisateur
-   */
   const fetchUserConsultations = useCallback(async (userId: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await consultationsApi.getUserConsultations(userId);
-      setConsultations(response.consultations);
+      setConsultations(response.consultations || []);
       return response;
-    } catch (err) {
-      const error = err as Error;
-      setError(error);
-      throw error;
+    } catch (err: any) {
+      const errorMessage =
+        err.message || "Erreur lors du chargement de l'historique";
+      setError(errorMessage);
+      throw err;
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  /**
-   * Récupérer les détails d'une consultation
-   */
   const fetchConsultationById = useCallback(async (consultationId: string) => {
     setIsLoading(true);
     setError(null);
@@ -196,18 +184,16 @@ export function useConsultations() {
       const response = await consultationsApi.getById(consultationId);
       setCurrentConsultation(response.consultation);
       return response.consultation;
-    } catch (err) {
-      const error = err as Error;
-      setError(error);
-      throw error;
+    } catch (err: any) {
+      const errorMessage =
+        err.message || "Erreur lors du chargement de la consultation";
+      setError(errorMessage);
+      throw err;
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  /**
-   * Assigner un conseiller
-   */
   const assignCounselor = useCallback(
     async (consultationId: string, data: AssignCounselorRequest) => {
       setIsLoading(true);
@@ -216,27 +202,26 @@ export function useConsultations() {
       try {
         const response = await consultationsApi.assignCounselor(
           consultationId,
-          data
+          data,
         );
         // Mettre à jour dans la liste
         setConsultations((prev) =>
-          prev.map((c) => (c.id === consultationId ? response.consultation : c))
+          prev.map((c) =>
+            c.id === consultationId ? response.consultation : c,
+          ),
         );
         return response;
-      } catch (err) {
-        const error = err as Error;
-        setError(error);
-        throw error;
+      } catch (err: any) {
+        const errorMessage = err.message || "Erreur lors de l'assignation";
+        setError(errorMessage);
+        throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
-  /**
-   * Mettre à jour le statut
-   */
   const updateStatus = useCallback(
     async (consultationId: string, data: UpdateConsultationStatusRequest) => {
       setIsLoading(true);
@@ -245,22 +230,25 @@ export function useConsultations() {
       try {
         const response = await consultationsApi.updateStatus(
           consultationId,
-          data
+          data,
         );
         // Mettre à jour dans la liste
         setConsultations((prev) =>
-          prev.map((c) => (c.id === consultationId ? response.consultation : c))
+          prev.map((c) =>
+            c.id === consultationId ? response.consultation : c,
+          ),
         );
         return response;
-      } catch (err) {
-        const error = err as Error;
-        setError(error);
-        throw error;
+      } catch (err: any) {
+        const errorMessage =
+          err.message || "Erreur lors de la mise à jour du statut";
+        setError(errorMessage);
+        throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   return {

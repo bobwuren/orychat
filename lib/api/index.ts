@@ -1,19 +1,21 @@
 /**
  * =====================================================
- * API - Index
+ * API - Index - CORRIGÉ
  * =====================================================
  * Export centralisé de tous les clients API
  *
  * @module lib/api
- * @version 1.0
+ * @version 1.1
  */
 
 // Client principal
-export { ApiClient, ApiError } from "./client";
-export type { ApiResponse } from "./client";
+export { ApiClient, ApiError, apiClient } from "./client";
+export type { ApiResponse, ApiSuccess, ApiFailure } from "./client";
 
-// Clients API par catégorie
+// Exports des fonctions d'authentification
 export * from "./auth.api";
+
+// Exports des classes et instances
 export { seriesApi, SeriesApi } from "./series.api";
 export { subjectsApi, SubjectsApi } from "./subjects.api";
 export { notesApi, NotesApi } from "./notes.api";

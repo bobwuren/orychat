@@ -1,4 +1,4 @@
-import { ApiClient } from "./client";
+import { apiClient } from "./client";
 import type {
   RegisterRequest,
   LoginRequest,
@@ -15,23 +15,20 @@ import type {
   ListUsersQuery,
 } from "../types/auth.types";
 
-const api = new ApiClient(`${process.env.NEXT_PUBLIC_API_URL!}/auth`);
-
 /* =========================================================
    Helpers
    ========================================================= */
 
-function buildQuery(params?: ListUsersQuery): string {
-  if (!params) return "";
+function buildQuery(params?: ListUsersQuery): Record<string, string | number> {
+  if (!params) return {};
 
-  const searchParams = new URLSearchParams();
+  const query: Record<string, string | number> = {};
 
-  if (params.page) searchParams.append("page", String(params.page));
-  if (params.limit) searchParams.append("limit", String(params.limit));
-  if (params.permissions) searchParams.append("permissions", params.permissions);
+  if (params.page) query.page = params.page;
+  if (params.limit) query.limit = params.limit;
+  if (params.permissions) query.permissions = params.permissions;
 
-  const query = searchParams.toString();
-  return query ? `?${query}` : "";
+  return query;
 }
 
 /* =========================================================
@@ -39,15 +36,15 @@ function buildQuery(params?: ListUsersQuery): string {
    ========================================================= */
 
 export const register = async (data: RegisterRequest) => {
-  return api.post<AuthSuccessResponse, RegisterRequest>("/register", data);
+  return apiClient.post<AuthSuccessResponse>("/auth/register", data);
 };
 
 export const login = async (data: LoginRequest) => {
-  return api.post<AuthSuccessResponse, LoginRequest>("/login", data);
+  return apiClient.post<AuthSuccessResponse>("/auth/login", data);
 };
 
 export const refreshToken = async (data: RefreshTokenRequest) => {
-  return api.post<RefreshTokenResponse, RefreshTokenRequest>("/refresh", data);
+  return apiClient.post<RefreshTokenResponse>("/auth/refresh", data);
 };
 
 /* =========================================================
@@ -55,7 +52,7 @@ export const refreshToken = async (data: RefreshTokenRequest) => {
    ========================================================= */
 
 export const logout = async (data: LogoutRequest) => {
-  return api.post<LogoutResponse, LogoutRequest>("/logout", data);
+  return apiClient.post<LogoutResponse>("/auth/logout", data);
 };
 
 /* =========================================================
@@ -63,19 +60,22 @@ export const logout = async (data: LogoutRequest) => {
    ========================================================= */
 
 export const getUsers = async (query?: ListUsersQuery) => {
-  return api.get<GetUsersResponse>(`/users${buildQuery(query)}`);
+  return apiClient.get<GetUsersResponse>("/auth/users", buildQuery(query));
 };
 
 export const getUserById = async (userId: string) => {
-  return api.get<GetUserResponse>(`/users/${userId}`);
+  return apiClient.get<GetUserResponse>(`/auth/users/${userId}`);
 };
 
 export const updateUser = async (userId: string, data: UpdateUserRequest) => {
-  return api.put<UpdateUserResponse, UpdateUserRequest>(`/users/${userId}`, data);
+  return apiClient.put<UpdateUserResponse, UpdateUserRequest>(
+    `/auth/users/${userId}`,
+    data,
+  );
 };
 
 export const deleteUser = async (userId: string) => {
-  return api.delete<DeleteUserResponse>(`/users/${userId}`);
+  return apiClient.delete<DeleteUserResponse>(`/auth/users/${userId}`);
 };
 
 /* =========================================================
@@ -83,5 +83,5 @@ export const deleteUser = async (userId: string) => {
    ========================================================= */
 
 export const setAuthToken = (token: string | null) => {
-  api.setAccessToken(token);
+  apiClient.setAccessToken(token);
 };

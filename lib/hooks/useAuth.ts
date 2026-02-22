@@ -52,19 +52,19 @@ export function useAuth() {
 
       // Si access token absent mais refresh présent → tentative refresh
       if (!accessToken && refreshToken) {
-        const res = await refreshTokenApi({ refreshToken });
+        try {
+          const data = await refreshTokenApi({ refreshToken });
 
-        if (res.success) {
-          localStorage.setItem(ACCESS_TOKEN_KEY, res.data.accessToken);
-          localStorage.setItem(REFRESH_TOKEN_KEY, res.data.refreshToken);
-          setAuthToken(res.data.accessToken);
+          localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
+          localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+          setAuthToken(data.accessToken);
 
-          setState(prev => ({
+          setState((prev) => ({
             ...prev,
             loading: false,
             isAuthenticated: true,
           }));
-        } else {
+        } catch (error) {
           clearStorage();
           setState({ user: null, loading: false, isAuthenticated: false });
         }
@@ -79,7 +79,11 @@ export function useAuth() {
 
   /* ================= HELPERS ================= */
 
-  const saveSession = (user: AuthUser, accessToken: string, refreshToken: string) => {
+  const saveSession = (
+    user: AuthUser,
+    accessToken: string,
+    refreshToken: string,
+  ) => {
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
@@ -102,55 +106,60 @@ export function useAuth() {
   /* ================= ACTIONS ================= */
 
   const login = useCallback(async (data: LoginRequest) => {
-    setState(prev => ({ ...prev, loading: true }));
+    setState((prev) => ({ ...prev, loading: true }));
 
-    const res = await loginApi(data);
-
-    if (res.success) {
-      saveSession(res.data.user, res.data.accessToken, res.data.refreshToken);
-    } else {
-      setState(prev => ({ ...prev, loading: false }));
+    try {
+      const res = await loginApi(data);
+      saveSession(res.user, res.accessToken, res.refreshToken);
+      return { success: true, data: res };
+    } catch (error) {
+      setState((prev) => ({ ...prev, loading: false }));
+      return { success: false, error };
     }
-
-    return res;
   }, []);
 
   const register = useCallback(async (data: RegisterRequest) => {
-    setState(prev => ({ ...prev, loading: true }));
+    setState((prev) => ({ ...prev, loading: true }));
 
-    const res = await registerApi(data);
-
-    if (res.success) {
-      saveSession(res.data.user, res.data.accessToken, res.data.refreshToken);
-    } else {
-      setState(prev => ({ ...prev, loading: false }));
+    try {
+      const res = await registerApi(data);
+      saveSession(res.user, res.accessToken, res.refreshToken);
+      return { success: true, data: res };
+    } catch (error) {
+      setState((prev) => ({ ...prev, loading: false }));
+      return { success: false, error };
     }
-
-    return res;
   }, []);
 
   const logout = useCallback(async () => {
     const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
 
     if (refreshToken) {
-      await logoutApi({ refreshToken });
+      try {
+        await logoutApi({ refreshToken });
+      } catch (error) {
+        console.error("Logout API error:", error);
+      }
     }
 
     clearStorage();
     setState({ user: null, loading: false, isAuthenticated: false });
 
     // redirection safe côté client
-    window.location.href = "/login";
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
   }, []);
 
   /* ================= RETURN ================= */
 
   return {
-  ...state,
-  role: state.user?.permissions ?? null,
-  login,
-  register,
-  logout,
-};
-
+    user: state.user,
+    loading: state.loading,
+    isAuthenticated: state.isAuthenticated,
+    role: state.user?.permissions ?? null,
+    login,
+    register,
+    logout,
+  };
 }
