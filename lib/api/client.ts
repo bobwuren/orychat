@@ -254,5 +254,5 @@ function safeJsonParse(text: string): unknown {
 }
 
 // Instance singleton avec l'URL de base
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 export const apiClient = new ApiClient(API_BASE_URL);

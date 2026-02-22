@@ -30,8 +30,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <SidebarProvider>
       <AppSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader />
+      <SiteHeader />
+      <div className="p-4">
         {children}
+      </div>
       </SidebarInset>
     </SidebarProvider>
   )
