@@ -2,56 +2,117 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Card, CardContent, CardDescription, CardHeader, CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import {
-  Pagination, PaginationContent, PaginationItem,
-  PaginationLink, PaginationNext, PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-  Dialog, DialogContent, DialogDescription,
-  DialogFooter, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Building, Download, Plus, Search, Edit, Trash2, Eye,
-  RefreshCw, AlertCircle, MoreVertical, X, Award,
-  Globe, GraduationCap, ExternalLink,
-} from "lucide-react";
-import { useUniversities } from "@/lib/hooks";
-import { useDegrees } from "@/lib/hooks";
+  AdminPage,
+  PageHeader,
+  AdminCard,
+  Btn,
+  AdminTable,
+  THead,
+  Th,
+  TBody,
+  Tr,
+  Td,
+  SkeletonRows,
+  EmptyRow,
+  AdminDialog,
+  DialogActions,
+  FormField,
+  AdminInput,
+  AdminTextarea,
+  AdminSelect,
+  AdminBadge,
+  Toggle,
+  PaginationBar,
+  SearchBar,
+  InlineError,
+  PageError,
+} from "@/components/admin/ui";
+import { useUniversities, useDegrees } from "@/lib/hooks";
 import type { University } from "@/lib/types";
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Types locaux
+// ---------------------------------------------------------------------------
 
-const ITEMS_PER_PAGE = 10;
 type DialogMode = "create" | "edit" | "view" | "delete" | "export" | null;
-
-// ─── Formulaire université ────────────────────────────────────────────────────
+type SponsorFilter = "all" | "sponsors" | "non-sponsors";
+const ITEMS_PER_PAGE = 10;
 
 interface DegreeRow {
   name: string;
   description?: string;
 }
+
+// ---------------------------------------------------------------------------
+// Icônes SVG inline
+// ---------------------------------------------------------------------------
+
+function IconRefresh() {
+  return (
+    <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
+      <path
+        d="M2 8a6 6 0 0110.472-4M14 8a6 6 0 01-10.472 4M2 8h2m10 0h-2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+function IconDownload() {
+  return (
+    <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
+      <path
+        d="M8 2v9M5 8l3 3 3-3M3 13h10"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+function IconPlus() {
+  return (
+    <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
+      <path
+        d="M6 2v8M2 6h8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+function IconX() {
+  return (
+    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+      <path
+        d="M2 2l8 8M10 2l-8 8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+function IconExternal() {
+  return (
+    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+      <path
+        d="M7 1h4v4M11 1L6 6M5 2H2a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V8"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Formulaire université
+// ---------------------------------------------------------------------------
 
 interface UniversityFormProps {
   initial?: Partial<University>;
@@ -68,31 +129,52 @@ interface UniversityFormProps {
   mode: "create" | "edit";
 }
 
-function UniversityForm({ initial, availableDegrees, onSubmit, onCancel, isLoading, mode }: UniversityFormProps) {
+function UniversityForm({
+  initial,
+  onSubmit,
+  onCancel,
+  isLoading,
+  mode,
+}: UniversityFormProps) {
   const [name, setName] = useState(initial?.name ?? "");
-  const [webSite, setWebSite] = useState(initial?.webSite ?? initial?.website ?? "");
+  const [webSite, setWebSite] = useState(
+    initial?.webSite ?? (initial as any)?.website ?? "",
+  );
   const [description, setDescription] = useState(initial?.description ?? "");
   const [isSponsor, setIsSponsor] = useState(initial?.isSponsor ?? false);
-  // degrees : on envoie { name, description } — le backend crée/associe
-  const [degrees, setDegrees] = useState<DegreeRow[]>(
-    () => (initial?.degrees ?? []).map((d: any) => ({ name: d.name ?? "", description: d.description ?? "" }))
+  const [degrees, setDegrees] = useState<DegreeRow[]>(() =>
+    (initial?.degrees ?? []).map((d: any) => ({
+      name: d.name ?? "",
+      description: d.description ?? "",
+    })),
   );
   const [formError, setFormError] = useState<string | null>(null);
 
-  const addDegree = () => setDegrees((prev) => [...prev, { name: "", description: "" }]);
-  const removeDegree = (i: number) => setDegrees((prev) => prev.filter((_, idx) => idx !== i));
+  const addDegree = () =>
+    setDegrees((prev) => [...prev, { name: "", description: "" }]);
+  const removeDegree = (i: number) =>
+    setDegrees((prev) => prev.filter((_, idx) => idx !== i));
   const updateDegree = (i: number, field: keyof DegreeRow, value: string) =>
-    setDegrees((prev) => prev.map((d, idx) => (idx === i ? { ...d, [field]: value } : d)));
+    setDegrees((prev) =>
+      prev.map((d, idx) => (idx === i ? { ...d, [field]: value } : d)),
+    );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
-    if (!name.trim()) { setFormError("Le nom est obligatoire."); return; }
+    if (!name.trim()) {
+      setFormError("Le nom est obligatoire.");
+      return;
+    }
     if (mode === "create" && degrees.length === 0) {
-      setFormError("Au moins une formation est requise."); return;
+      setFormError("Au moins une formation est requise.");
+      return;
     }
     for (const d of degrees) {
-      if (!d.name.trim()) { setFormError("Chaque formation doit avoir un nom."); return; }
+      if (!d.name.trim()) {
+        setFormError("Chaque formation doit avoir un nom.");
+        return;
+      }
     }
     try {
       await onSubmit({
@@ -109,92 +191,119 @@ function UniversityForm({ initial, availableDegrees, onSubmit, onCancel, isLoadi
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <FormField label="Nom" required>
+        <AdminInput
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="ex: Université de Lomé"
+          disabled={isLoading}
+        />
+      </FormField>
+      <FormField label="Site web">
+        <AdminInput
+          value={webSite}
+          onChange={(e) => setWebSite(e.target.value)}
+          placeholder="https://…"
+          type="url"
+          disabled={isLoading}
+        />
+      </FormField>
+      <FormField label="Description">
+        <AdminTextarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={2}
+          disabled={isLoading}
+        />
+      </FormField>
+      <Toggle
+        checked={isSponsor}
+        onChange={setIsSponsor}
+        label="Université sponsor"
+        disabled={isLoading}
+      />
+
+      {/* Formations */}
       <div className="space-y-2">
-        <Label htmlFor="u-name">Nom <span className="text-red-500">*</span></Label>
-        <Input id="u-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="ex: Université de Paris" disabled={isLoading} />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="u-website">Site web</Label>
-        <Input id="u-website" value={webSite} onChange={(e) => setWebSite(e.target.value)} placeholder="https://…" disabled={isLoading} />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="u-desc">Description</Label>
-        <Textarea id="u-desc" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} disabled={isLoading} />
-      </div>
-      <div className="flex items-center gap-3">
-        <Switch id="u-sponsor" checked={isSponsor} onCheckedChange={setIsSponsor} disabled={isLoading} />
-        <Label htmlFor="u-sponsor">Université sponsor</Label>
-      </div>
-      {isSponsor && (
-        <div className="space-y-2">
-          <Label>Niveau de sponsoring</Label>
-          <Select disabled={isLoading}>
-            <SelectTrigger><SelectValue placeholder="Niveau…" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="bronze">Bronze</SelectItem>
-              <SelectItem value="silver">Silver</SelectItem>
-              <SelectItem value="gold">Gold</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label>
-            Formations {mode === "create" && <span className="text-red-500">*</span>}
-          </Label>
-          <Button type="button" variant="outline" size="sm" onClick={addDegree} disabled={isLoading}>
-            <Plus className="h-3 w-3 mr-1" /> Ajouter
-          </Button>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#666]">
+            Formations{" "}
+            {mode === "create" && (
+              <span className="text-[#c9a84c] ml-1">*</span>
+            )}
+          </p>
+          <Btn
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={addDegree}
+            disabled={isLoading}
+            icon={<IconPlus />}
+          >
+            Ajouter
+          </Btn>
         </div>
         {degrees.length === 0 ? (
-          <p className="text-sm text-muted-foreground italic">
-            {mode === "create" ? "Au moins une formation requise." : "Aucune formation associée."}
+          <p className="text-sm text-[#444] italic py-2">
+            {mode === "create"
+              ? "Au moins une formation requise."
+              : "Aucune formation associée."}
           </p>
         ) : (
           <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
             {degrees.map((d, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <Input
-                  value={d.name}
-                  onChange={(e) => updateDegree(i, "name", e.target.value)}
-                  placeholder="Nom de la formation"
+              <div key={i} className="flex items-start gap-2">
+                <div className="flex-1 space-y-1.5">
+                  <AdminInput
+                    value={d.name}
+                    onChange={(e) => updateDegree(i, "name", e.target.value)}
+                    placeholder="Nom de la formation"
+                    disabled={isLoading}
+                  />
+                  <AdminInput
+                    value={d.description ?? ""}
+                    onChange={(e) =>
+                      updateDegree(i, "description", e.target.value)
+                    }
+                    placeholder="Description (optionnel)"
+                    disabled={isLoading}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeDegree(i)}
                   disabled={isLoading}
-                  className="flex-1"
-                />
-                <Input
-                  value={d.description ?? ""}
-                  onChange={(e) => updateDegree(i, "description", e.target.value)}
-                  placeholder="Description (optionnel)"
-                  disabled={isLoading}
-                  className="flex-1"
-                />
-                <Button type="button" variant="ghost" size="icon" onClick={() => removeDegree(i)} disabled={isLoading}>
-                  <X className="h-4 w-4 text-red-500" />
-                </Button>
+                  className="w-7 h-7 mt-1 flex items-center justify-center text-[#444] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all shrink-0"
+                >
+                  <IconX />
+                </button>
               </div>
             ))}
           </div>
         )}
       </div>
-      {formError && (
-        <p className="text-sm text-red-500 flex items-center gap-1">
-          <AlertCircle className="h-4 w-4" /> {formError}
-        </p>
-      )}
-      <DialogFooter>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>Annuler</Button>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Enregistrement…</> :
-            mode === "create" ? <><Plus className="mr-2 h-4 w-4" /> Créer</> :
-              <><Edit className="mr-2 h-4 w-4" /> Mettre à jour</>}
-        </Button>
-      </DialogFooter>
+
+      <InlineError message={formError} />
+      <DialogActions>
+        <Btn
+          variant="ghost"
+          type="button"
+          onClick={onCancel}
+          disabled={isLoading}
+        >
+          Annuler
+        </Btn>
+        <Btn variant="primary" type="submit" loading={isLoading}>
+          {mode === "create" ? "Créer l'université" : "Enregistrer"}
+        </Btn>
+      </DialogActions>
     </form>
   );
 }
 
-// ─── Page principale ──────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Page principale
+// ---------------------------------------------------------------------------
 
 export default function UniversitiesAdminPage() {
   const {
@@ -214,486 +323,524 @@ export default function UniversitiesAdminPage() {
 
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterSponsor, setFilterSponsor] = useState<"all" | "sponsors" | "non-sponsors">("all");
+  const [filterSponsor, setFilterSponsor] = useState<SponsorFilter>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [dialogMode, setDialogMode] = useState<DialogMode>(null);
-  const [selectedUniversity, setSelectedUniversity] = useState<University | null>(null);
+  const [selectedUniversity, setSelectedUniversity] =
+    useState<University | null>(null);
   const [exportFormat, setExportFormat] = useState<"csv" | "json">("csv");
   const [isExporting, setIsExporting] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const load = useCallback(() => { fetchUniversities(); }, [fetchUniversities]);
-
-  useEffect(() => { load(); fetchDegrees(); }, [load, fetchDegrees]);
-  useEffect(() => { setCurrentPage(1); }, [searchTerm, filterSponsor]);
+  const load = useCallback(() => {
+    fetchUniversities();
+  }, [fetchUniversities]);
+  useEffect(() => {
+    load();
+    fetchDegrees();
+  }, [load, fetchDegrees]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterSponsor]);
 
   const filtered = (universities ?? []).filter((u) => {
-    const matchSearch = !searchTerm || u.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchSearch =
+      !searchTerm || u.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchSponsor =
       filterSponsor === "all" ||
       (filterSponsor === "sponsors" && u.isSponsor) ||
       (filterSponsor === "non-sponsors" && !u.isSponsor);
     return matchSearch && matchSponsor;
   });
-  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const paginated = filtered.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
+  const sponsorCount = (universities ?? []).filter((u) => u.isSponsor).length;
 
-  const closeDialog = () => { setDialogMode(null); setSelectedUniversity(null); setActionError(null); };
-  const openCreate = () => { setSelectedUniversity(null); setActionError(null); setDialogMode("create"); };
-  const openEdit = async (u: University) => { setActionError(null); setSelectedUniversity(u); setDialogMode("edit"); await fetchUniversityById(u.id); };
-  const openView = async (u: University) => { setActionError(null); setSelectedUniversity(u); setDialogMode("view"); await fetchUniversityById(u.id); };
-  const openDelete = (u: University) => { setActionError(null); setSelectedUniversity(u); setDialogMode("delete"); };
+  const closeDialog = () => {
+    setDialogMode(null);
+    setSelectedUniversity(null);
+    setActionError(null);
+  };
+  const openCreate = () => {
+    setSelectedUniversity(null);
+    setActionError(null);
+    setDialogMode("create");
+  };
+  const openEdit = async (u: University) => {
+    setActionError(null);
+    setSelectedUniversity(u);
+    setDialogMode("edit");
+    await fetchUniversityById(u.id);
+  };
+  const openView = async (u: University) => {
+    setActionError(null);
+    setSelectedUniversity(u);
+    setDialogMode("view");
+    await fetchUniversityById(u.id);
+  };
+  const openDelete = (u: University) => {
+    setActionError(null);
+    setSelectedUniversity(u);
+    setDialogMode("delete");
+  };
 
   const handleCreate = async (data: any) => {
-    setActionLoading(true); setActionError(null);
-    try { await createUniversity(data); closeDialog(); }
-    catch (err: any) { setActionError(err?.message ?? "Erreur."); throw err; }
-    finally { setActionLoading(false); }
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await createUniversity(data);
+      closeDialog();
+    } catch (err: any) {
+      setActionError(err?.message ?? "Erreur.");
+      throw err;
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleUpdate = async (data: any) => {
     if (!selectedUniversity) return;
-    setActionLoading(true); setActionError(null);
-    try { await updateUniversity(selectedUniversity.id, data); closeDialog(); }
-    catch (err: any) { setActionError(err?.message ?? "Erreur."); throw err; }
-    finally { setActionLoading(false); }
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await updateUniversity(selectedUniversity.id, data);
+      closeDialog();
+    } catch (err: any) {
+      setActionError(err?.message ?? "Erreur.");
+      throw err;
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleDelete = async () => {
     if (!selectedUniversity) return;
-    setActionLoading(true); setActionError(null);
-    try { await deleteUniversity(selectedUniversity.id); closeDialog(); }
-    catch (err: any) { setActionError(err?.message ?? "Erreur."); }
-    finally { setActionLoading(false); }
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await deleteUniversity(selectedUniversity.id);
+      closeDialog();
+    } catch (err: any) {
+      setActionError(err?.message ?? "Erreur.");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleExport = async () => {
-    setIsExporting(true); setActionError(null);
-    try { await exportUniversities({ format: exportFormat }); closeDialog(); }
-    catch (err: any) { setActionError(err?.message ?? "Erreur export."); }
-    finally { setIsExporting(false); }
+    setIsExporting(true);
+    setActionError(null);
+    try {
+      await exportUniversities({ format: exportFormat });
+      closeDialog();
+    } catch (err: any) {
+      setActionError(err?.message ?? "Erreur export.");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
-  const activeUniversity = currentUniversity?.id === selectedUniversity?.id
-    ? (currentUniversity ?? selectedUniversity) : selectedUniversity;
+  const activeUniversity =
+    currentUniversity?.id === selectedUniversity?.id
+      ? (currentUniversity ?? selectedUniversity)
+      : selectedUniversity;
 
-  const degreesForForm = (availableDegrees ?? []).map((d) => ({ id: String(d.id), name: d.name }));
+  const degreesForForm = (availableDegrees ?? []).map((d) => ({
+    id: String(d.id),
+    name: d.name,
+  }));
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <AlertCircle className="h-12 w-12 text-red-500" />
-        <div className="text-center">
-          <h3 className="text-lg font-semibold">Erreur de chargement</h3>
-          <p className="text-muted-foreground">{error.message}</p>
-        </div>
-        <Button onClick={load}><RefreshCw className="mr-2 h-4 w-4" /> Réessayer</Button>
-      </div>
-    );
-  }
+  if (error) return <PageError message={error.message} onRetry={load} />;
 
   return (
-    <div className="space-y-6">
-      {/* En-tête */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Universités</h1>
-          <p className="text-muted-foreground">
-            {filtered.length} université{filtered.length !== 1 ? "s" : ""}
-            {" · "}{(universities ?? []).filter((u) => u.isSponsor).length} sponsor{(universities ?? []).filter((u) => u.isSponsor).length !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={load} disabled={isLoading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} /> Actualiser
-          </Button>
-          <Button variant="outline" onClick={() => setDialogMode("export")}>
-            <Download className="mr-2 h-4 w-4" /> Exporter
-          </Button>
-          <Button onClick={openCreate}>
-            <Plus className="mr-2 h-4 w-4" /> Nouvelle université
-          </Button>
-        </div>
-      </div>
+    <AdminPage>
+      <PageHeader
+        title="Universités"
+        subtitle={`${filtered.length} université${filtered.length !== 1 ? "s" : ""} · ${sponsorCount} sponsor${sponsorCount !== 1 ? "s" : ""}`}
+        actions={
+          <>
+            <Btn
+              variant="secondary"
+              size="sm"
+              loading={isLoading}
+              onClick={load}
+              icon={<IconRefresh />}
+            >
+              Actualiser
+            </Btn>
+            <Btn
+              variant="secondary"
+              size="sm"
+              onClick={() => setDialogMode("export")}
+              icon={<IconDownload />}
+            >
+              Exporter
+            </Btn>
+            <Btn
+              variant="primary"
+              size="sm"
+              onClick={openCreate}
+              icon={<IconPlus />}
+            >
+              Nouvelle université
+            </Btn>
+          </>
+        }
+      />
 
-      {/* Tableau */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-            <div>
-              <CardTitle>Liste des universités</CardTitle>
-              <CardDescription>Créez, modifiez ou supprimez des universités.</CardDescription>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Select value={filterSponsor} onValueChange={(v: any) => setFilterSponsor(v)}>
-                <SelectTrigger className="w-44">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes</SelectItem>
-                  <SelectItem value="sponsors">Sponsors</SelectItem>
-                  <SelectItem value="non-sponsors">Non-sponsors</SelectItem>
-                </SelectContent>
-              </Select>
-              <form
-                onSubmit={(e) => { e.preventDefault(); setSearchTerm(searchInput); }}
-                className="flex space-x-2"
-              >
-                <div className="relative">
-                  <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Rechercher…"
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    className="pl-8 w-52"
-                  />
-                  {searchInput && (
-                    <button
-                      type="button"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      onClick={() => { setSearchInput(""); setSearchTerm(""); }}
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  )}
-                </div>
-                <Button type="submit" variant="outline" size="icon">
-                  <Search className="h-4 w-4" />
-                </Button>
-              </form>
-            </div>
+      <AdminCard
+        title="Liste des universités"
+        description="Créez, modifiez ou supprimez des universités."
+        toolbar={
+          <div className="flex items-center gap-2">
+            {/* Filtre sponsor */}
+            <select
+              value={filterSponsor}
+              onChange={(e) =>
+                setFilterSponsor(e.target.value as SponsorFilter)
+              }
+              className="px-3 py-2 bg-[#141414] border border-[#222] rounded-lg text-sm text-white focus:outline-none focus:border-[#c9a84c] transition-all"
+            >
+              <option value="all">Toutes</option>
+              <option value="sponsors">Sponsors</option>
+              <option value="non-sponsors">Non-sponsors</option>
+            </select>
+            <SearchBar
+              value={searchInput}
+              onChange={(v) => {
+                setSearchInput(v);
+                if (!v) setSearchTerm("");
+              }}
+              onSubmit={() => setSearchTerm(searchInput)}
+              placeholder="Rechercher…"
+            />
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Formations</TableHead>
-                  <TableHead>Site web</TableHead>
-                  <TableHead>Sponsor</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      {Array.from({ length: 5 }).map((__, j) => (
-                        <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : paginated.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-12">
-                      <div className="flex flex-col items-center space-y-3">
-                        <Building className="h-12 w-12 text-muted-foreground" />
-                        <p className="text-muted-foreground">
-                          {searchTerm || filterSponsor !== "all" ? "Aucun résultat." : "Aucune université."}
-                        </p>
-                        {!searchTerm && filterSponsor === "all" && (
-                          <Button variant="outline" size="sm" onClick={openCreate}>
-                            <Plus className="mr-2 h-4 w-4" /> Créer la première université
-                          </Button>
-                        )}
+        }
+      >
+        <AdminTable>
+          <THead>
+            <Th>Nom</Th>
+            <Th>Formations</Th>
+            <Th>Site web</Th>
+            <Th>Sponsor</Th>
+            <Th right>Actions</Th>
+          </THead>
+          <TBody>
+            {isLoading ? (
+              <SkeletonRows cols={5} />
+            ) : paginated.length === 0 ? (
+              <EmptyRow
+                colSpan={5}
+                label={
+                  searchTerm || filterSponsor !== "all"
+                    ? "Aucun résultat pour ces filtres."
+                    : "Aucune université."
+                }
+                action={
+                  !searchTerm &&
+                  filterSponsor === "all" && (
+                    <Btn variant="secondary" size="sm" onClick={openCreate}>
+                      Créer la première université
+                    </Btn>
+                  )
+                }
+              />
+            ) : (
+              paginated.map((university) => {
+                const site =
+                  (university as any).webSite ?? (university as any).website;
+                return (
+                  <Tr key={university.id}>
+                    <Td>
+                      <span className="font-medium text-white">
+                        {university.name}
+                      </span>
+                    </Td>
+                    <Td>
+                      {(university.degrees?.length ?? 0) === 0 ? (
+                        <span className="text-[#444] text-sm">—</span>
+                      ) : (
+                        <AdminBadge color="gray">
+                          {university.degrees?.length} formation
+                          {(university.degrees?.length ?? 0) > 1 ? "s" : ""}
+                        </AdminBadge>
+                      )}
+                    </Td>
+                    <Td>
+                      {site ? (
+                        <a
+                          href={site}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-sm text-[#c9a84c] hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Site web <IconExternal />
+                        </a>
+                      ) : (
+                        <span className="text-[#444] text-sm">—</span>
+                      )}
+                    </Td>
+                    <Td>
+                      {university.isSponsor ? (
+                        <AdminBadge color="gold">Sponsor</AdminBadge>
+                      ) : (
+                        <AdminBadge color="gray">Standard</AdminBadge>
+                      )}
+                    </Td>
+                    <Td right>
+                      <div className="flex items-center justify-end gap-1">
+                        <Btn
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openView(university)}
+                        >
+                          Voir
+                        </Btn>
+                        <Btn
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEdit(university)}
+                        >
+                          Modifier
+                        </Btn>
+                        <Btn
+                          variant="danger"
+                          size="sm"
+                          onClick={() => openDelete(university)}
+                        >
+                          Supprimer
+                        </Btn>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  paginated.map((university) => (
-                    <TableRow key={university.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <Building className="h-4 w-4 text-muted-foreground shrink-0" />
-                          {university.name}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {(university.degrees?.length ?? 0) === 0 ? (
-                          <span className="text-muted-foreground text-sm">—</span>
-                        ) : (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Badge variant="secondary" className="cursor-help">
-                                  <GraduationCap className="h-3 w-3 mr-1" />
-                                  {university.degrees?.length}
-                                </Badge>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <div className="space-y-1 max-h-40 overflow-y-auto">
-                                  {university.degrees?.map((d) => (
-                                    <p key={d.id} className="text-sm">{d.name}</p>
-                                  ))}
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {university.webSite || university.website ? (
-                          <a
-                            href={university.webSite ?? university.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
-                          >
-                            <Globe className="h-3 w-3" />
-                            Site web
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
-                        )}
-                      </TableCell>
-                        <TableCell>
-                        {university.isSponsor ? (
-                          <Badge variant="outline" className="border">
-                          <Award className="h-3 w-3 mr-1" />
-                          Oui
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-muted-foreground">Non</Badge>
-                        )}
-                        </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => openView(university)}>
-                              <Eye className="mr-2 h-4 w-4" /> Voir les détails
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openEdit(university)}>
-                              <Edit className="mr-2 h-4 w-4" /> Modifier
-                            </DropdownMenuItem>
-                            {(university.webSite || university.website) && (
-                              <DropdownMenuItem asChild>
-                                <a href={university.webSite ?? university.website} target="_blank" rel="noopener noreferrer">
-                                  <ExternalLink className="mr-2 h-4 w-4" /> Visiter le site
-                                </a>
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600 focus:text-red-600"
-                              onClick={() => openDelete(university)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {!isLoading && filtered.length > ITEMS_PER_PAGE && (
-            <div className="flex items-center justify-between pt-4">
-              <p className="text-sm text-muted-foreground">
-                {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
-                {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} sur {filtered.length}
-              </p>
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious href="#"
-                      onClick={(e) => { e.preventDefault(); if (currentPage > 1) setCurrentPage((p) => p - 1); }}
-                      className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-                    />
-                  </PaginationItem>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <PaginationItem key={page}>
-                      <PaginationLink href="#"
-                        onClick={(e) => { e.preventDefault(); setCurrentPage(page); }}
-                        isActive={currentPage === page}
-                      >{page}</PaginationLink>
-                    </PaginationItem>
-                  ))}
-                  <PaginationItem>
-                    <PaginationNext href="#"
-                      onClick={(e) => { e.preventDefault(); if (currentPage < totalPages) setCurrentPage((p) => p + 1); }}
-                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                    </Td>
+                  </Tr>
+                );
+              })
+            )}
+          </TBody>
+        </AdminTable>
+        <PaginationBar
+          currentPage={currentPage}
+          totalPages={Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))}
+          totalItems={filtered.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+          onPageChange={setCurrentPage}
+        />
+      </AdminCard>
 
       {/* ── Dialog Création ── */}
-      <Dialog open={dialogMode === "create"} onOpenChange={(o) => !o && closeDialog()}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Nouvelle université</DialogTitle>
-            <DialogDescription>Remplissez les informations. Au moins une formation est requise.</DialogDescription>
-          </DialogHeader>
-          <UniversityForm
-            mode="create"
-            availableDegrees={degreesForForm}
-            onSubmit={handleCreate}
-            onCancel={closeDialog}
-            isLoading={actionLoading}
-          />
-          {actionError && <p className="text-sm text-red-500 flex items-center gap-1"><AlertCircle className="h-4 w-4" /> {actionError}</p>}
-        </DialogContent>
-      </Dialog>
+      <AdminDialog
+        open={dialogMode === "create"}
+        onClose={closeDialog}
+        size="md"
+        title="Nouvelle université"
+        description="Au moins une formation est requise."
+      >
+        <UniversityForm
+          mode="create"
+          availableDegrees={degreesForForm}
+          onSubmit={handleCreate}
+          onCancel={closeDialog}
+          isLoading={actionLoading}
+        />
+        <InlineError message={actionError} />
+      </AdminDialog>
 
       {/* ── Dialog Édition ── */}
-      <Dialog open={dialogMode === "edit"} onOpenChange={(o) => !o && closeDialog()}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Modifier l'université</DialogTitle>
-            <DialogDescription>Modifiez les informations de l'université.</DialogDescription>
-          </DialogHeader>
-          <UniversityForm
-            key={selectedUniversity?.id}
-            mode="edit"
-            initial={activeUniversity ?? undefined}
-            availableDegrees={degreesForForm}
-            onSubmit={handleUpdate}
-            onCancel={closeDialog}
-            isLoading={actionLoading}
-          />
-          {actionError && <p className="text-sm text-red-500 flex items-center gap-1"><AlertCircle className="h-4 w-4" /> {actionError}</p>}
-        </DialogContent>
-      </Dialog>
+      <AdminDialog
+        open={dialogMode === "edit"}
+        onClose={closeDialog}
+        size="md"
+        title="Modifier l'université"
+      >
+        <UniversityForm
+          key={selectedUniversity?.id}
+          mode="edit"
+          initial={activeUniversity ?? undefined}
+          availableDegrees={degreesForForm}
+          onSubmit={handleUpdate}
+          onCancel={closeDialog}
+          isLoading={actionLoading}
+        />
+        <InlineError message={actionError} />
+      </AdminDialog>
 
       {/* ── Dialog Vue ── */}
-      <Dialog open={dialogMode === "view"} onOpenChange={(o) => !o && closeDialog()}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Détails de l'université</DialogTitle></DialogHeader>
-          {isLoading ? (
-            <div className="space-y-3 py-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-5 w-full" />)}</div>
-          ) : (
-            <div className="space-y-4 py-2">
+      <AdminDialog
+        open={dialogMode === "view"}
+        onClose={closeDialog}
+        title="Détails de l'université"
+        size="md"
+      >
+        {isLoading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-5 bg-[#1a1a1a] rounded animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
+                Nom
+              </p>
+              <p className="font-semibold text-lg text-white">
+                {activeUniversity?.name}
+              </p>
+            </div>
+            {activeUniversity?.description && (
               <div>
-                <p className="text-sm text-muted-foreground">Nom</p>
-                <p className="font-semibold text-lg">{activeUniversity?.name}</p>
+                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
+                  Description
+                </p>
+                <p className="text-sm text-[#aaa]">
+                  {activeUniversity.description}
+                </p>
               </div>
-              {activeUniversity?.description && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Description</p>
-                  <p className="text-sm">{activeUniversity.description}</p>
-                </div>
-              )}
+            )}
+            <div className="flex items-center gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Statut</p>
-                  <p className="font-semibold">
-                  {activeUniversity?.isSponsor ? "Oui" : "Non"}
+                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
+                  Statut
+                </p>
+                {activeUniversity?.isSponsor ? (
+                  <AdminBadge color="gold">Sponsor</AdminBadge>
+                ) : (
+                  <AdminBadge color="gray">Standard</AdminBadge>
+                )}
+              </div>
+              {((activeUniversity as any)?.webSite ||
+                (activeUniversity as any)?.website) && (
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
+                    Site web
                   </p>
-              </div>
-              {(activeUniversity?.webSite || activeUniversity?.website) && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Site web</p>
                   <a
-                    href={activeUniversity.webSite ?? activeUniversity.website}
+                    href={
+                      (activeUniversity as any).webSite ??
+                      (activeUniversity as any).website
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline flex items-center gap-1 text-sm"
+                    className="inline-flex items-center gap-1 text-sm text-[#c9a84c] hover:underline"
                   >
-                    <Globe className="h-3 w-3" />
-                    {activeUniversity.webSite ?? activeUniversity.website}
-                    <ExternalLink className="h-3 w-3" />
+                    Visiter <IconExternal />
                   </a>
                 </div>
               )}
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Formations ({activeUniversity?.degrees?.length ?? 0})</p>
-                {(activeUniversity?.degrees?.length ?? 0) === 0 ? (
-                  <p className="text-sm italic text-muted-foreground">Aucune formation.</p>
-                ) : (
-                  <div className="space-y-1 max-h-40 overflow-y-auto">
-                    {activeUniversity?.degrees?.map((d) => (
-                      <div key={d.id} className="flex items-center gap-2 border rounded px-3 py-1.5 text-sm">
-                        <GraduationCap className="h-3 w-3 text-muted-foreground" />
-                        <span>{d.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={closeDialog}>Fermer</Button>
-            <Button onClick={() => selectedUniversity && openEdit(selectedUniversity)}>
-              <Edit className="mr-2 h-4 w-4" /> Modifier
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-2">
+                Formations ({activeUniversity?.degrees?.length ?? 0})
+              </p>
+              {(activeUniversity?.degrees?.length ?? 0) === 0 ? (
+                <p className="text-sm text-[#444] italic">Aucune formation.</p>
+              ) : (
+                <div className="space-y-1.5 max-h-52 overflow-y-auto">
+                  {activeUniversity?.degrees?.map((d: any) => (
+                    <div
+                      key={d.id}
+                      className="flex items-center gap-2 px-3 py-2 bg-[#141414] border border-[#1e1e1e] rounded-lg text-sm text-white"
+                    >
+                      <svg
+                        className="w-3.5 h-3.5 text-[#444] shrink-0"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                      >
+                        <path
+                          d="M4 10.5v9.75a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V15a.75.75 0 01.75-.75h3a.75.75 0 01.75.75v5.25a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V10.5M12 3L2.25 10.5M21.75 10.5L12 3"
+                          stroke="currentColor"
+                          strokeWidth="1.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      {d.name}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        <DialogActions>
+          <Btn variant="ghost" onClick={closeDialog}>
+            Fermer
+          </Btn>
+          <Btn
+            variant="secondary"
+            onClick={() => selectedUniversity && openEdit(selectedUniversity)}
+          >
+            Modifier
+          </Btn>
+        </DialogActions>
+      </AdminDialog>
 
       {/* ── Dialog Suppression ── */}
-      <Dialog open={dialogMode === "delete"} onOpenChange={(o) => !o && closeDialog()}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
-            <DialogDescription>
-              Cette action est <strong>irréversible</strong>. L'université et toutes ses associations seront supprimées.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="rounded-lg bg-muted p-4 my-2">
-            <p className="text-sm text-muted-foreground">Université concernée</p>
-            <p className="font-semibold text-lg">{selectedUniversity?.name}</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              {selectedUniversity?.degrees?.length ?? 0} formation(s) · {selectedUniversity?.isSponsor ? "Sponsor" : "Standard"}
-            </p>
-          </div>
-          {actionError && <p className="text-sm text-red-500 flex items-center gap-1"><AlertCircle className="h-4 w-4" /> {actionError}</p>}
-          <DialogFooter>
-            <Button variant="outline" onClick={closeDialog} disabled={actionLoading}>Annuler</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={actionLoading}>
-              {actionLoading ? <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Suppression…</> :
-                <><Trash2 className="mr-2 h-4 w-4" /> Supprimer définitivement</>}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AdminDialog
+        open={dialogMode === "delete"}
+        onClose={closeDialog}
+        title="Confirmer la suppression"
+        description="Cette action est irréversible. L'université et toutes ses associations seront supprimées."
+        size="sm"
+      >
+        <div className="p-4 bg-[#141414] border border-[#1e1e1e] rounded-xl mb-2 space-y-1">
+          <p className="text-xs text-[#555]">Université concernée</p>
+          <p className="font-semibold text-white">{selectedUniversity?.name}</p>
+          <p className="text-xs text-[#444]">
+            {selectedUniversity?.degrees?.length ?? 0} formation(s) ·{" "}
+            {selectedUniversity?.isSponsor ? "Sponsor" : "Standard"}
+          </p>
+        </div>
+        <InlineError message={actionError} />
+        <DialogActions>
+          <Btn variant="ghost" onClick={closeDialog} disabled={actionLoading}>
+            Annuler
+          </Btn>
+          <Btn variant="danger" onClick={handleDelete} loading={actionLoading}>
+            Supprimer définitivement
+          </Btn>
+        </DialogActions>
+      </AdminDialog>
 
       {/* ── Dialog Export ── */}
-      <Dialog open={dialogMode === "export"} onOpenChange={(o) => !o && closeDialog()}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Exporter les universités</DialogTitle>
-            <DialogDescription>Choisissez le format d'export.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label>Format</Label>
-              <Select value={exportFormat} onValueChange={(v: "csv" | "json") => setExportFormat(v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="csv">CSV (Excel)</SelectItem>
-                  <SelectItem value="json">JSON</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="rounded-lg bg-muted p-4 text-sm text-muted-foreground">
-              Toutes les universités ({filtered.length}) avec leurs formations seront incluses.
-            </div>
-          </div>
-          {actionError && <p className="text-sm text-red-500 flex items-center gap-1"><AlertCircle className="h-4 w-4" /> {actionError}</p>}
-          <DialogFooter>
-            <Button variant="outline" onClick={closeDialog} disabled={isExporting}>Annuler</Button>
-            <Button onClick={handleExport} disabled={isExporting}>
-              {isExporting ? <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Export…</> :
-                <><Download className="mr-2 h-4 w-4" /> Exporter</>}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+      <AdminDialog
+        open={dialogMode === "export"}
+        onClose={closeDialog}
+        title="Exporter les universités"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <FormField label="Format">
+            <AdminSelect
+              value={exportFormat}
+              onChange={(e) =>
+                setExportFormat(e.target.value as "csv" | "json")
+              }
+              options={[
+                { value: "csv", label: "CSV (Excel)" },
+                { value: "json", label: "JSON" },
+              ]}
+            />
+          </FormField>
+          <p className="text-xs text-[#444] bg-[#141414] border border-[#1e1e1e] rounded-lg px-4 py-3">
+            Toutes les universités ({filtered.length}) avec leurs formations
+            seront incluses.
+          </p>
+        </div>
+        <InlineError message={actionError} />
+        <DialogActions>
+          <Btn variant="ghost" onClick={closeDialog} disabled={isExporting}>
+            Annuler
+          </Btn>
+          <Btn variant="primary" onClick={handleExport} loading={isExporting}>
+            Exporter
+          </Btn>
+        </DialogActions>
+      </AdminDialog>
+    </AdminPage>
   );
 }
