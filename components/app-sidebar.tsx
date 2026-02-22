@@ -1,19 +1,18 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
-  CameraIcon,
-  ClipboardListIcon,
-  DatabaseIcon,
-  FileCodeIcon,
-  FileIcon,
-  FileTextIcon,
-  FolderIcon,
-  UsersIcon,
-} from "lucide-react"
+  BarChart3Icon,
+  BookOpenIcon,
+  GraduationCapIcon,
+  LayoutDashboardIcon,
+  MessageSquareIcon,
+  SchoolIcon,
+  UserCheckIcon,
+} from "lucide-react";
 
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -22,7 +21,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 const data = {
   user: {
@@ -32,97 +31,50 @@ const data = {
   },
   navMain: [
     {
+      title: "Utilisateurs",
+      url: "/admin/users",
+      icon: UserCheckIcon,
+    },
+    {
       title: "Consultations",
       url: "/admin/consultations",
-      icon: ClipboardListIcon,
+      icon: MessageSquareIcon,
     },
     {
       title: "Conseillers",
       url: "/admin/counselors",
-      icon: UsersIcon,
-    },
-    {
-      title: "Diplômes",
-      url: "/admin/degrees",
-      icon: FileTextIcon,
-    },
-    {
-      title: "Recommandations",
-      url: "/admin/recommendations",
-      icon: FileCodeIcon,
-    },
-    {
-      title: "Séries",
-      url: "/admin/series",
-      icon: FolderIcon,
-    },
-    {
-      title: "Matières",
-      url: "/admin/subjects",
-      icon: DatabaseIcon,
+      icon: UserCheckIcon,
     },
     {
       title: "Universités",
       url: "/admin/universities",
-      icon: FileIcon,
+      icon: SchoolIcon,
     },
     {
-      title: "Utilisateurs",
-      url: "/admin/users",
-      icon: UsersIcon,
+      title: "Diplômes",
+      url: "/admin/degrees",
+      icon: GraduationCapIcon,
+    },
+    {
+      title: "Séries",
+      url: "/admin/series",
+      icon: BookOpenIcon,
+    },
+    {
+      title: "Matières",
+      url: "/admin/subjects",
+      icon: LayoutDashboardIcon,
+    },
+    {
+      title: "Recommandations",
+      url: "/admin/recommendations",
+      icon: BarChart3Icon,
     },
   ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: CameraIcon,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: FileTextIcon,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: FileCodeIcon,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-  ],
+  navClouds: [],
   navSecondary: [],
   documents: [],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -148,5 +100,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
