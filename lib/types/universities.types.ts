@@ -1,14 +1,10 @@
 /**
- * =====================================================
  * Types - Universités & Diplômes
- * =====================================================
- * Définitions TypeScript pour universités et diplômes
- *
  * @module lib/types/universities.types
- * @version 1.0
  */
 
 // ========== DEGREE ==========
+
 export interface Degree {
   id: string;
   name: string;
@@ -25,7 +21,7 @@ export interface DegreeWithUniversities extends Degree {
 }
 
 // ========== UNIVERSITY ==========
-export type SponsorshipLevel = "Bronze" | "Silver" | "Gold" | "Platinum";
+
 
 export interface University {
   id: string;
@@ -33,12 +29,11 @@ export interface University {
   description?: string;
   location?: string;
   address?: string;
-  website?: string;
-  webSite?: string; // API uses both
+  website?: string; // l'API utilise les deux noms de façon incohérente
+  webSite?: string; // lire : university.website || university.webSite
   email?: string;
   phone?: string;
   isSponsor: boolean;
-  sponsorshipLevel?: SponsorshipLevel;
   logo?: string;
   ranking?: number;
   studentCount?: number;
@@ -49,6 +44,7 @@ export interface University {
 }
 
 // ========== REQUESTS ==========
+
 export interface CreateDegreeRequest {
   name: string;
   description?: string;
@@ -64,25 +60,19 @@ export interface UpdateDegreeRequest {
 }
 
 export interface CreateUniversityRequest {
-  name: string;
+  name: string; // obligatoire, 2-200 chars, unique
+  location: string; // obligatoire
   description?: string;
-  location: string;
   address?: string;
   website?: string;
-  webSite?: string;
   email?: string;
   phone?: string;
   isSponsor?: boolean;
-  sponsorshipLevel?: SponsorshipLevel;
   logo?: string;
   ranking?: number;
   studentCount?: number;
   establishedYear?: number;
-  degreeIds?: string[];
-  degrees?: Array<{
-    name: string;
-    description?: string;
-  }>;
+  degreeIds?: string[]; // IDs de diplômes existants à associer
 }
 
 export interface UpdateUniversityRequest {
@@ -91,23 +81,18 @@ export interface UpdateUniversityRequest {
   location?: string;
   address?: string;
   website?: string;
-  webSite?: string;
   email?: string;
   phone?: string;
   isSponsor?: boolean;
-  sponsorshipLevel?: SponsorshipLevel;
   logo?: string;
   ranking?: number;
   studentCount?: number;
   establishedYear?: number;
-  degreeIds?: string[];
-  degrees?: Array<{
-    name: string;
-    description?: string;
-  }>;
+  degreeIds?: string[]; // remplace la liste existante
 }
 
 // ========== RESPONSES ==========
+
 export interface DegreesListResponse {
   degrees: Degree[];
   count?: number;
@@ -169,7 +154,7 @@ export interface DeleteUniversityResponse {
   deletedUniversity?: {
     id: string;
     name: string;
-    deletedAt: string;
+    deletedAt: string; // ISO 8601
   };
   cascadeInfo?: {
     degreeAssociations: number;

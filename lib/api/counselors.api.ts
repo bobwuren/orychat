@@ -1,13 +1,3 @@
-/**
- * =====================================================
- * API Client - Conseillers - CORRIGÉ
- * =====================================================
- * Client pour les endpoints des conseillers d'orientation
- *
- * @module lib/api/counselors.api
- * @version 1.1
- */
-
 import { apiClient } from "./client";
 import type {
   CreateCounselorRequest,
@@ -22,42 +12,24 @@ import type {
 export class CounselorsApi {
   private client = apiClient;
 
-  /**
-   * Récupérer tous les conseillers actifs
-   * GET /api/counselors
-   */
+  // GET /api/counselors — filtrables par specialty uniquement
   async getAll(params?: {
     specialty?: string;
-    page?: number;
-    limit?: number;
   }): Promise<CounselorsListResponse> {
     return this.client.get<CounselorsListResponse>("/counselors", params);
   }
 
-  /**
-   * Récupérer tous les conseillers (actifs + inactifs) - Admin
-   * GET /api/counselors/all
-   */
-  async getAllAdmin(params?: {
-    includeInactive?: boolean;
-    page?: number;
-    limit?: number;
-  }): Promise<CounselorsListResponse> {
-    return this.client.get<CounselorsListResponse>("/counselors/all", params);
+  // GET /api/counselors/all (Admin)
+  async getAllAdmin(): Promise<CounselorsListResponse> {
+    return this.client.get<CounselorsListResponse>("/counselors/all");
   }
 
-  /**
-   * Récupérer un conseiller par ID
-   * GET /api/counselors/:id
-   */
+  // GET /api/counselors/:id
   async getById(counselorId: string): Promise<CounselorResponse> {
     return this.client.get<CounselorResponse>(`/counselors/${counselorId}`);
   }
 
-  /**
-   * Créer un conseiller (Admin uniquement)
-   * POST /api/counselors
-   */
+  // POST /api/counselors (Admin)
   async create(data: CreateCounselorRequest): Promise<CreateCounselorResponse> {
     return this.client.post<CreateCounselorResponse, CreateCounselorRequest>(
       "/counselors",
@@ -65,10 +37,7 @@ export class CounselorsApi {
     );
   }
 
-  /**
-   * Mettre à jour un conseiller (Admin uniquement)
-   * PUT /api/counselors/:id
-   */
+  // PUT /api/counselors/:id (Admin)
   async update(
     counselorId: string,
     data: UpdateCounselorRequest,
@@ -79,20 +48,14 @@ export class CounselorsApi {
     );
   }
 
-  /**
-   * Supprimer un conseiller (Admin uniquement)
-   * DELETE /api/counselors/:id
-   */
+  // DELETE /api/counselors/:id (Admin)
   async delete(counselorId: string): Promise<DeleteCounselorResponse> {
     return this.client.delete<DeleteCounselorResponse>(
       `/counselors/${counselorId}`,
     );
   }
 
-  /**
-   * Désactiver un conseiller (Admin uniquement)
-   * PATCH /api/counselors/:id/deactivate
-   */
+  // PATCH /api/counselors/:id/deactivate (Admin)
   async deactivate(counselorId: string): Promise<UpdateCounselorResponse> {
     return this.client.patch<UpdateCounselorResponse, undefined>(
       `/counselors/${counselorId}/deactivate`,
@@ -100,10 +63,7 @@ export class CounselorsApi {
     );
   }
 
-  /**
-   * Activer un conseiller (Admin uniquement)
-   * PATCH /api/counselors/:id/activate
-   */
+  // PATCH /api/counselors/:id/activate (Admin)
   async activate(counselorId: string): Promise<UpdateCounselorResponse> {
     return this.client.patch<UpdateCounselorResponse, undefined>(
       `/counselors/${counselorId}/activate`,
@@ -112,5 +72,4 @@ export class CounselorsApi {
   }
 }
 
-// Instance singleton exportée
 export const counselorsApi = new CounselorsApi();

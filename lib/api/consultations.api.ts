@@ -1,13 +1,3 @@
-/**
- * =====================================================
- * API Client - Consultations - CORRIGÉ
- * =====================================================
- * Client pour les endpoints des consultations
- *
- * @module lib/api/consultations.api
- * @version 1.1
- */
-
 import { apiClient } from "./client";
 import type {
   RequestConsultationRequest,
@@ -25,10 +15,7 @@ import type {
 export class ConsultationsApi {
   private client = apiClient;
 
-  /**
-   * Créer une demande de consultation
-   * POST /api/consultations/request
-   */
+  // POST /api/consultations/request
   async request(
     data: RequestConsultationRequest,
   ): Promise<RequestConsultationResponse> {
@@ -38,31 +25,20 @@ export class ConsultationsApi {
     );
   }
 
-  /**
-   * Liste toutes les consultations (Admin uniquement)
-   * GET /api/consultations
-   */
+  // GET /api/consultations (Admin) — filtrables par status et counselorId uniquement
   async getAll(params?: {
     status?: ConsultationStatus;
     counselorId?: string;
-    page?: number;
-    limit?: number;
   }): Promise<ConsultationsListResponse> {
     return this.client.get<ConsultationsListResponse>("/consultations", params);
   }
 
-  /**
-   * Récupérer les statistiques des consultations (Admin uniquement)
-   * GET /api/consultations/stats
-   */
+  // GET /api/consultations/stats (Admin)
   async getStats(): Promise<ConsultationStatsResponse> {
     return this.client.get<ConsultationStatsResponse>("/consultations/stats");
   }
 
-  /**
-   * Récupérer l'historique des consultations d'un utilisateur
-   * GET /api/consultations/user/:userId
-   */
+  // GET /api/consultations/user/:userId
   async getUserConsultations(
     userId: string,
   ): Promise<ConsultationsListResponse> {
@@ -71,20 +47,14 @@ export class ConsultationsApi {
     );
   }
 
-  /**
-   * Récupérer les détails d'une consultation (Admin uniquement)
-   * GET /api/consultations/:id
-   */
+  // GET /api/consultations/:id (Admin)
   async getById(consultationId: string): Promise<ConsultationDetailsResponse> {
     return this.client.get<ConsultationDetailsResponse>(
       `/consultations/${consultationId}`,
     );
   }
 
-  /**
-   * Assigner un conseiller (Admin uniquement)
-   * PUT /api/consultations/:id/assign
-   */
+  // PUT /api/consultations/:id/assign (Admin)
   async assignCounselor(
     consultationId: string,
     data: AssignCounselorRequest,
@@ -95,10 +65,7 @@ export class ConsultationsApi {
     );
   }
 
-  /**
-   * Mettre à jour le statut (Admin uniquement)
-   * PATCH /api/consultations/:id/status
-   */
+  // PATCH /api/consultations/:id/status (Admin)
   async updateStatus(
     consultationId: string,
     data: UpdateConsultationStatusRequest,
@@ -110,5 +77,4 @@ export class ConsultationsApi {
   }
 }
 
-// Instance singleton exportée
 export const consultationsApi = new ConsultationsApi();

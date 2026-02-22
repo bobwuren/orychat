@@ -1,14 +1,10 @@
 /**
- * =====================================================
  * Types - Notes & Recommandations
- * =====================================================
- * Définitions TypeScript pour notes et recommandations
- *
  * @module lib/types/notes-recommendations.types
- * @version 1.0
  */
 
 // ========== NOTE ==========
+
 export interface Note {
   id: string;
   userId: string;
@@ -17,27 +13,37 @@ export interface Note {
   value: number;
   coefficient?: number;
   subjectName?: string;
-  createdAt: string;
+  createdAt: string; // ISO 8601
 }
 
-// ========== RECOMMENDATION ==========
-interface Degree {
+// ========== ORIENTATION ==========
+
+/**
+ * Diplôme simplifié dans une orientation IA.
+ * ⚠️ Distinct de l'entité Degree de universities.types.ts
+ */
+export interface OrientationDegree {
   name: string;
   articleLink?: string;
 }
 
-interface University {
+/**
+ * Université simplifiée dans une orientation IA.
+ * ⚠️ Distinct de l'entité University de universities.types.ts
+ */
+export interface OrientationUniversity {
   name: string;
   site?: string;
-  website?: string;
 }
 
 export interface Orientation {
   name: string;
   why: string;
-  degrees: Degree[];
-  universities: University[];
+  degrees: OrientationDegree[];
+  universities: OrientationUniversity[];
 }
+
+// ========== RECOMMENDATION ==========
 
 export interface Recommendation {
   id: string;
@@ -46,10 +52,11 @@ export interface Recommendation {
   serieCode?: string;
   orientations: Orientation[];
   noteIds?: string[];
-  createdAt: string;
+  createdAt: string; // ISO 8601
 }
 
 // ========== REQUESTS ==========
+
 export interface SaveNotesRequest {
   notes: Array<{
     userId: string;
@@ -72,6 +79,7 @@ export interface SaveRecommendationRequest {
   noteIds: string[];
 }
 
+// moyenne des notes doit être ≥ 10/20
 export interface GenerateRecommendationRequest {
   serieId: string;
   notes: Array<{
@@ -83,6 +91,7 @@ export interface GenerateRecommendationRequest {
 }
 
 // ========== RESPONSES ==========
+
 export interface SaveNotesResponse {
   message: string;
   noteIds: string[];

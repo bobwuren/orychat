@@ -1,14 +1,10 @@
 /**
- * =====================================================
  * Types - Séries & Matières
- * =====================================================
- * Définitions TypeScript pour les séries et matières
- *
  * @module lib/types/academic.types
- * @version 1.0
  */
 
 // ========== SUBJECT ==========
+
 export interface Subject {
   id: string;
   name: string;
@@ -33,6 +29,7 @@ export interface SubjectWithCoefficients extends Subject {
 }
 
 // ========== SERIE ==========
+
 export interface Serie {
   id: string;
   code: string;
@@ -55,6 +52,7 @@ export interface SerieWithStatistics extends Serie {
 }
 
 // ========== REQUESTS ==========
+
 export interface CreateSubjectRequest {
   name: string;
   description?: string;
@@ -65,8 +63,9 @@ export interface CreateSubjectRequest {
   }>;
 }
 
+// PUT accepte des mises à jour partielles — tous les champs sont optionnels
 export interface UpdateSubjectRequest {
-  name: string;
+  name?: string;
   description?: string;
   code?: string;
   seriesCoefficients?: Array<{
@@ -85,9 +84,10 @@ export interface CreateSerieRequest {
   }>;
 }
 
+// PUT accepte des mises à jour partielles — tous les champs sont optionnels
 export interface UpdateSerieRequest {
-  code: string;
-  description: string;
+  code?: string;
+  description?: string;
   subjects?: Array<{
     subjectId: string;
     coefficient: number;
@@ -95,7 +95,8 @@ export interface UpdateSerieRequest {
   }>;
 }
 
-// ========== RESPONSES ==========
+// ========== RESPONSES — SUBJECTS ==========
+
 export interface SubjectsListResponse {
   success?: boolean;
   subjects: SubjectWithCoefficients[];
@@ -129,7 +130,7 @@ export interface DeleteSubjectResponse {
   deletedSubject?: {
     id: string;
     name: string;
-    deletedAt: string;
+    deletedAt: string; // ISO 8601
   };
   cascadeInfo?: {
     seriesAssignments: number;
@@ -137,6 +138,8 @@ export interface DeleteSubjectResponse {
     recommendations: number;
   };
 }
+
+// ========== RESPONSES — SERIES ==========
 
 export interface SeriesListResponse {
   series: Serie[];
@@ -177,8 +180,8 @@ export interface DeleteSerieResponse {
     description: string;
     totalSubjects: number;
   };
-  deletedAt?: string;
-  deletedBy?: string;
+  deletedAt?: string; // ISO 8601
+  deletedBy?: string; // ID de l'admin
   cascadeEffects?: {
     subjectCoefficientsDeleted: number;
     recommendationsDeleted: number;
