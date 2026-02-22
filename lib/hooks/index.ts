@@ -14,3 +14,4 @@ export { useSubjects } from "./useSubjects";
 export { useRecommendations } from "./useRecommendations";
 export { useUniversities } from "./useUniversities";
 export { useConsultations } from "./useConsultations";
+export { useDegrees } from "./useDegrees";
