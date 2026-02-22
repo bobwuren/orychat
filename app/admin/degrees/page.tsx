@@ -146,31 +146,13 @@ function DegreeForm({
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="level">Niveau</Label>
-        <Input
-          id="level"
-          value={level}
-          onChange={(e) => setLevel(e.target.value)}
-          placeholder="ex: Licence, Master, BTS…"
-          disabled={isLoading}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="duration">Durée</Label>
-        <Input
-          id="duration"
-          value={duration}
-          onChange={(e) => setDuration(e.target.value)}
-          placeholder="ex: 3 ans"
-          disabled={isLoading}
-        />
-      </div>
-      <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
         <Textarea
           id="description"
           value={description}
-          onChange={(e: { target: { value: SetStateAction<string>; }; }) => setDescription(e.target.value)}
+          onChange={(e: { target: { value: SetStateAction<string> } }) =>
+            setDescription(e.target.value)
+          }
           placeholder="Description optionnelle"
           disabled={isLoading}
           rows={3}
@@ -450,18 +432,15 @@ export default function DegreesAdminPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nom</TableHead>
-                  <TableHead>Niveau</TableHead>
-                  <TableHead>Durée</TableHead>
                   <TableHead>Description</TableHead>
-                  <TableHead>Créé</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
+                  Array.from({ length: 3 }).map((_, i) => (
                     <TableRow key={i}>
-                      {Array.from({ length: 6 }).map((__, j) => (
+                      {Array.from({ length: 3 }).map((__, j) => (
                         <TableCell key={j}>
                           <Skeleton className="h-4 w-full" />
                         </TableCell>
@@ -501,23 +480,6 @@ export default function DegreesAdminPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {degree.level ? (
-                          <Badge variant="secondary">{degree.level}</Badge>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {degree.duration ? (
-                          <div className="flex items-center text-sm">
-                            <Clock className="mr-1 h-3 w-3 text-muted-foreground" />
-                            {degree.duration}
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -528,37 +490,6 @@ export default function DegreesAdminPage() {
                             {degree.description && (
                               <TooltipContent>
                                 <p className="max-w-xs">{degree.description}</p>
-                              </TooltipContent>
-                            )}
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-                      <TableCell>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="flex items-center text-sm text-muted-foreground cursor-help">
-                                <Calendar className="mr-1 h-3 w-3" />
-                                {degree.createdAt
-                                  ? formatDistanceToNow(
-                                      new Date(degree.createdAt),
-                                      { addSuffix: true, locale: fr },
-                                    )
-                                  : "—"}
-                              </div>
-                            </TooltipTrigger>
-                            {degree.createdAt && (
-                              <TooltipContent>
-                                {new Date(degree.createdAt).toLocaleDateString(
-                                  "fr-FR",
-                                  {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  },
-                                )}
                               </TooltipContent>
                             )}
                           </Tooltip>
