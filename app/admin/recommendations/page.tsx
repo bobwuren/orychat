@@ -2,84 +2,86 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Download,
-  Search,
-  Eye,
-  RefreshCw,
-  AlertCircle,
-  MoreVertical,
-  X,
-  BookOpen,
-  GraduationCap,
-  User,
-} from "lucide-react";
+  AdminPage,
+  PageHeader,
+  AdminCard,
+  Btn,
+  AdminTable,
+  THead,
+  Th,
+  TBody,
+  Tr,
+  Td,
+  SkeletonRows,
+  EmptyRow,
+  AdminDialog,
+  DialogActions,
+  FormField,
+  AdminSelect,
+  AdminBadge,
+  PaginationBar,
+  SearchBar,
+  InlineError,
+  PageError,
+} from "@/components/admin/ui";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useRecommendations } from "@/lib/hooks";
 import type { Recommendation, Orientation } from "@/lib/types";
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Types locaux
+// ---------------------------------------------------------------------------
 
-const ITEMS_PER_PAGE = 10;
 type DialogMode = "view" | "export" | null;
+const ITEMS_PER_PAGE = 10;
 
-// ─── Page principale ──────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Icônes SVG inline
+// ---------------------------------------------------------------------------
+
+function IconRefresh() {
+  return (
+    <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
+      <path
+        d="M2 8a6 6 0 0110.472-4M14 8a6 6 0 01-10.472 4M2 8h2m10 0h-2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+function IconDownload() {
+  return (
+    <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
+      <path
+        d="M8 2v9M5 8l3 3 3-3M3 13h10"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+function IconExternal() {
+  return (
+    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+      <path
+        d="M7 1h4v4M11 1L6 6M5 2H2a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V8"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Page principale
+// ---------------------------------------------------------------------------
 
 export default function RecommendationsAdminPage() {
   const {
@@ -119,7 +121,6 @@ export default function RecommendationsAdminPage() {
       r.serieCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.id?.toString().toLowerCase().includes(searchTerm.toLowerCase()),
   );
-  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const paginated = filtered.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
@@ -137,10 +138,9 @@ export default function RecommendationsAdminPage() {
     setDialogMode("view");
     setViewLoading(true);
     try {
-      // getById retourne l'objet direct, le hook stocke dans currentRecommendation
       await fetchRecommendationById(r.id);
     } catch {
-      // si erreur on affiche quand même avec selectedReco
+      /* affichage avec selectedReco en fallback */
     } finally {
       setViewLoading(false);
     }
@@ -164,503 +164,320 @@ export default function RecommendationsAdminPage() {
       ? (currentRecommendation ?? selectedReco)
       : selectedReco;
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <AlertCircle className="h-12 w-12 text-red-500" />
-        <div className="text-center">
-          <h3 className="text-lg font-semibold">Erreur de chargement</h3>
-          <p className="text-muted-foreground">{error.message}</p>
-        </div>
-        <Button onClick={load}>
-          <RefreshCw className="mr-2 h-4 w-4" /> Réessayer
-        </Button>
-      </div>
-    );
-  }
+  if (error) return <PageError message={error.message} onRetry={load} />;
 
   return (
-    <div className="space-y-6">
-      {/* En-tête */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Recommandations</h1>
-          <p className="text-muted-foreground">
-            {filtered.length} recommandation{filtered.length !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={load} disabled={isLoading}>
-            <RefreshCw
-              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-            />{" "}
-            Actualiser
-          </Button>
-          <Button variant="outline" onClick={() => setDialogMode("export")}>
-            <Download className="mr-2 h-4 w-4" /> Exporter
-          </Button>
-        </div>
-      </div>
-
-      {/* Tableau */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-            <div>
-              <CardTitle>Liste des recommandations</CardTitle>
-              <CardDescription>
-                Consultation des recommandations générées par l'IA.
-              </CardDescription>
-            </div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setSearchTerm(searchInput);
-              }}
-              className="flex space-x-2"
+    <AdminPage>
+      <PageHeader
+        title="Recommandations"
+        subtitle={`${filtered.length} recommandation${filtered.length !== 1 ? "s" : ""}`}
+        actions={
+          <>
+            <Btn
+              variant="secondary"
+              size="sm"
+              loading={isLoading}
+              onClick={load}
+              icon={<IconRefresh />}
             >
-              <div className="relative">
-                <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="ID, userId, série…"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  className="pl-8 w-60"
-                />
-                {searchInput && (
-                  <button
-                    type="button"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    onClick={() => {
-                      setSearchInput("");
-                      setSearchTerm("");
-                    }}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-              <Button type="submit" variant="outline" size="icon">
-                <Search className="h-4 w-4" />
-              </Button>
-            </form>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Utilisateur</TableHead>
-                  <TableHead>Série</TableHead>
-                  <TableHead>Orientations</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      {Array.from({ length: 6 }).map((__, j) => (
-                        <TableCell key={j}>
-                          <Skeleton className="h-4 w-full" />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : paginated.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-12">
-                      <div className="flex flex-col items-center space-y-3">
-                        <BookOpen className="h-12 w-12 text-muted-foreground" />
-                        <p className="text-muted-foreground">
-                          {searchTerm
-                            ? "Aucun résultat."
-                            : "Aucune recommandation."}
-                        </p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  paginated.map((reco) => (
-                    <TableRow key={reco.id}>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        #{String(reco.id).slice(0, 8)}…
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <User className="h-3 w-3 text-muted-foreground" />
-                          <span className="font-mono text-xs">
-                            {String(reco.userId).slice(0, 10)}…
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {reco.serieCode ? (
-                          <Badge variant="secondary" className="font-mono">
-                            {reco.serieCode}
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">
-                            —
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Badge variant="outline" className="cursor-help">
-                                <GraduationCap className="h-3 w-3 mr-1" />
-                                {reco.orientations?.length ?? 0} orientation
-                                {(reco.orientations?.length ?? 0) > 1
-                                  ? "s"
-                                  : ""}
-                              </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <div className="space-y-1 max-w-xs">
-                                {reco.orientations
-                                  ?.slice(0, 5)
-                                  .map((o: Orientation, i: number) => (
-                                    <p key={i} className="text-sm">
-                                      {o.name}
-                                    </p>
-                                  ))}
-                                {(reco.orientations?.length ?? 0) > 5 && (
-                                  <p className="text-xs text-muted-foreground">
-                                    +{reco.orientations.length - 5} autres…
-                                  </p>
-                                )}
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm text-muted-foreground">
-                          {reco.createdAt
-                            ? formatDistanceToNow(new Date(reco.createdAt), {
-                                addSuffix: true,
-                                locale: fr,
-                              })
-                            : "—"}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => openView(reco)}>
-                              <Eye className="mr-2 h-4 w-4" /> Voir les détails
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+              Actualiser
+            </Btn>
+            <Btn
+              variant="secondary"
+              size="sm"
+              onClick={() => setDialogMode("export")}
+              icon={<IconDownload />}
+            >
+              Exporter
+            </Btn>
+          </>
+        }
+      />
 
-          {!isLoading && filtered.length > ITEMS_PER_PAGE && (
-            <div className="flex items-center justify-between pt-4">
-              <p className="text-sm text-muted-foreground">
-                {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
-                {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} sur{" "}
-                {filtered.length}
-              </p>
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href="#"
+      <AdminCard
+        title="Liste des recommandations"
+        description="Consultation des recommandations générées par l'IA."
+        toolbar={
+          <SearchBar
+            value={searchInput}
+            onChange={(v) => {
+              setSearchInput(v);
+              if (!v) setSearchTerm("");
+            }}
+            onSubmit={() => setSearchTerm(searchInput)}
+            placeholder="ID, userId, série…"
+          />
+        }
+      >
+        <AdminTable>
+          <THead>
+            <Th>ID</Th>
+            <Th>Utilisateur</Th>
+            <Th>Série</Th>
+            <Th>Orientations</Th>
+            <Th>Date</Th>
+            <Th right>Actions</Th>
+          </THead>
+          <TBody>
+            {isLoading ? (
+              <SkeletonRows cols={6} />
+            ) : paginated.length === 0 ? (
+              <EmptyRow
+                colSpan={6}
+                label={
+                  searchTerm
+                    ? "Aucun résultat pour cette recherche."
+                    : "Aucune recommandation."
+                }
+              />
+            ) : (
+              paginated.map((reco) => (
+                <Tr key={reco.id} onClick={() => openView(reco)}>
+                  <Td mono muted>
+                    #{String(reco.id).slice(0, 8)}…
+                  </Td>
+                  <Td mono muted>
+                    {String(reco.userId).slice(0, 10)}…
+                  </Td>
+                  <Td>
+                    {reco.serieCode ? (
+                      <AdminBadge color="gold">{reco.serieCode}</AdminBadge>
+                    ) : (
+                      <span className="text-[#444]">—</span>
+                    )}
+                  </Td>
+                  <Td>
+                    <AdminBadge color="blue">
+                      {reco.orientations?.length ?? 0} orientation
+                      {(reco.orientations?.length ?? 0) > 1 ? "s" : ""}
+                    </AdminBadge>
+                  </Td>
+                  <Td muted>
+                    {reco.createdAt
+                      ? formatDistanceToNow(new Date(reco.createdAt), {
+                          addSuffix: true,
+                          locale: fr,
+                        })
+                      : "—"}
+                  </Td>
+                  <Td right>
+                    <Btn
+                      variant="ghost"
+                      size="sm"
                       onClick={(e) => {
-                        e.preventDefault();
-                        if (currentPage > 1) setCurrentPage((p) => p - 1);
+                        e.stopPropagation();
+                        openView(reco);
                       }}
-                      className={
-                        currentPage === 1
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }
-                    />
-                  </PaginationItem>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setCurrentPage(page);
-                          }}
-                          isActive={currentPage === page}
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ),
-                  )}
-                  <PaginationItem>
-                    <PaginationNext
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (currentPage < totalPages)
-                          setCurrentPage((p) => p + 1);
-                      }}
-                      className={
-                        currentPage === totalPages
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                    >
+                      Voir
+                    </Btn>
+                  </Td>
+                </Tr>
+              ))
+            )}
+          </TBody>
+        </AdminTable>
+        <PaginationBar
+          currentPage={currentPage}
+          totalPages={Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))}
+          totalItems={filtered.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+          onPageChange={setCurrentPage}
+        />
+      </AdminCard>
 
       {/* ── Dialog Vue ── */}
-      <Dialog
+      <AdminDialog
         open={dialogMode === "view"}
-        onOpenChange={(o) => !o && closeDialog()}
+        onClose={closeDialog}
+        title="Détails de la recommandation"
+        size="lg"
       >
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Détails de la recommandation</DialogTitle>
-          </DialogHeader>
-          {viewLoading ? (
-            <div className="space-y-3 py-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-5 w-full" />
+        {viewLoading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-5 bg-[#1a1a1a] rounded animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Infos générales */}
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { label: "ID", value: activeReco?.id, mono: true },
+                { label: "Utilisateur", value: activeReco?.userId, mono: true },
+                {
+                  label: "Série",
+                  value: activeReco?.serieCode ?? activeReco?.serieId,
+                },
+                {
+                  label: "Créé le",
+                  value: activeReco?.createdAt
+                    ? new Date(activeReco.createdAt).toLocaleDateString(
+                        "fr-FR",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        },
+                      )
+                    : undefined,
+                },
+              ].map(({ label, value, mono }) => (
+                <div key={label}>
+                  <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
+                    {label}
+                  </p>
+                  <p
+                    className={`text-sm text-white ${mono ? "font-mono" : ""}`}
+                  >
+                    {value ?? <span className="text-[#444] italic">—</span>}
+                  </p>
+                </div>
               ))}
             </div>
-          ) : (
-            <div className="space-y-5 py-2">
-              {/* Infos générales */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">ID</p>
-                  <p className="font-mono text-sm">{activeReco?.id}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Utilisateur</p>
-                  <p className="font-mono text-sm">{activeReco?.userId}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Série</p>
-                  {activeReco?.serieCode ? (
-                    <Badge variant="secondary" className="font-mono mt-1">
-                      {activeReco.serieCode}
-                    </Badge>
-                  ) : (
-                    <p className="text-sm font-mono">{activeReco?.serieId}</p>
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Créé le</p>
-                  <p className="text-sm">
-                    {activeReco?.createdAt
-                      ? new Date(activeReco.createdAt).toLocaleDateString(
-                          "fr-FR",
-                          {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          },
-                        )
-                      : "—"}
-                  </p>
-                </div>
-              </div>
 
-              {/* Notes associées */}
-              {(activeReco?.noteIds?.length ?? 0) > 0 && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Notes associées
-                  </p>
-                  <p className="text-sm">
-                    {activeReco?.noteIds?.length} note(s)
-                  </p>
-                </div>
-              )}
-
-              {/* Orientations */}
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Orientations recommandées (
-                  {activeReco?.orientations?.length ?? 0})
+            {/* Orientations */}
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-3">
+                Orientations recommandées (
+                {activeReco?.orientations?.length ?? 0})
+              </p>
+              {(activeReco?.orientations?.length ?? 0) === 0 ? (
+                <p className="text-sm text-[#444] italic">
+                  Aucune orientation.
                 </p>
-                {(activeReco?.orientations?.length ?? 0) === 0 ? (
-                  <p className="text-sm italic text-muted-foreground">
-                    Aucune orientation.
-                  </p>
-                ) : (
-                  <div className="space-y-4">
-                    {activeReco?.orientations?.map(
-                      (o: Orientation, i: number) => (
-                        <div
-                          key={i}
-                          className="border rounded-lg p-4 space-y-3"
-                        >
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h4 className="font-semibold">{o.name}</h4>
-                              <p className="text-sm text-muted-foreground mt-1">
+              ) : (
+                <div className="space-y-3">
+                  {activeReco?.orientations?.map(
+                    (o: Orientation, i: number) => (
+                      <div
+                        key={i}
+                        className="border border-[#1e1e1e] rounded-xl p-4 space-y-3 bg-[#0a0a0a]"
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="w-6 h-6 rounded-full bg-[#c9a84c]/15 border border-[#c9a84c]/30 flex items-center justify-center text-[11px] font-bold text-[#c9a84c] shrink-0 mt-0.5">
+                            {i + 1}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-white">{o.name}</p>
+                            {o.why && (
+                              <p className="text-sm text-[#555] mt-1">
                                 {o.why}
                               </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Diplômes */}
+                        {o.degrees?.length > 0 && (
+                          <div className="pl-9">
+                            <p className="text-[10px] uppercase tracking-[0.1em] text-[#444] font-semibold mb-1.5">
+                              Diplômes
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {o.degrees.map((d: any, j: number) => (
+                                <span key={j}>
+                                  {d.articleLink ? (
+                                    <a
+                                      href={d.articleLink}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium bg-[#141414] border border-[#222] text-[#aaa] rounded hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-all"
+                                    >
+                                      {d.name} <IconExternal />
+                                    </a>
+                                  ) : (
+                                    <AdminBadge color="gray">
+                                      {d.name}
+                                    </AdminBadge>
+                                  )}
+                                </span>
+                              ))}
                             </div>
                           </div>
-                          {o.degrees?.length > 0 && (
-                            <div>
-                              <p className="text-xs text-muted-foreground mb-1">
-                                Diplômes suggérés
-                              </p>
-                              <div className="flex flex-wrap gap-1">
-                                {o.degrees.map((d, j) => (
-                                  <Badge
-                                    key={j}
-                                    variant="outline"
-                                    className="text-xs"
-                                  >
-                                    {d.articleLink ? (
-                                      <a
-                                        href={d.articleLink}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-1 hover:underline"
-                                      >
-                                        {d.name}{" "}
-                                        <X className="h-2 w-2 rotate-45" />
-                                      </a>
-                                    ) : (
-                                      d.name
-                                    )}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {o.universities?.length > 0 && (
-                            <div>
-                              <p className="text-xs text-muted-foreground mb-1">
-                                Universités suggérées
-                              </p>
-                              <div className="flex flex-wrap gap-1">
-                                {o.universities.map((u, j) => (
-                                  <Badge
-                                    key={j}
-                                    variant="secondary"
-                                    className="text-xs"
-                                  >
-                                    {u.site || u.website ? (
-                                      <a
-                                        href={u.site ?? u.website}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="hover:underline"
-                                      >
-                                        {u.name}
-                                      </a>
-                                    ) : (
-                                      u.name
-                                    )}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ),
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={closeDialog}>
-              Fermer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                        )}
 
-      {/* ── Dialog Export ── */}
-      <Dialog
-        open={dialogMode === "export"}
-        onOpenChange={(o) => !o && closeDialog()}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Exporter les recommandations</DialogTitle>
-            <DialogDescription>
-              Choisissez le format d'export.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label>Format</Label>
-              <Select
-                value={exportFormat}
-                onValueChange={(v: "csv" | "json") => setExportFormat(v)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="csv">CSV (Excel)</SelectItem>
-                  <SelectItem value="json">JSON</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="rounded-lg bg-muted p-4 text-sm text-muted-foreground">
-              Toutes les recommandations ({filtered.length}) seront incluses
-              avec leurs orientations.
+                        {/* Universités */}
+                        {o.universities?.length > 0 && (
+                          <div className="pl-9">
+                            <p className="text-[10px] uppercase tracking-[0.1em] text-[#444] font-semibold mb-1.5">
+                              Universités
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {o.universities.map((u: any, j: number) => (
+                                <span key={j}>
+                                  {u.site || u.website ? (
+                                    <a
+                                      href={u.site ?? u.website}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium bg-[#141414] border border-[#222] text-[#aaa] rounded hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-all"
+                                    >
+                                      {u.name} <IconExternal />
+                                    </a>
+                                  ) : (
+                                    <AdminBadge color="gray">
+                                      {u.name}
+                                    </AdminBadge>
+                                  )}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ),
+                  )}
+                </div>
+              )}
             </div>
           </div>
-          {actionError && (
-            <p className="text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle className="h-4 w-4" /> {actionError}
-            </p>
-          )}
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={closeDialog}
-              disabled={isExporting}
-            >
-              Annuler
-            </Button>
-            <Button onClick={handleExport} disabled={isExporting}>
-              {isExporting ? (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Export…
-                </>
-              ) : (
-                <>
-                  <Download className="mr-2 h-4 w-4" /> Exporter
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+        )}
+        <DialogActions>
+          <Btn variant="ghost" onClick={closeDialog}>
+            Fermer
+          </Btn>
+        </DialogActions>
+      </AdminDialog>
+
+      {/* ── Dialog Export ── */}
+      <AdminDialog
+        open={dialogMode === "export"}
+        onClose={closeDialog}
+        title="Exporter les recommandations"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <FormField label="Format">
+            <AdminSelect
+              value={exportFormat}
+              onChange={(e) =>
+                setExportFormat(e.target.value as "csv" | "json")
+              }
+              options={[
+                { value: "csv", label: "CSV (Excel)" },
+                { value: "json", label: "JSON" },
+              ]}
+            />
+          </FormField>
+          <p className="text-xs text-[#444] bg-[#141414] border border-[#1e1e1e] rounded-lg px-4 py-3">
+            Toutes les recommandations ({filtered.length}) seront incluses avec
+            leurs orientations.
+          </p>
+        </div>
+        <InlineError message={actionError} />
+        <DialogActions>
+          <Btn variant="ghost" onClick={closeDialog} disabled={isExporting}>
+            Annuler
+          </Btn>
+          <Btn variant="primary" onClick={handleExport} loading={isExporting}>
+            Exporter
+          </Btn>
+        </DialogActions>
+      </AdminDialog>
+    </AdminPage>
   );
 }

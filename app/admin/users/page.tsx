@@ -2,109 +2,213 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  RefreshCw,
-  AlertCircle,
-  MoreVertical,
-  X,
-  Users,
-  Shield,
-  User,
-  Eye,
-  EyeOff,
-  Copy,
-  CheckCheck,
-} from "lucide-react";
-import {
-  getUsers,
-  getUserById,
-  updateUser,
-  deleteUser,
-} from "@/lib/api/auth.api";
+  AdminPage,
+  PageHeader,
+  AdminCard,
+  Btn,
+  AdminTable,
+  THead,
+  Th,
+  TBody,
+  Tr,
+  Td,
+  SkeletonRows,
+  EmptyRow,
+  AdminDialog,
+  DialogActions,
+  FormField,
+  AdminInput,
+  AdminBadge,
+  PaginationBar,
+  SearchBar,
+  InlineError,
+  PageError,
+} from "@/components/admin/ui";
+import { getUsers, updateUser, deleteUser } from "@/lib/api/auth.api";
 import { useAuth } from "@/lib/hooks";
 import type { AuthUser, UserRole } from "@/lib/types/auth.types";
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Constantes
+// ---------------------------------------------------------------------------
 
 const ITEMS_PER_PAGE = 10;
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api";
 
 type DialogMode = "view" | "edit" | "delete" | "create-admin" | null;
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Icônes SVG inline
+// ---------------------------------------------------------------------------
+
+function IconRefresh() {
+  return (
+    <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
+      <path
+        d="M2 8a6 6 0 0110.472-4M14 8a6 6 0 01-10.472 4M2 8h2m10 0h-2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+function IconShield() {
+  return (
+    <svg
+      className="w-3.5 h-3.5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <path
+        d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+function IconEye({ off }: { off?: boolean }) {
+  if (off)
+    return (
+      <svg
+        className="w-4 h-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      >
+        <path
+          d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  return (
+    <svg
+      className="w-4 h-4"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <path
+        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+function IconCopy({ checked }: { checked?: boolean }) {
+  if (checked)
+    return (
+      <svg
+        className="w-3.5 h-3.5 text-green-400"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        <path
+          d="M4.5 12.75l6 6 9-13.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  return (
+    <svg
+      className="w-3.5 h-3.5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <path
+        d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Helpers d'affichage
+// ---------------------------------------------------------------------------
 
 function RoleBadge({ role }: { role: UserRole }) {
   if (role === "admin") {
     return (
-      <Badge className="bg-purple-50 text-purple-800 border border-purple-300 hover:bg-purple-50">
-        <Shield className="h-3 w-3 mr-1" /> Admin
-      </Badge>
+      <AdminBadge color="gold">
+        <svg
+          className="w-2.5 h-2.5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <path
+            d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        Admin
+      </AdminBadge>
     );
   }
+  return <AdminBadge color="gray">Client</AdminBadge>;
+}
+
+function UserAvatar({
+  user,
+  size = "sm",
+}: {
+  user: AuthUser;
+  size?: "sm" | "lg";
+}) {
+  const isAdmin = user.permissions === "admin";
+  const dim = size === "lg" ? "w-12 h-12 text-base" : "w-7 h-7 text-[11px]";
   return (
-    <Badge variant="outline" className="text-muted-foreground">
-      <User className="h-3 w-3 mr-1" /> Client
-    </Badge>
+    <div
+      className={`${dim} rounded-full flex items-center justify-center font-bold shrink-0 ${
+        isAdmin
+          ? "bg-[#c9a84c]/10 border border-[#c9a84c]/20 text-[#c9a84c]"
+          : "bg-[#141414] border border-[#222] text-[#555]"
+      }`}
+    >
+      {user.email[0].toUpperCase()}
+    </div>
   );
 }
 
-// ─── Formulaire édition utilisateur ──────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Formulaire édition utilisateur
+// ---------------------------------------------------------------------------
 
-interface EditFormProps {
+interface EditUserFormProps {
   user: AuthUser;
   onSubmit: (email?: string, password?: string) => Promise<void>;
   onCancel: () => void;
   isLoading: boolean;
 }
 
-function EditUserForm({ user, onSubmit, onCancel, isLoading }: EditFormProps) {
+function EditUserForm({
+  user,
+  onSubmit,
+  onCancel,
+  isLoading,
+}: EditUserFormProps) {
   const [email, setEmail] = useState(user.email);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -113,10 +217,8 @@ function EditUserForm({ user, onSubmit, onCancel, isLoading }: EditFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
-
     const newEmail = email.trim() !== user.email ? email.trim() : undefined;
     const newPassword = password || undefined;
-
     if (!newEmail && !newPassword) {
       setFormError("Aucune modification détectée.");
       return;
@@ -126,102 +228,77 @@ function EditUserForm({ user, onSubmit, onCancel, isLoading }: EditFormProps) {
       return;
     }
     if (newPassword) {
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-      if (!passwordRegex.test(newPassword)) {
+      if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(newPassword)) {
         setFormError(
-          "Le mot de passe doit faire au moins 8 caractères, contenir une majuscule, une minuscule et un chiffre.",
+          "Min. 8 caractères, une majuscule, une minuscule, un chiffre.",
         );
         return;
       }
     }
-
     try {
       await onSubmit(newEmail, newPassword);
     } catch (err: any) {
-      setFormError(err?.message ?? "Une erreur est survenue.");
+      setFormError(err?.message ?? "Erreur.");
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="u-email">Email</Label>
-        <Input
-          id="u-email"
+      <FormField label="Email" required>
+        <AdminInput
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isLoading}
         />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="u-password">
-          Nouveau mot de passe{" "}
-          <span className="text-muted-foreground text-xs">
-            (laisser vide pour ne pas changer)
-          </span>
-        </Label>
+      </FormField>
+      <FormField
+        label="Nouveau mot de passe"
+        hint="Laisser vide pour ne pas modifier. Min. 8 chars, 1 maj, 1 min, 1 chiffre."
+      >
         <div className="relative">
-          <Input
-            id="u-password"
+          <AdminInput
             type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Min. 8 chars, 1 maj, 1 min, 1 chiffre"
-            className="pr-10"
+            placeholder="••••••••"
             disabled={isLoading}
+            className="pr-10"
           />
           <button
             type="button"
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            tabIndex={-1}
             onClick={() => setShowPassword((v) => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#888] transition-colors"
           >
-            {showPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
+            <IconEye off={showPassword} />
           </button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Le rôle (admin/client) ne peut pas être modifié depuis cette
-          interface.
-        </p>
-      </div>
-
-      {formError && (
-        <p className="text-sm text-red-500 flex items-center gap-1">
-          <AlertCircle className="h-4 w-4" /> {formError}
-        </p>
-      )}
-
-      <DialogFooter>
-        <Button
+      </FormField>
+      <p className="text-[11px] text-[#444]">
+        Le rôle (admin/client) ne peut pas être modifié depuis cette interface.
+      </p>
+      <InlineError message={formError} />
+      <DialogActions>
+        <Btn
+          variant="ghost"
           type="button"
-          variant="outline"
           onClick={onCancel}
           disabled={isLoading}
         >
           Annuler
-        </Button>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />{" "}
-              Enregistrement…
-            </>
-          ) : (
-            <>
-              <Edit className="mr-2 h-4 w-4" /> Mettre à jour
-            </>
-          )}
-        </Button>
-      </DialogFooter>
+        </Btn>
+        <Btn variant="primary" type="submit" loading={isLoading}>
+          Enregistrer
+        </Btn>
+      </DialogActions>
     </form>
   );
 }
 
-// ─── Formulaire création admin ────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Formulaire création admin
+// ---------------------------------------------------------------------------
 
 interface CreateAdminFormProps {
   onSubmit: (email: string) => Promise<void>;
@@ -251,60 +328,53 @@ function CreateAdminForm({
     try {
       await onSubmit(email.trim().toLowerCase());
     } catch (err: any) {
-      setFormError(err?.message ?? "Une erreur est survenue.");
+      setFormError(err?.message ?? "Erreur.");
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="a-email">
-          Email du nouvel admin <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          id="a-email"
+      <FormField label="Email du nouvel admin" required>
+        <AdminInput
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="admin@example.com"
           disabled={isLoading}
         />
-      </div>
-      <div className="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
-        Un mot de passe sécurisé sera généré automatiquement et affiché une
-        seule fois.
-      </div>
-      {formError && (
-        <p className="text-sm text-red-500 flex items-center gap-1">
-          <AlertCircle className="h-4 w-4" /> {formError}
+      </FormField>
+      <div className="px-4 py-3 bg-[#141414] border border-[#1e1e1e] rounded-lg">
+        <p className="text-xs text-[#555]">
+          Un mot de passe sécurisé sera généré automatiquement et affiché une
+          seule fois.
         </p>
-      )}
-      <DialogFooter>
-        <Button
+      </div>
+      <InlineError message={formError} />
+      <DialogActions>
+        <Btn
+          variant="ghost"
           type="button"
-          variant="outline"
           onClick={onCancel}
           disabled={isLoading}
         >
           Annuler
-        </Button>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Création…
-            </>
-          ) : (
-            <>
-              <Shield className="mr-2 h-4 w-4" /> Créer l&apos;admin
-            </>
-          )}
-        </Button>
-      </DialogFooter>
+        </Btn>
+        <Btn
+          variant="primary"
+          type="submit"
+          loading={isLoading}
+          icon={<IconShield />}
+        >
+          Créer l'admin
+        </Btn>
+      </DialogActions>
     </form>
   );
 }
 
-// ─── Page principale ──────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Page principale
+// ---------------------------------------------------------------------------
 
 export default function UsersAdminPage() {
   const { user: currentUser } = useAuth();
@@ -323,7 +393,7 @@ export default function UsersAdminPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  // Credentials admin générés (affiché une seule fois)
+  // Credentials admin générés — affichés une seule fois après création
   const [generatedCredentials, setGeneratedCredentials] = useState<{
     email: string;
     password: string;
@@ -332,7 +402,7 @@ export default function UsersAdminPage() {
     null,
   );
 
-  // ── Chargement ──────────────────────────────────────────────────────────────
+  // ── Chargement ─────────────────────────────────────────────────────────────
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -354,7 +424,7 @@ export default function UsersAdminPage() {
     setCurrentPage(1);
   }, [searchTerm, filterRole]);
 
-  // ── Filtrage ────────────────────────────────────────────────────────────────
+  // ── Filtrage ───────────────────────────────────────────────────────────────
 
   const filtered = users.filter((u) => {
     const matchSearch =
@@ -371,12 +441,12 @@ export default function UsersAdminPage() {
     currentPage * ITEMS_PER_PAGE,
   );
 
-  // ── Stats ───────────────────────────────────────────────────────────────────
+  // ── Stats ──────────────────────────────────────────────────────────────────
 
   const adminCount = users.filter((u) => u.permissions === "admin").length;
   const clientCount = users.filter((u) => u.permissions === "client").length;
 
-  // ── Dialogs ─────────────────────────────────────────────────────────────────
+  // ── Dialogs ────────────────────────────────────────────────────────────────
 
   const closeDialog = () => {
     setDialogMode(null);
@@ -404,7 +474,7 @@ export default function UsersAdminPage() {
     setDialogMode("create-admin");
   };
 
-  // ── Actions ─────────────────────────────────────────────────────────────────
+  // ── Actions ────────────────────────────────────────────────────────────────
 
   const handleUpdate = async (email?: string, password?: string) => {
     if (!selected) return;
@@ -448,7 +518,6 @@ export default function UsersAdminPage() {
     setActionLoading(true);
     setActionError(null);
     try {
-      // Route dédiée création admin : POST /auth/users/admin
       const res = await fetch(`${API_BASE}/auth/users/admin`, {
         method: "POST",
         headers: {
@@ -459,9 +528,7 @@ export default function UsersAdminPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Erreur création admin.");
-      // Ajouter à la liste locale
       setUsers((prev) => [...prev, data.user]);
-      // Afficher les credentials générés
       setGeneratedCredentials(data.credentials);
     } catch (err: any) {
       const msg = err?.message ?? "Erreur.";
@@ -479,535 +546,424 @@ export default function UsersAdminPage() {
     });
   };
 
-  // ── Rendu erreur ─────────────────────────────────────────────────────────────
+  // ── Rendu erreur globale ───────────────────────────────────────────────────
 
   if (loadError && users.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <AlertCircle className="h-12 w-12 text-red-500" />
-        <div className="text-center">
-          <h3 className="text-lg font-semibold">Erreur de chargement</h3>
-          <p className="text-muted-foreground">{loadError}</p>
-        </div>
-        <Button onClick={load}>
-          <RefreshCw className="mr-2 h-4 w-4" /> Réessayer
-        </Button>
-      </div>
-    );
+    return <PageError message={loadError} onRetry={load} />;
   }
 
+  // ── Stats cards ────────────────────────────────────────────────────────────
+
+  const statCards = [
+    {
+      key: "all" as const,
+      label: "Total",
+      value: users.length,
+      icon: (
+        <svg
+          className="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <path
+            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ),
+      color: "text-[#666]",
+    },
+    {
+      key: "admin" as const,
+      label: "Admins",
+      value: adminCount,
+      icon: (
+        <svg
+          className="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <path
+            d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ),
+      color: "text-[#c9a84c]",
+    },
+    {
+      key: "client" as const,
+      label: "Clients",
+      value: clientCount,
+      icon: (
+        <svg
+          className="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <path
+            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ),
+      color: "text-[#555]",
+    },
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* En-tête */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Utilisateurs</h1>
-          <p className="text-muted-foreground">
-            {users.length} utilisateur{users.length !== 1 ? "s" : ""} ·{" "}
-            {adminCount} admin{adminCount !== 1 ? "s" : ""} · {clientCount}{" "}
-            client{clientCount !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={load} disabled={isLoading}>
-            <RefreshCw
-              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-            />{" "}
-            Actualiser
-          </Button>
-          <Button onClick={openCreateAdmin}>
-            <Shield className="mr-2 h-4 w-4" /> Nouvel admin
-          </Button>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-        <button
-          onClick={() => setFilterRole("all")}
-          className={`rounded-lg border p-4 text-left transition-all hover:shadow-sm ${filterRole === "all" ? "ring-2 ring-primary" : ""}`}
-        >
-          <div className="flex items-center gap-2 mb-1">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">Total</p>
-          </div>
-          <p className="text-2xl font-bold">{users.length}</p>
-        </button>
-        <button
-          onClick={() => setFilterRole("admin")}
-          className={`rounded-lg border p-4 text-left transition-all hover:shadow-sm ${filterRole === "admin" ? "ring-2 ring-primary" : ""}`}
-        >
-          <div className="flex items-center gap-2 mb-1">
-            <Shield className="h-4 w-4 text-purple-500" />
-            <p className="text-xs text-muted-foreground">Admins</p>
-          </div>
-          <p className="text-2xl font-bold">{adminCount}</p>
-        </button>
-        <button
-          onClick={() => setFilterRole("client")}
-          className={`rounded-lg border p-4 text-left transition-all hover:shadow-sm ${filterRole === "client" ? "ring-2 ring-primary" : ""}`}
-        >
-          <div className="flex items-center gap-2 mb-1">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">Clients</p>
-          </div>
-          <p className="text-2xl font-bold">{clientCount}</p>
-        </button>
-      </div>
-
-      {/* Tableau */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-            <div>
-              <CardTitle>Liste des utilisateurs</CardTitle>
-              <CardDescription>
-                Consultez, modifiez ou supprimez les comptes.
-              </CardDescription>
-            </div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setSearchTerm(searchInput);
-              }}
-              className="flex space-x-2"
+    <AdminPage>
+      <PageHeader
+        title="Utilisateurs"
+        subtitle={`${users.length} utilisateur${users.length !== 1 ? "s" : ""} · ${adminCount} admin${adminCount !== 1 ? "s" : ""} · ${clientCount} client${clientCount !== 1 ? "s" : ""}`}
+        actions={
+          <>
+            <Btn
+              variant="secondary"
+              size="sm"
+              loading={isLoading}
+              onClick={load}
+              icon={<IconRefresh />}
             >
-              <div className="relative">
-                <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Email ou ID…"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  className="pl-8 w-60"
-                />
-                {searchInput && (
-                  <button
-                    type="button"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    onClick={() => {
-                      setSearchInput("");
-                      setSearchTerm("");
-                    }}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-              <Button type="submit" variant="outline" size="icon">
-                <Search className="h-4 w-4" />
-              </Button>
-            </form>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Email</TableHead>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Rôle</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  Array.from({ length: 6 }).map((_, i) => (
-                    <TableRow key={i}>
-                      {Array.from({ length: 4 }).map((__, j) => (
-                        <TableCell key={j}>
-                          <Skeleton className="h-4 w-full" />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : paginated.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-12">
-                      <div className="flex flex-col items-center space-y-3">
-                        <Users className="h-12 w-12 text-muted-foreground" />
-                        <p className="text-muted-foreground">
-                          {searchTerm || filterRole !== "all"
-                            ? "Aucun résultat."
-                            : "Aucun utilisateur."}
-                        </p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  paginated.map((u) => (
-                    <TableRow
-                      key={u.id}
-                      className={u.id === currentUser?.id ? "bg-muted/40" : ""}
-                    >
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${u.permissions === "admin" ? "bg-purple-100" : "bg-muted"}`}
-                          >
-                            {u.permissions === "admin" ? (
-                              <Shield className="h-4 w-4 text-purple-600" />
-                            ) : (
-                              <User className="h-4 w-4 text-muted-foreground" />
-                            )}
-                          </div>
-                          <div>
-                            <p>{u.email}</p>
-                            {u.id === currentUser?.id && (
-                              <p className="text-xs text-muted-foreground">
-                                Vous
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">
-                          {String(u.id).slice(0, 16)}
-                          {String(u.id).length > 16 ? "…" : ""}
-                        </code>
-                      </TableCell>
-                      <TableCell>
-                        <RoleBadge role={u.permissions} />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => openView(u)}>
-                              <Eye className="mr-2 h-4 w-4" /> Voir les détails
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openEdit(u)}>
-                              <Edit className="mr-2 h-4 w-4" /> Modifier
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600 focus:text-red-600"
-                              onClick={() => openDelete(u)}
-                              disabled={u.id === currentUser?.id}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+              Actualiser
+            </Btn>
+            <Btn
+              variant="primary"
+              size="sm"
+              onClick={openCreateAdmin}
+              icon={<IconShield />}
+            >
+              Nouvel admin
+            </Btn>
+          </>
+        }
+      />
 
-          {!isLoading && filtered.length > ITEMS_PER_PAGE && (
-            <div className="flex items-center justify-between pt-4">
-              <p className="text-sm text-muted-foreground">
-                {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
-                {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} sur{" "}
-                {filtered.length}
-              </p>
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (currentPage > 1) setCurrentPage((p) => p - 1);
-                      }}
-                      className={
-                        currentPage === 1
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }
-                    />
-                  </PaginationItem>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setCurrentPage(page);
-                          }}
-                          isActive={currentPage === page}
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ),
-                  )}
-                  <PaginationItem>
-                    <PaginationNext
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (currentPage < totalPages)
-                          setCurrentPage((p) => p + 1);
-                      }}
-                      className={
-                        currentPage === totalPages
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* ── Stats cards cliquables ── */}
+      <div className="grid grid-cols-3 gap-3">
+        {statCards.map(({ key, label, value, icon, color }) => {
+          const isActive = filterRole === key;
+          return (
+            <button
+              key={key}
+              onClick={() => setFilterRole(key)}
+              className={[
+                "flex flex-col gap-3 p-4 rounded-xl border text-left transition-all duration-200",
+                isActive
+                  ? "bg-[#c9a84c]/5 border-[#c9a84c]/25"
+                  : "bg-[#0e0e0e] border-[#1a1a1a] hover:border-[#252525] hover:bg-[#141414]",
+              ].join(" ")}
+            >
+              <div className={`${color} ${isActive ? "text-[#c9a84c]" : ""}`}>
+                {icon}
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.1em] text-[#444] font-semibold">
+                  {label}
+                </p>
+                <p className="text-2xl font-bold text-white mt-0.5">{value}</p>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── Tableau ── */}
+      <AdminCard
+        title="Liste des utilisateurs"
+        description="Consultez, modifiez ou supprimez les comptes."
+        toolbar={
+          <SearchBar
+            value={searchInput}
+            onChange={(v) => {
+              setSearchInput(v);
+              if (!v) setSearchTerm("");
+            }}
+            onSubmit={() => setSearchTerm(searchInput)}
+            placeholder="Email ou ID…"
+          />
+        }
+      >
+        <AdminTable>
+          <THead>
+            <Th>Utilisateur</Th>
+            <Th>ID</Th>
+            <Th>Rôle</Th>
+            <Th right>Actions</Th>
+          </THead>
+          <TBody>
+            {isLoading ? (
+              <SkeletonRows cols={4} />
+            ) : paginated.length === 0 ? (
+              <EmptyRow
+                colSpan={4}
+                label={
+                  searchTerm || filterRole !== "all"
+                    ? "Aucun résultat."
+                    : "Aucun utilisateur."
+                }
+              />
+            ) : (
+              paginated.map((u) => (
+                <Tr key={u.id}>
+                  <Td>
+                    <div className="flex items-center gap-2.5">
+                      <UserAvatar user={u} />
+                      <div>
+                        <p className="text-sm font-medium text-white">
+                          {u.email}
+                        </p>
+                        {u.id === currentUser?.id && (
+                          <p className="text-[10px] text-[#c9a84c]">
+                            Votre compte
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </Td>
+                  <Td>
+                    <code className="text-[11px] font-mono text-[#444] bg-[#141414] px-2 py-0.5 rounded">
+                      {String(u.id).slice(0, 16)}
+                      {String(u.id).length > 16 ? "…" : ""}
+                    </code>
+                  </Td>
+                  <Td>
+                    <RoleBadge role={u.permissions} />
+                  </Td>
+                  <Td right>
+                    <div className="flex items-center justify-end gap-1">
+                      <Btn
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openView(u)}
+                      >
+                        Voir
+                      </Btn>
+                      <Btn
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEdit(u)}
+                      >
+                        Modifier
+                      </Btn>
+                      <Btn
+                        variant="danger"
+                        size="sm"
+                        onClick={() => openDelete(u)}
+                        disabled={u.id === currentUser?.id}
+                      >
+                        Supprimer
+                      </Btn>
+                    </div>
+                  </Td>
+                </Tr>
+              ))
+            )}
+          </TBody>
+        </AdminTable>
+        <PaginationBar
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filtered.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+          onPageChange={setCurrentPage}
+        />
+      </AdminCard>
 
       {/* ── Dialog Vue ── */}
-      <Dialog
+      <AdminDialog
         open={dialogMode === "view"}
-        onOpenChange={(o) => !o && closeDialog()}
+        onClose={closeDialog}
+        title="Détails de l'utilisateur"
+        size="sm"
       >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Détails de l&apos;utilisateur</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="flex items-center gap-3">
-              <div
-                className={`h-12 w-12 rounded-full flex items-center justify-center shrink-0 ${selected?.permissions === "admin" ? "bg-purple-100" : "bg-muted"}`}
-              >
-                {selected?.permissions === "admin" ? (
-                  <Shield className="h-6 w-6 text-purple-600" />
-                ) : (
-                  <User className="h-6 w-6 text-muted-foreground" />
-                )}
+        <div className="space-y-5">
+          <div className="flex items-center gap-4 p-4 bg-[#0a0a0a] border border-[#141414] rounded-xl">
+            {selected && <UserAvatar user={selected} size="lg" />}
+            <div>
+              <p className="font-semibold text-white">{selected?.email}</p>
+              <div className="mt-1.5">
+                {selected && <RoleBadge role={selected.permissions} />}
               </div>
-              <div>
-                <p className="font-medium">{selected?.email}</p>
-                <RoleBadge role={selected?.permissions ?? "client"} />
-              </div>
+              {selected?.id === currentUser?.id && (
+                <p className="text-[10px] text-[#c9a84c] mt-1.5">
+                  Votre compte
+                </p>
+              )}
             </div>
-            <div className="rounded-lg bg-muted p-3 space-y-1.5 text-sm">
-              <div>
-                <p className="text-xs text-muted-foreground">ID</p>
-                <code className="font-mono text-xs break-all">
-                  {selected?.id}
-                </code>
-              </div>
-            </div>
-            {selected?.id === currentUser?.id && (
-              <p className="text-xs text-muted-foreground border rounded p-2 bg-muted">
-                Il s&apos;agit de votre propre compte.
-              </p>
-            )}
           </div>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={closeDialog}>
-              Fermer
-            </Button>
-            <Button
-              onClick={() => {
-                closeDialog();
-                setTimeout(() => selected && openEdit(selected), 100);
-              }}
-            >
-              <Edit className="mr-2 h-4 w-4" /> Modifier
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="p-4 bg-[#0a0a0a] border border-[#141414] rounded-xl">
+            <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-2">
+              ID
+            </p>
+            <code className="text-xs font-mono text-[#888] break-all">
+              {selected?.id}
+            </code>
+          </div>
+        </div>
+        <DialogActions>
+          <Btn variant="ghost" onClick={closeDialog}>
+            Fermer
+          </Btn>
+          <Btn
+            variant="secondary"
+            onClick={() => {
+              closeDialog();
+              setTimeout(() => selected && openEdit(selected), 100);
+            }}
+          >
+            Modifier
+          </Btn>
+        </DialogActions>
+      </AdminDialog>
 
       {/* ── Dialog Édition ── */}
-      <Dialog
+      <AdminDialog
         open={dialogMode === "edit"}
-        onOpenChange={(o) => !o && closeDialog()}
+        onClose={closeDialog}
+        title="Modifier l'utilisateur"
+        description="Modifiez l'email et/ou le mot de passe."
       >
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Modifier l&apos;utilisateur</DialogTitle>
-            <DialogDescription>
-              Modifiez l&apos;email et/ou le mot de passe.
-            </DialogDescription>
-          </DialogHeader>
-          {selected && (
-            <EditUserForm
-              key={selected.id}
-              user={selected}
-              onSubmit={handleUpdate}
+        {selected && (
+          <EditUserForm
+            key={selected.id}
+            user={selected}
+            onSubmit={handleUpdate}
+            onCancel={closeDialog}
+            isLoading={actionLoading}
+          />
+        )}
+        <InlineError message={actionError} />
+      </AdminDialog>
+
+      {/* ── Dialog Suppression ── */}
+      <AdminDialog
+        open={dialogMode === "delete"}
+        onClose={closeDialog}
+        title="Confirmer la suppression"
+        description="Cette action est irréversible."
+        size="sm"
+      >
+        {selected && (
+          <div className="flex items-center gap-3 p-4 bg-[#141414] border border-[#1e1e1e] rounded-xl mb-2">
+            <UserAvatar user={selected} />
+            <div>
+              <p className="text-sm font-semibold text-white">
+                {selected.email}
+              </p>
+              <RoleBadge role={selected.permissions} />
+            </div>
+          </div>
+        )}
+        {selected?.id === currentUser?.id && (
+          <InlineError message="Vous ne pouvez pas supprimer votre propre compte." />
+        )}
+        <InlineError message={actionError} />
+        <DialogActions>
+          <Btn variant="ghost" onClick={closeDialog} disabled={actionLoading}>
+            Annuler
+          </Btn>
+          <Btn
+            variant="danger"
+            onClick={handleDelete}
+            loading={actionLoading}
+            disabled={selected?.id === currentUser?.id}
+          >
+            Supprimer définitivement
+          </Btn>
+        </DialogActions>
+      </AdminDialog>
+
+      {/* ── Dialog Création Admin ── */}
+      <AdminDialog
+        open={dialogMode === "create-admin"}
+        onClose={closeDialog}
+        title={
+          generatedCredentials
+            ? "Admin créé avec succès"
+            : "Créer un compte administrateur"
+        }
+        description={
+          generatedCredentials
+            ? "Notez ces identifiants maintenant. Ils ne seront plus affichés."
+            : "Un mot de passe sécurisé sera généré automatiquement."
+        }
+      >
+        {generatedCredentials ? (
+          /* ── Écran credentials générés ── */
+          <div className="space-y-4">
+            <div className="p-4 bg-[#0a0a0a] border border-[#1e1e1e] rounded-xl space-y-4">
+              {/* Email */}
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-2">
+                  Email
+                </p>
+                <div className="flex items-center justify-between gap-3">
+                  <code className="text-sm font-mono text-white">
+                    {generatedCredentials.email}
+                  </code>
+                  <button
+                    onClick={() =>
+                      copyToClipboard(generatedCredentials.email, "email")
+                    }
+                    className="w-7 h-7 flex items-center justify-center rounded-lg text-[#444] hover:text-white hover:bg-[#1a1a1a] transition-all shrink-0"
+                  >
+                    <IconCopy checked={copiedField === "email"} />
+                  </button>
+                </div>
+              </div>
+              {/* Divider */}
+              <div className="h-px bg-[#1a1a1a]" />
+              {/* Password */}
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-2">
+                  Mot de passe généré
+                </p>
+                <div className="flex items-center justify-between gap-3">
+                  <code className="text-sm font-mono text-[#c9a84c] bg-[#c9a84c]/5 border border-[#c9a84c]/15 px-3 py-1.5 rounded-lg break-all">
+                    {generatedCredentials.password}
+                  </code>
+                  <button
+                    onClick={() =>
+                      copyToClipboard(generatedCredentials.password, "password")
+                    }
+                    className="w-7 h-7 flex items-center justify-center rounded-lg text-[#444] hover:text-white hover:bg-[#1a1a1a] transition-all shrink-0"
+                  >
+                    <IconCopy checked={copiedField === "password"} />
+                  </button>
+                </div>
+              </div>
+            </div>
+            <p className="text-xs text-[#444]">
+              Partagez ces identifiants de façon sécurisée. L'admin devra
+              changer son mot de passe à la première connexion.
+            </p>
+            <DialogActions>
+              <Btn variant="primary" onClick={closeDialog}>
+                Fermer
+              </Btn>
+            </DialogActions>
+          </div>
+        ) : (
+          <>
+            <CreateAdminForm
+              onSubmit={handleCreateAdmin}
               onCancel={closeDialog}
               isLoading={actionLoading}
             />
-          )}
-          {actionError && (
-            <p className="text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle className="h-4 w-4" /> {actionError}
-            </p>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Dialog Suppression ── */}
-      <Dialog
-        open={dialogMode === "delete"}
-        onOpenChange={(o) => !o && closeDialog()}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
-            <DialogDescription>
-              Cette action est <strong>irréversible</strong>.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="rounded-lg bg-muted p-4 my-2 space-y-1">
-            <p className="text-sm text-muted-foreground">
-              Utilisateur concerné
-            </p>
-            <p className="font-semibold">{selected?.email}</p>
-            <RoleBadge role={selected?.permissions ?? "client"} />
-          </div>
-          {selected?.id === currentUser?.id && (
-            <p className="text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle className="h-4 w-4" />
-              Vous ne pouvez pas supprimer votre propre compte.
-            </p>
-          )}
-          {actionError && (
-            <p className="text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle className="h-4 w-4" /> {actionError}
-            </p>
-          )}
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={closeDialog}
-              disabled={actionLoading}
-            >
-              Annuler
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={actionLoading || selected?.id === currentUser?.id}
-            >
-              {actionLoading ? (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />{" "}
-                  Suppression…
-                </>
-              ) : (
-                <>
-                  <Trash2 className="mr-2 h-4 w-4" /> Supprimer définitivement
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Dialog Création Admin ── */}
-      <Dialog
-        open={dialogMode === "create-admin"}
-        onOpenChange={(o) => !o && closeDialog()}
-      >
-        <DialogContent className="max-w-md">
-          {generatedCredentials ? (
-            // Écran affichage credentials — affiché une seule fois
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <CheckCheck className="h-5 w-5 text-green-600" />
-                  Admin créé avec succès
-                </DialogTitle>
-                <DialogDescription>
-                  Notez ces identifiants maintenant. Ils ne seront plus
-                  affichés.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-3 py-2">
-                <div className="rounded-lg border bg-muted p-4 space-y-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Email</p>
-                    <div className="flex items-center justify-between gap-2">
-                      <code className="text-sm font-mono">
-                        {generatedCredentials.email}
-                      </code>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 shrink-0"
-                        onClick={() =>
-                          copyToClipboard(generatedCredentials.email, "email")
-                        }
-                      >
-                        {copiedField === "email" ? (
-                          <CheckCheck className="h-3 w-3 text-green-600" />
-                        ) : (
-                          <Copy className="h-3 w-3" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">
-                      Mot de passe généré
-                    </p>
-                    <div className="flex items-center justify-between gap-2">
-                      <code className="text-sm font-mono bg-background px-2 py-1 rounded border">
-                        {generatedCredentials.password}
-                      </code>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 shrink-0"
-                        onClick={() =>
-                          copyToClipboard(
-                            generatedCredentials.password,
-                            "password",
-                          )
-                        }
-                      >
-                        {copiedField === "password" ? (
-                          <CheckCheck className="h-3 w-3 text-green-600" />
-                        ) : (
-                          <Copy className="h-3 w-3" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Partagez ces identifiants de façon sécurisée. L&apos;admin
-                  devra changer son mot de passe à la première connexion.
-                </p>
-              </div>
-              <DialogFooter>
-                <Button onClick={closeDialog}>Fermer</Button>
-              </DialogFooter>
-            </>
-          ) : (
-            <>
-              <DialogHeader>
-                <DialogTitle>Créer un compte administrateur</DialogTitle>
-                <DialogDescription>
-                  Un mot de passe sécurisé sera généré automatiquement.
-                </DialogDescription>
-              </DialogHeader>
-              <CreateAdminForm
-                onSubmit={handleCreateAdmin}
-                onCancel={closeDialog}
-                isLoading={actionLoading}
-              />
-              {actionError && (
-                <p className="text-sm text-red-500 flex items-center gap-1">
-                  <AlertCircle className="h-4 w-4" /> {actionError}
-                </p>
-              )}
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+            <InlineError message={actionError} />
+          </>
+        )}
+      </AdminDialog>
+    </AdminPage>
   );
 }
