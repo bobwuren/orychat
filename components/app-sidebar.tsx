@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { redirect } from "next/navigation";
 import {
   BarChart3Icon,
   BookOpenIcon,
@@ -9,6 +10,7 @@ import {
   MessageSquareIcon,
   SchoolIcon,
   UserCheckIcon,
+  UsersIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -23,58 +25,24 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+const navItems = [
+  { title: "Utilisateurs", url: "/admin/users", icon: UsersIcon },
+  {
+    title: "Consultations",
+    url: "/admin/consultations",
+    icon: MessageSquareIcon,
   },
-  navMain: [
-    {
-      title: "Utilisateurs",
-      url: "/admin/users",
-      icon: UserCheckIcon,
-    },
-    {
-      title: "Consultations",
-      url: "/admin/consultations",
-      icon: MessageSquareIcon,
-    },
-    {
-      title: "Conseillers",
-      url: "/admin/counselors",
-      icon: UserCheckIcon,
-    },
-    {
-      title: "Universités",
-      url: "/admin/universities",
-      icon: SchoolIcon,
-    },
-    {
-      title: "Diplômes",
-      url: "/admin/degrees",
-      icon: GraduationCapIcon,
-    },
-    {
-      title: "Séries",
-      url: "/admin/series",
-      icon: BookOpenIcon,
-    },
-    {
-      title: "Matières",
-      url: "/admin/subjects",
-      icon: LayoutDashboardIcon,
-    },
-    {
-      title: "Recommandations",
-      url: "/admin/recommendations",
-      icon: BarChart3Icon,
-    },
-  ],
-  navClouds: [],
-  navSecondary: [],
-  documents: [],
-};
+  { title: "Conseillers", url: "/admin/counselors", icon: UserCheckIcon },
+  { title: "Universités", url: "/admin/universities", icon: SchoolIcon },
+  { title: "Diplômes", url: "/admin/degrees", icon: GraduationCapIcon },
+  { title: "Séries", url: "/admin/series", icon: BookOpenIcon },
+  { title: "Matières", url: "/admin/subjects", icon: LayoutDashboardIcon },
+  {
+    title: "Recommandations",
+    url: "/admin/recommendations",
+    icon: BarChart3Icon,
+  },
+];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -86,7 +54,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
+              <a href="/admin/users">
                 <span className="text-base font-semibold">Orientys Admin</span>
               </a>
             </SidebarMenuButton>
@@ -94,10 +62,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navItems} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );
