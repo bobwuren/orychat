@@ -618,8 +618,11 @@ export default function SubjectsAdminPage() {
                                 </TooltipTrigger>
                                 <TooltipContent>
                                   <div className="space-y-1">
-                                    {coeffs.map((c) => (
-                                      <div key={c.serieId} className="text-sm">
+                                    {coeffs.map((c, idx) => (
+                                      <div
+                                        key={`${c.serieId ?? "unknown"}-${idx}`}
+                                        className="text-sm"
+                                      >
                                         {resolveSerieLabel(c.serieId)} : coef.{" "}
                                         {c.coefficient}
                                       </div>
