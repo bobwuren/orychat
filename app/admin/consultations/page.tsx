@@ -310,7 +310,6 @@ export default function ConsultationsAdminPage() {
         <AlertCircle className="h-12 w-12 text-red-500" />
         <div className="text-center">
           <h3 className="text-lg font-semibold">Erreur de chargement</h3>
-          <p className="text-muted-foreground">{error.message}</p>
         </div>
         <Button onClick={handleRefresh}>
           <RefreshCw className="mr-2 h-4 w-4" />
@@ -412,64 +411,6 @@ export default function ConsultationsAdminPage() {
                 <p className="text-xs text-muted-foreground">
                   Consultations terminées
                 </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Graphiques */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card className="col-span-1">
-              <CardHeader>
-                <CardTitle>Statut des consultations</CardTitle>
-                <CardDescription>Répartition par statut</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[300px]">
-                  {isLoading ? (
-                    <Skeleton className="h-full w-full" />
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={statusData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={(entry) => `${entry.name}: ${entry.value}`}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {statusData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <RechartsTooltip />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="col-span-1">
-              <CardHeader>
-                <CardTitle>Évolution mensuelle</CardTitle>
-                <CardDescription>Consultations créées par jour</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[300px]">
-                  {isLoading ? (
-                    <Skeleton className="h-full w-full" />
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <BarChart3 className="h-16 w-16 text-muted-foreground" />
-                      <p className="text-muted-foreground ml-4">
-                        Graphique d&apos;évolution à implémenter
-                      </p>
-                    </div>
-                  )}
-                </div>
               </CardContent>
             </Card>
           </div>

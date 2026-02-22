@@ -93,7 +93,14 @@ import {
   Legend,
 } from "recharts";
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D"];
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#8884D8",
+  "#82CA9D",
+];
 
 export default function SubjectsAdminPage() {
   const {
@@ -107,7 +114,8 @@ export default function SubjectsAdminPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState<SubjectWithCoefficients | null>(null);
+  const [selectedSubject, setSelectedSubject] =
+    useState<SubjectWithCoefficients | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState<"csv" | "json">("csv");
@@ -125,28 +133,42 @@ export default function SubjectsAdminPage() {
   // Calculer les statistiques
   const stats = {
     totalSubjects: subjects.length,
-    coreSubjects: subjects.filter(s => s.isCore).length,
-    withCoefficients: subjects.filter(s => s.seriesCoefficients && s.seriesCoefficients.length > 0).length,
-    averageSeriesPerSubject: subjects.length > 0 
-      ? (subjects.reduce((acc, subject) => acc + (subject.seriesCoefficients?.length || 0), 0) / subjects.length).toFixed(1)
-      : "0.0",
+    coreSubjects: subjects.filter((s) => s.isCore).length,
+    withCoefficients: subjects.filter(
+      (s) => s.seriesCoefficients && s.seriesCoefficients.length > 0,
+    ).length,
+    averageSeriesPerSubject:
+      subjects.length > 0
+        ? (
+            subjects.reduce(
+              (acc, subject) => acc + (subject.seriesCoefficients?.length || 0),
+              0,
+            ) / subjects.length
+          ).toFixed(1)
+        : "0.0",
   };
 
   // Préparer les données pour les graphiques
-  const seriesDistribution = subjects.reduce((acc, subject) => {
-    const count = subject.seriesCoefficients?.length || 0;
-    acc[count] = (acc[count] || 0) + 1;
-    return acc;
-  }, {} as Record<number, number>);
+  const seriesDistribution = subjects.reduce(
+    (acc, subject) => {
+      const count = subject.seriesCoefficients?.length || 0;
+      acc[count] = (acc[count] || 0) + 1;
+      return acc;
+    },
+    {} as Record<number, number>,
+  );
 
   const chartData = Object.entries(seriesDistribution).map(([key, value]) => ({
-    name: `${key} série${parseInt(key) > 1 ? 's' : ''}`,
+    name: `${key} série${parseInt(key) > 1 ? "s" : ""}`,
     count: value,
   }));
 
   const coreSubjectsData = [
-    { name: 'Coefficient Défini', value: stats.withCoefficients },
-    { name: 'Coefficient Indéfini', value: subjects.length - stats.withCoefficients },
+    { name: "Coefficient Défini", value: stats.withCoefficients },
+    {
+      name: "Coefficient Indéfini",
+      value: subjects.length - stats.withCoefficients,
+    },
   ];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -210,20 +232,25 @@ export default function SubjectsAdminPage() {
       {/* En-tête */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Matières Académiques</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Matières Académiques
+          </h1>
           <p className="text-muted-foreground">
             Gérez toutes les matières et leurs coefficients par série
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={isLoading}
+          >
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
             Actualiser
           </Button>
-          <Button
-            onClick={() => setIsExportDialogOpen(true)}
-            variant="outline"
-          >
+          <Button onClick={() => setIsExportDialogOpen(true)} variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Exporter
           </Button>
@@ -238,7 +265,9 @@ export default function SubjectsAdminPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total des Matières</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total des Matières
+            </CardTitle>
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -250,7 +279,9 @@ export default function SubjectsAdminPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Matières Principales</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Matières Principales
+            </CardTitle>
             <Award className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -262,7 +293,9 @@ export default function SubjectsAdminPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avec Coefficients</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Avec Coefficients
+            </CardTitle>
             <Hash className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -278,71 +311,12 @@ export default function SubjectsAdminPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.averageSeriesPerSubject}</div>
+            <div className="text-2xl font-bold">
+              {stats.averageSeriesPerSubject}
+            </div>
             <p className="text-xs text-muted-foreground">
               Séries par matière en moyenne
             </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Graphiques */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Distribution par nombre de séries</CardTitle>
-            <CardDescription>Nombre de matières par nombre de séries associées</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              {isLoading ? (
-                <Skeleton className="h-full w-full" />
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <RechartsTooltip />
-                    <Bar dataKey="count" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Statut des coefficients</CardTitle>
-            <CardDescription>Répartition des matières avec/coefficients</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              {isLoading ? (
-                <Skeleton className="h-full w-full" />
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={coreSubjectsData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={(entry) => `${entry.name}: ${entry.value}`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {coreSubjectsData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              )}
-            </div>
           </CardContent>
         </Card>
       </div>
@@ -357,7 +331,10 @@ export default function SubjectsAdminPage() {
                 Gérez toutes les matières et leurs attributions aux séries
               </CardDescription>
             </div>
-            <form onSubmit={handleSearch} className="flex w-full md:w-auto space-x-2">
+            <form
+              onSubmit={handleSearch}
+              className="flex w-full md:w-auto space-x-2"
+            >
               <div className="relative flex-1 md:w-64">
                 <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -379,12 +356,8 @@ export default function SubjectsAdminPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Code</TableHead>
                   <TableHead>Nom</TableHead>
-                  <TableHead>Description</TableHead>
                   <TableHead>Séries</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Créé le</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -393,12 +366,24 @@ export default function SubjectsAdminPage() {
                   // Skeleton loader
                   Array.from({ length: 5 }).map((_, index) => (
                     <TableRow key={index}>
-                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-16" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-32" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-48" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-20" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-16" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-24" />
+                      </TableCell>
                       <TableCell className="text-right">
                         <Skeleton className="h-8 w-20 ml-auto" />
                       </TableCell>
@@ -409,7 +394,9 @@ export default function SubjectsAdminPage() {
                     <TableCell colSpan={7} className="text-center py-8">
                       <div className="flex flex-col items-center space-y-2">
                         <BookOpen className="h-12 w-12 text-muted-foreground" />
-                        <p className="text-muted-foreground">Aucune matière trouvée</p>
+                        <p className="text-muted-foreground">
+                          Aucune matière trouvée
+                        </p>
                         <Button variant="outline" size="sm">
                           <Plus className="mr-2 h-4 w-4" />
                           Créer une matière
@@ -421,72 +408,59 @@ export default function SubjectsAdminPage() {
                   subjects.map((subject) => (
                     <TableRow key={subject.id}>
                       <TableCell className="font-medium">
-                        {subject.code ? (
-                          <Badge variant="outline" className="font-mono">
-                            {subject.code}
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground">N/A</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-medium">{subject.name}</TableCell>
-                      <TableCell>
-                        <div className="max-w-[300px] truncate">
-                          {subject.description || "Aucune description"}
-                        </div>
+                        {subject.name}
                       </TableCell>
                       <TableCell>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Badge variant="secondary">
-                                {subject.seriesCoefficients?.length || 0} série(s)
+                                {subject.seriesCoefficients?.length || 0}{" "}
+                                série(s) série(s)
                               </Badge>
                             </TooltipTrigger>
                             <TooltipContent>
                               <div className="space-y-1">
-                                {subject.seriesCoefficients?.map((sc) => (
-                                  <div key={sc.serieId} className="text-sm">
-                                    {sc.seriesName || sc.serieId}: coef. {sc.coefficient}
+                                {subject.seriesCoefficients &&
+                                subject.seriesCoefficients.length > 0 ? (
+                                  subject.seriesCoefficients.map((sc, idx) => {
+                                    // Vérifier que sc existe et a les propriétés attendues
+                                    const serieName =
+                                      sc?.seriesName ||
+                                      sc?.serieId ||
+                                      "Série inconnue";
+                                    const coefficient =
+                                      sc?.coefficient !== undefined
+                                        ? sc.coefficient
+                                        : "N/A";
+
+                                    return (
+                                      <div
+                                        key={sc?.serieId || `coeff-${idx}`}
+                                        className="text-sm"
+                                      >
+                                        {serieName}: coef. {coefficient}
+                                      </div>
+                                    );
+                                  })
+                                ) : (
+                                  <div className="text-sm text-muted-foreground">
+                                    Aucune série associée
                                   </div>
-                                )) || "Aucune série"}
+                                )}
                               </div>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center space-x-2">
-                          {subject.isCore && (
-                            <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-                              <Award className="mr-1 h-3 w-3" />
-                              Principale
-                            </Badge>
-                          )}
-                          {(subject.seriesCoefficients?.length || 0) > 0 && (
-                            <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                              <CheckCircle2 className="mr-1 h-3 w-3" />
-                              Attachée
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
                         <TooltipProvider>
                           <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="text-sm text-muted-foreground cursor-help">
-                                {subject.createdAt
-                                  ? formatDistanceToNow(new Date(subject.createdAt), {
-                                      addSuffix: true,
-                                      locale: fr,
-                                    })
-                                  : "N/A"}
-                              </span>
-                            </TooltipTrigger>
                             <TooltipContent>
                               {subject.createdAt
-                                ? new Date(subject.createdAt).toLocaleDateString("fr-FR", {
+                                ? new Date(
+                                    subject.createdAt,
+                                  ).toLocaleDateString("fr-FR", {
                                     year: "numeric",
                                     month: "long",
                                     day: "numeric",
@@ -545,8 +519,10 @@ export default function SubjectsAdminPage() {
             <div className="flex items-center justify-between py-4">
               <div className="text-sm text-muted-foreground">
                 Affichage de <strong>{(currentPage - 1) * limit + 1}</strong> à{" "}
-                <strong>{Math.min(currentPage * limit, subjects.length)}</strong> sur{" "}
-                <strong>{subjects.length}</strong> matières
+                <strong>
+                  {Math.min(currentPage * limit, subjects.length)}
+                </strong>{" "}
+                sur <strong>{subjects.length}</strong> matières
               </div>
               <Pagination>
                 <PaginationContent>
@@ -557,7 +533,11 @@ export default function SubjectsAdminPage() {
                         e.preventDefault();
                         if (currentPage > 1) setCurrentPage(currentPage - 1);
                       }}
-                      className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                      className={
+                        currentPage === 1
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
                     />
                   </PaginationItem>
                   {[1, 2, 3].map((page) => (
@@ -597,7 +577,8 @@ export default function SubjectsAdminPage() {
             <DialogTitle>Confirmer la suppression</DialogTitle>
             <DialogDescription>
               Êtes-vous sûr de vouloir supprimer la matière{" "}
-              <strong>{selectedSubject?.name}</strong> ? Cette action est irréversible.
+              <strong>{selectedSubject?.name}</strong> ? Cette action est
+              irréversible.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -608,21 +589,11 @@ export default function SubjectsAdminPage() {
                   <p className="font-medium">{selectedSubject?.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Code</p>
-                  <p className="font-medium">{selectedSubject?.code || "N/A"}</p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-sm text-muted-foreground">Description</p>
-                  <p className="font-medium">{selectedSubject?.description || "Aucune description"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Séries associées</p>
-                  <p className="font-medium">{selectedSubject?.seriesCoefficients?.length || 0}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Statut</p>
+                  <p className="text-sm text-muted-foreground">
+                    Séries associées
+                  </p>
                   <p className="font-medium">
-                    {selectedSubject?.isCore ? "Principale" : "Secondaire"}
+                    {selectedSubject?.seriesCoefficients?.length || 0}
                   </p>
                 </div>
               </div>
@@ -637,7 +608,9 @@ export default function SubjectsAdminPage() {
             </Button>
             <Button
               variant="destructive"
-              onClick={() => selectedSubject && handleDelete(selectedSubject.id)}
+              onClick={() =>
+                selectedSubject && handleDelete(selectedSubject.id)
+              }
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Supprimer définitivement
@@ -657,10 +630,14 @@ export default function SubjectsAdminPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Format d&apos;export</label>
+              <label className="text-sm font-medium">
+                Format d&apos;export
+              </label>
               <Select
                 value={exportFormat}
-                onValueChange={(value: "csv" | "json") => setExportFormat(value)}
+                onValueChange={(value: "csv" | "json") =>
+                  setExportFormat(value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner un format" />
@@ -673,8 +650,9 @@ export default function SubjectsAdminPage() {
             </div>
             <div className="rounded-lg bg-muted p-4">
               <p className="text-sm text-muted-foreground">
-                L&apos;export inclura toutes les matières avec leurs coefficients par série.
-                Le fichier sera téléchargé automatiquement après l&apos;export.
+                L&apos;export inclura toutes les matières avec leurs
+                coefficients par série. Le fichier sera téléchargé
+                automatiquement après l&apos;export.
               </p>
             </div>
           </div>

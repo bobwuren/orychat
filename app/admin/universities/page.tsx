@@ -299,20 +299,6 @@ export default function UniversitiesAdminPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Étudiants</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.totalStudents.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Étudiants au total
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Diplômes</CardTitle>
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -321,75 +307,6 @@ export default function UniversitiesAdminPage() {
             <p className="text-xs text-muted-foreground">
               Diplômes par université
             </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Graphiques */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Répartition Sponsors/Non-Sponsors</CardTitle>
-            <CardDescription>Proportion des universités partenaires</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              {isLoading ? (
-                <Skeleton className="h-full w-full" />
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={sponsorshipData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={(entry) => `${entry.name}: ${entry.value}`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {sponsorshipData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Niveaux de Sponsoring</CardTitle>
-            <CardDescription>Distribution par niveau de partenariat</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              {isLoading ? (
-                <Skeleton className="h-full w-full" />
-              ) : chartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <RechartsTooltip />
-                    <Bar dataKey="count">
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-muted-foreground">Aucun sponsor enregistré</p>
-                </div>
-              )}
-            </div>
           </CardContent>
         </Card>
       </div>
@@ -439,10 +356,7 @@ export default function UniversitiesAdminPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nom</TableHead>
-                  <TableHead>Localisation</TableHead>
-                  <TableHead>Contact</TableHead>
                   <TableHead>Diplômes</TableHead>
-                  <TableHead>Étudiants</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -553,16 +467,6 @@ export default function UniversitiesAdminPage() {
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-                      </TableCell>
-                      <TableCell>
-                        {university.studentCount ? (
-                          <div className="flex items-center">
-                            <Users className="mr-1 h-3 w-3 text-muted-foreground" />
-                            <span>{university.studentCount.toLocaleString()}</span>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">N/A</span>
-                        )}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
@@ -696,16 +600,6 @@ export default function UniversitiesAdminPage() {
                 <div className="col-span-2">
                   <p className="text-sm text-muted-foreground">Nom</p>
                   <p className="font-medium text-lg">{selectedUniversity?.name}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Localisation</p>
-                  <p className="font-medium">{selectedUniversity?.location || "N/A"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Étudiants</p>
-                  <p className="font-medium">
-                    {selectedUniversity?.studentCount?.toLocaleString() || "N/A"}
-                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Statut Sponsor</p>

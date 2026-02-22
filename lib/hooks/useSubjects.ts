@@ -1,11 +1,11 @@
 /**
  * =====================================================
- * Hook - Matières
+ * Hook - Matières - CORRIGÉ
  * =====================================================
  * Hook React pour la gestion des matières
  *
  * @module lib/hooks/useSubjects
- * @version 1.0
+ * @version 1.2
  */
 
 "use client";
@@ -18,12 +18,125 @@ import type {
   UpdateSubjectRequest,
 } from "../types";
 
+// ========== TYPES D'UNION POUR LES RÉPONSES API ==========
+
+// Pour une réponse unique (getById, create, update)
+type ApiSingleResponse<T> =
+  | { subject: T; message?: string; success?: boolean }
+  | { data: T; message?: string; success?: boolean }
+  | T;
+
+// Pour une réponse multiple (getAll, getBySerie)
+type ApiListResponse<T> =
+  | {
+      subjects: T[];
+      count?: number;
+      totalPages?: number;
+      currentPage?: number;
+      message?: string;
+      success?: boolean;
+    }
+  | {
+      data: T[];
+      count?: number;
+      totalPages?: number;
+      currentPage?: number;
+      message?: string;
+      success?: boolean;
+    }
+  | T[];
+
+// ========== HOOK PRINCIPAL ==========
+
 export function useSubjects() {
   const [subjects, setSubjects] = useState<SubjectWithCoefficients[]>([]);
   const [currentSubject, setCurrentSubject] =
     useState<SubjectWithCoefficients | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+
+  /**
+   * Normalise un objet SubjectWithCoefficients pour s'assurer que seriesCoefficients est un tableau
+   */
+  const normalizeSubject = (
+    subject: SubjectWithCoefficients,
+  ): SubjectWithCoefficients => {
+    return {
+      ...subject,
+      seriesCoefficients: Array.isArray(subject.seriesCoefficients)
+        ? subject.seriesCoefficients
+        : subject.seriesCoefficients
+          ? [subject.seriesCoefficients as any]
+          : [],
+    };
+  };
+
+  /**
+   * Normalise un tableau de sujets
+   */
+  const normalizeSubjects = (
+    items: SubjectWithCoefficients[],
+  ): SubjectWithCoefficients[] => {
+    return items.map(normalizeSubject);
+  };
+
+  /**
+   * Extrait un sujet d'une réponse API (format unique)
+   */
+  const extractSingleSubject = (
+    response: unknown,
+  ): SubjectWithCoefficients | null => {
+    if (!response || typeof response !== "object") return null;
+
+    const resp = response as ApiSingleResponse<SubjectWithCoefficients>;
+
+    // Cas 1: { subject: {...} }
+    if ("subject" in resp && resp.subject && typeof resp.subject === "object") {
+      return normalizeSubject(resp.subject);
+    }
+
+    // Cas 2: { data: {...} }
+    if ("data" in resp && resp.data && typeof resp.data === "object") {
+      return normalizeSubject(resp.data);
+    }
+
+    // Cas 3: direct {...}
+    if (resp && typeof resp === "object" && "id" in resp) {
+      return normalizeSubject(resp as SubjectWithCoefficients);
+    }
+
+    return null;
+  };
+
+  /**
+   * Extrait une liste de sujets d'une réponse API (format multiple)
+   */
+  const extractListSubjects = (
+    response: unknown,
+  ): SubjectWithCoefficients[] => {
+    if (!response) return [];
+
+    // Cas 1: Tableau direct
+    if (Array.isArray(response)) {
+      return normalizeSubjects(response);
+    }
+
+    if (typeof response === "object") {
+      const resp = response as ApiListResponse<SubjectWithCoefficients>;
+
+      // Cas 2: { subjects: [...] }
+      if ("subjects" in resp && Array.isArray(resp.subjects)) {
+        return normalizeSubjects(resp.subjects);
+      }
+
+      // Cas 3: { data: [...] }
+      if ("data" in resp && Array.isArray(resp.data)) {
+        return normalizeSubjects(resp.data);
+      }
+    }
+
+    return [];
+  };
 
   /**
    * Récupérer toutes les matières
@@ -35,7 +148,8 @@ export function useSubjects() {
 
       try {
         const response = await subjectsApi.getAll(params);
-        setSubjects(response.subjects);
+        const subjectsData = extractListSubjects(response);
+        setSubjects(subjectsData);
         return response;
       } catch (err) {
         const error = err as Error;
@@ -45,7 +159,7 @@ export function useSubjects() {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   /**
@@ -57,8 +171,13 @@ export function useSubjects() {
 
     try {
       const response = await subjectsApi.getById(subjectId);
-      setCurrentSubject(response.subject);
-      return response.subject;
+      const subjectData = extractSingleSubject(response);
+
+      if (subjectData) {
+        setCurrentSubject(subjectData);
+      }
+
+      return subjectData;
     } catch (err) {
       const error = err as Error;
       setError(error);
@@ -77,7 +196,8 @@ export function useSubjects() {
 
     try {
       const response = await subjectsApi.getBySerie(serieId);
-      setSubjects(response.subjects);
+      const subjectsData = extractListSubjects(response);
+      setSubjects(subjectsData);
       return response;
     } catch (err) {
       const error = err as Error;
@@ -97,7 +217,12 @@ export function useSubjects() {
 
     try {
       const response = await subjectsApi.create(data);
-      setSubjects((prev) => [...prev, response.subject]);
+      const newSubject = extractSingleSubject(response);
+
+      if (newSubject) {
+        setSubjects((prev) => [...prev, newSubject]);
+      }
+
       return response;
     } catch (err) {
       const error = err as Error;
@@ -118,14 +243,20 @@ export function useSubjects() {
 
       try {
         const response = await subjectsApi.update(subjectId, data);
-        setSubjects((prev) =>
-          prev.map((subject) =>
-            subject.id === subjectId ? response.subject : subject
-          )
-        );
-        if (currentSubject?.id === subjectId) {
-          setCurrentSubject(response.subject);
+        const updatedSubject = extractSingleSubject(response);
+
+        if (updatedSubject) {
+          setSubjects((prev) =>
+            prev.map((subject) =>
+              subject.id === subjectId ? updatedSubject : subject,
+            ),
+          );
+
+          if (currentSubject?.id === subjectId) {
+            setCurrentSubject(updatedSubject);
+          }
         }
+
         return response;
       } catch (err) {
         const error = err as Error;
@@ -135,7 +266,7 @@ export function useSubjects() {
         setIsLoading(false);
       }
     },
-    [currentSubject]
+    [currentSubject],
   );
 
   /**
@@ -149,7 +280,7 @@ export function useSubjects() {
       try {
         const response = await subjectsApi.delete(subjectId);
         setSubjects((prev) =>
-          prev.filter((subject) => subject.id !== subjectId)
+          prev.filter((subject) => subject.id !== subjectId),
         );
         if (currentSubject?.id === subjectId) {
           setCurrentSubject(null);
@@ -163,7 +294,7 @@ export function useSubjects() {
         setIsLoading(false);
       }
     },
-    [currentSubject]
+    [currentSubject],
   );
 
   /**
@@ -185,7 +316,7 @@ export function useSubjects() {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   return {

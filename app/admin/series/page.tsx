@@ -69,27 +69,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSeries } from "@/lib/hooks";
 import { Serie } from "@/lib/types";
-import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from "recharts";
 
 const COLORS = [
   "#0088FE",
@@ -300,70 +279,6 @@ export default function SeriesAdminPage() {
         </Card>
       </div>
 
-      {/* Graphiques */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Répartition des matières par série</CardTitle>
-            <CardDescription>Nombre de matières par série</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              {isLoading ? (
-                <Skeleton className="h-full w-full" />
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <RechartsTooltip />
-                    <Bar dataKey="subjects" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Distribution des matières</CardTitle>
-            <CardDescription>Proportion des matières par série</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              {isLoading ? (
-                <Skeleton className="h-full w-full" />
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={(entry) => `${entry.name}: ${entry.subjects}`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="subjects"
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Barre de recherche et filtres */}
       <Card>
         <CardHeader>
@@ -402,8 +317,6 @@ export default function SeriesAdminPage() {
                   <TableHead>Code</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead>Matières</TableHead>
-                  <TableHead>Créé le</TableHead>
-                  <TableHead>Statut</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -466,55 +379,6 @@ export default function SeriesAdminPage() {
                         <Badge variant="secondary">
                           {serie.totalSubjects || 0} matières
                         </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="text-sm text-muted-foreground cursor-help">
-                                {serie.createdAt
-                                  ? formatDistanceToNow(
-                                      new Date(serie.createdAt),
-                                      {
-                                        addSuffix: true,
-                                        locale: fr,
-                                      }
-                                    )
-                                  : "N/A"}
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {serie.createdAt
-                                ? new Date(serie.createdAt).toLocaleDateString(
-                                    "fr-FR",
-                                    {
-                                      year: "numeric",
-                                      month: "long",
-                                      day: "numeric",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    }
-                                  )
-                                : "Non disponible"}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-                      <TableCell>
-                        {(serie.totalSubjects || 0) > 0 ? (
-                          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                            <CheckCircle2 className="mr-1 h-3 w-3" />
-                            Active
-                          </Badge>
-                        ) : (
-                          <Badge
-                            variant="outline"
-                            className="text-muted-foreground"
-                          >
-                            <AlertCircle className="mr-1 h-3 w-3" />
-                            Vide
-                          </Badge>
-                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
