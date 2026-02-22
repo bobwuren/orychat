@@ -54,8 +54,10 @@ export default function RecommendationPage() {
 
         setRecommendation(res.recommendation);
 
-        // 3. Nettoyage sessionStorage
+        // Nettoyage sessionStorage + cookies de flow
         sessionStorage.removeItem("notesPayload");
+        document.cookie = "flow_serie=0; path=/; max-age=0; SameSite=Strict";
+        document.cookie = "flow_notes=0; path=/; max-age=0; SameSite=Strict";
       } catch (err: any) {
         setError(err?.message ?? "Erreur lors de la génération.");
       } finally {

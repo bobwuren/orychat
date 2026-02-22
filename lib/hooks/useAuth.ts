@@ -25,6 +25,27 @@ const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";
 const USER_KEY = "user";
 
+/**
+ * Pose un cookie de session lisible par le middleware Next.js.
+ * Le middleware ne peut pas accéder à localStorage (côté serveur),
+ * donc on synchronise l'état d'auth via ce cookie léger.
+ *
+ * SameSite=Strict + pas de HttpOnly (doit être lisible par le middleware Edge).
+ */
+function setSessionCookie(value: "1" | "0") {
+  if (typeof document === "undefined") return;
+  if (value === "1") {
+    // Expire dans 7 jours (durée du refresh token)
+    const expires = new Date(
+      Date.now() + 7 * 24 * 60 * 60 * 1000,
+    ).toUTCString();
+    document.cookie = `session_exists=1; path=/; expires=${expires}; SameSite=Strict`;
+  } else {
+    // Suppression immédiate
+    document.cookie = "session_exists=0; path=/; max-age=0; SameSite=Strict";
+  }
+}
+
 export function useAuth() {
   const [state, setState] = useState<AuthState>({
     user: null,
@@ -42,6 +63,7 @@ export function useAuth() {
 
       if (accessToken && user) {
         setAuthToken(accessToken);
+        setSessionCookie("1");
         setState({
           user: JSON.parse(user),
           loading: false,
@@ -58,6 +80,7 @@ export function useAuth() {
           localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
           localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
           setAuthToken(data.accessToken);
+          setSessionCookie("1");
 
           setState((prev) => ({
             ...prev,
@@ -71,6 +94,7 @@ export function useAuth() {
         return;
       }
 
+      setSessionCookie("0");
       setState({ user: null, loading: false, isAuthenticated: false });
     };
 
@@ -88,6 +112,7 @@ export function useAuth() {
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
     setAuthToken(accessToken);
+    setSessionCookie("1");
 
     setState({
       user,
@@ -101,6 +126,7 @@ export function useAuth() {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     setAuthToken(null);
+    setSessionCookie("0");
   };
 
   /* ================= ACTIONS ================= */
@@ -145,7 +171,6 @@ export function useAuth() {
     clearStorage();
     setState({ user: null, loading: false, isAuthenticated: false });
 
-    // redirection safe côté client
     if (typeof window !== "undefined") {
       window.location.href = "/login";
     }

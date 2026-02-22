@@ -54,6 +54,10 @@ export default function DashboardPage() {
 
   const handleSelect = (serie: Serie) => {
     sessionStorage.setItem("selectedSerie", JSON.stringify(serie));
+    // Cookie lu par le middleware pour autoriser /dashboard/notes
+    document.cookie = "flow_serie=1; path=/; SameSite=Strict";
+    // Réinitialise l'étape suivante si on recommence depuis le début
+    document.cookie = "flow_notes=0; path=/; max-age=0; SameSite=Strict";
     router.push("/dashboard/notes");
   };
 

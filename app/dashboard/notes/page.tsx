@@ -73,6 +73,8 @@ export default function NotesPage() {
         1,
     }));
     sessionStorage.setItem("notesPayload", JSON.stringify(notesPayload));
+    // Cookie lu par le middleware pour autoriser /dashboard/recommendation
+    document.cookie = "flow_notes=1; path=/; SameSite=Strict";
     router.push("/dashboard/recommendation");
   };
 

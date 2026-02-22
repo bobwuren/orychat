@@ -36,7 +36,7 @@ export function LoginForm({
       if (res.data!.user.permissions === "admin") {
         router.push("/admin");
       } else {
-        router.push("/");
+        router.push("/dashboard");
       }
     } else {
       // res.error est une instance d'Error ou ApiError — on extrait le message
