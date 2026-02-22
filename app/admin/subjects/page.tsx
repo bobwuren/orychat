@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -44,23 +45,11 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  BookOpen,
-  Download,
-  Filter,
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  Eye,
-  TrendingUp,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle2,
-  MoreVertical,
-  Hash,
-  Award,
-  List,
-} from "lucide-react";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -69,146 +58,404 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSubjects } from "@/lib/hooks/useSubjects";
-import { SubjectWithCoefficients } from "@/lib/types/academic.types";
-import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from "recharts";
+  BookOpen,
+  Download,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Eye,
+  RefreshCw,
+  AlertCircle,
+  MoreVertical,
+  X,
+  Hash,
+} from "lucide-react";
+import { useSubjects } from "@/lib/hooks";
+import { useSeries } from "@/lib/hooks";
+import type { SubjectWithCoefficients } from "@/lib/types";
 
-const COLORS = [
-  "#0088FE",
-  "#00C49F",
-  "#FFBB28",
-  "#FF8042",
-  "#8884D8",
-  "#82CA9D",
-];
+// ─── Constantes ──────────────────────────────────────────────────────────────
+
+const ITEMS_PER_PAGE = 10;
+type DialogMode = "create" | "edit" | "view" | "delete" | "export" | null;
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * seriesCoefficients peut arriver comme objet { [serieId]: coef } (getAll)
+ * ou comme tableau [{ serieId, coefficient }] (create/update response).
+ * On normalise toujours en tableau.
+ */
+function normalizeCoefficients(
+  raw: any,
+): Array<{ serieId: string; coefficient: number; seriesName?: string }> {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  // objet { [serieId]: coefficient }
+  return Object.entries(raw).map(([serieId, coefficient]) => ({
+    serieId,
+    coefficient: coefficient as number,
+  }));
+}
+
+// ─── Formulaire matière ───────────────────────────────────────────────────────
+
+interface SerieCoeffRow {
+  serieId: string;
+  coefficient: number;
+}
+
+interface SubjectFormProps {
+  initial?: Partial<SubjectWithCoefficients>;
+  serieOptions: Array<{ id: string; code: string; description: string }>;
+  onSubmit: (data: {
+    name: string;
+    seriesCoefficients: SerieCoeffRow[];
+  }) => Promise<void>;
+  onCancel: () => void;
+  isLoading: boolean;
+  mode: "create" | "edit";
+}
+
+function SubjectForm({
+  initial,
+  serieOptions,
+  onSubmit,
+  onCancel,
+  isLoading,
+  mode,
+}: SubjectFormProps) {
+  const [name, setName] = useState(initial?.name ?? "");
+  const [rows, setRows] = useState<SerieCoeffRow[]>(() =>
+    normalizeCoefficients((initial as any)?.seriesCoefficients).map((sc) => ({
+      serieId: sc.serieId,
+      coefficient: sc.coefficient,
+    })),
+  );
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const addRow = () =>
+    setRows((prev) => [...prev, { serieId: "", coefficient: 1 }]);
+  const removeRow = (i: number) =>
+    setRows((prev) => prev.filter((_, idx) => idx !== i));
+  const updateRow = (
+    i: number,
+    field: keyof SerieCoeffRow,
+    value: string | number,
+  ) =>
+    setRows((prev) =>
+      prev.map((r, idx) => (idx === i ? { ...r, [field]: value } : r)),
+    );
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    if (!name.trim()) {
+      setFormError("Le nom est obligatoire.");
+      return;
+    }
+    for (const r of rows) {
+      if (!r.serieId) {
+        setFormError(
+          "Chaque ligne de coefficient doit avoir une série sélectionnée.",
+        );
+        return;
+      }
+      if (
+        typeof r.coefficient !== "number" ||
+        isNaN(r.coefficient) ||
+        r.coefficient < 0
+      ) {
+        setFormError("Le coefficient doit être un nombre positif.");
+        return;
+      }
+    }
+    try {
+      await onSubmit({ name: name.trim(), seriesCoefficients: rows });
+    } catch (err: any) {
+      setFormError(err?.message ?? "Une erreur est survenue.");
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="name">
+          Nom <span className="text-red-500">*</span>
+        </Label>
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="ex: Mathématiques"
+          disabled={isLoading}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label>Coefficients par série</Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addRow}
+            disabled={isLoading}
+          >
+            <Plus className="h-3 w-3 mr-1" /> Ajouter
+          </Button>
+        </div>
+        {rows.length === 0 ? (
+          <p className="text-sm text-muted-foreground italic">
+            Aucun coefficient défini.
+          </p>
+        ) : (
+          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+            {rows.map((row, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Select
+                  value={row.serieId}
+                  onValueChange={(v) => updateRow(i, "serieId", v)}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Série…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {serieOptions.map((s) => (
+                      <SelectItem key={s.id} value={String(s.id)}>
+                        {s.code} — {s.description}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  type="number"
+                  min={0}
+                  step={0.5}
+                  value={row.coefficient}
+                  onChange={(e) =>
+                    updateRow(i, "coefficient", parseFloat(e.target.value))
+                  }
+                  className="w-24"
+                  disabled={isLoading}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeRow(i)}
+                  disabled={isLoading}
+                >
+                  <X className="h-4 w-4 text-red-500" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {formError && (
+        <p className="text-sm text-red-500 flex items-center gap-1">
+          <AlertCircle className="h-4 w-4" /> {formError}
+        </p>
+      )}
+      <DialogFooter>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isLoading}
+        >
+          Annuler
+        </Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />{" "}
+              Enregistrement…
+            </>
+          ) : mode === "create" ? (
+            <>
+              <Plus className="mr-2 h-4 w-4" /> Créer
+            </>
+          ) : (
+            <>
+              <Edit className="mr-2 h-4 w-4" /> Mettre à jour
+            </>
+          )}
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+// ─── Page principale ──────────────────────────────────────────────────────────
 
 export default function SubjectsAdminPage() {
   const {
     subjects,
+    currentSubject,
     isLoading,
     error,
     fetchSubjects,
+    fetchSubjectById,
+    createSubject,
+    updateSubject,
     deleteSubject,
     exportSubjects,
   } = useSubjects();
 
-  const [currentPage, setCurrentPage] = useState(1);
+  // Pour peupler le sélecteur de séries dans le formulaire
+  const { series, fetchSeries } = useSeries();
+
+  const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [dialogMode, setDialogMode] = useState<DialogMode>(null);
   const [selectedSubject, setSelectedSubject] =
     useState<SubjectWithCoefficients | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState<"csv" | "json">("csv");
   const [isExporting, setIsExporting] = useState(false);
-  const [limit] = useState(10);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchSubjects({
-      page: currentPage,
-      limit,
-      search: searchTerm || undefined,
-    });
-  }, [currentPage, searchTerm, fetchSubjects]);
-
-  // Calculer les statistiques
-  const stats = {
-    totalSubjects: subjects.length,
-    coreSubjects: subjects.filter((s) => s.isCore).length,
-    withCoefficients: subjects.filter(
-      (s) => s.seriesCoefficients && s.seriesCoefficients.length > 0,
-    ).length,
-    averageSeriesPerSubject:
-      subjects.length > 0
-        ? (
-            subjects.reduce(
-              (acc, subject) => acc + (subject.seriesCoefficients?.length || 0),
-              0,
-            ) / subjects.length
-          ).toFixed(1)
-        : "0.0",
-  };
-
-  // Préparer les données pour les graphiques
-  const seriesDistribution = subjects.reduce(
-    (acc, subject) => {
-      const count = subject.seriesCoefficients?.length || 0;
-      acc[count] = (acc[count] || 0) + 1;
-      return acc;
-    },
-    {} as Record<number, number>,
+  const filtered = (subjects ?? []).filter(
+    (s) =>
+      !searchTerm || s.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
   );
 
-  const chartData = Object.entries(seriesDistribution).map(([key, value]) => ({
-    name: `${key} série${parseInt(key) > 1 ? "s" : ""}`,
-    count: value,
-  }));
+  const load = useCallback(() => {
+    fetchSubjects();
+  }, [fetchSubjects]);
 
-  const coreSubjectsData = [
-    { name: "Coefficient Défini", value: stats.withCoefficients },
-    {
-      name: "Coefficient Indéfini",
-      value: subjects.length - stats.withCoefficients,
-    },
-  ];
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    load();
+    fetchSeries();
+  }, [load, fetchSeries]);
+  useEffect(() => {
     setCurrentPage(1);
-    fetchSubjects({
-      page: 1,
-      limit,
-      search: searchTerm || undefined,
-    });
+  }, [searchTerm]);
+
+  const closeDialog = () => {
+    setDialogMode(null);
+    setSelectedSubject(null);
+    setActionError(null);
   };
 
-  const handleDelete = async (subjectId: string) => {
+  const openCreate = () => {
+    setSelectedSubject(null);
+    setActionError(null);
+    setDialogMode("create");
+  };
+
+  const openEdit = async (s: SubjectWithCoefficients) => {
+    setActionError(null);
+    setSelectedSubject(s);
+    setDialogMode("edit");
+    await fetchSubjectById(s.id);
+  };
+
+  const openView = async (s: SubjectWithCoefficients) => {
+    setActionError(null);
+    setSelectedSubject(s);
+    setDialogMode("view");
+    await fetchSubjectById(s.id);
+  };
+
+  const openDelete = (s: SubjectWithCoefficients) => {
+    setActionError(null);
+    setSelectedSubject(s);
+    setDialogMode("delete");
+  };
+
+  // ── Actions ──
+
+  const handleCreate = async (data: {
+    name: string;
+    seriesCoefficients: SerieCoeffRow[];
+  }) => {
+    setActionLoading(true);
+    setActionError(null);
     try {
-      await deleteSubject(subjectId);
-      setIsDeleteDialogOpen(false);
-      setSelectedSubject(null);
-    } catch (err) {
-      console.error("Error deleting subject:", err);
+      await createSubject({
+        name: data.name,
+        seriesCoefficients: data.seriesCoefficients,
+      });
+      closeDialog();
+    } catch (err: any) {
+      setActionError(err?.message ?? "Erreur lors de la création.");
+      throw err;
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUpdate = async (data: {
+    name: string;
+    seriesCoefficients: SerieCoeffRow[];
+  }) => {
+    if (!selectedSubject) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await updateSubject(selectedSubject.id, {
+        name: data.name,
+        seriesCoefficients: data.seriesCoefficients,
+      });
+      closeDialog();
+    } catch (err: any) {
+      setActionError(err?.message ?? "Erreur lors de la mise à jour.");
+      throw err;
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedSubject) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await deleteSubject(selectedSubject.id);
+      closeDialog();
+    } catch (err: any) {
+      setActionError(err?.message ?? "Erreur lors de la suppression.");
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const handleExport = async () => {
     setIsExporting(true);
+    setActionError(null);
     try {
       await exportSubjects({ format: exportFormat });
-      setIsExportDialogOpen(false);
-    } catch (err) {
-      console.error("Error exporting subjects:", err);
+      closeDialog();
+    } catch (err: any) {
+      setActionError(err?.message ?? "Erreur lors de l'export.");
     } finally {
       setIsExporting(false);
     }
   };
 
-  const handleRefresh = () => {
-    fetchSubjects({
-      page: currentPage,
-      limit,
-      search: searchTerm || undefined,
-    });
+  const serieOptions = (series ?? []).map((s) => ({
+    id: String(s.id),
+    code: s.code,
+    description: s.description,
+  }));
+
+  // Résoudre le nom de série à partir de l'ID
+  const resolveSerieLabel = (serieId: string) => {
+    const s = series?.find((s) => String(s.id) === String(serieId));
+    return s ? `${s.code}` : serieId;
   };
 
   if (error) {
@@ -219,9 +466,8 @@ export default function SubjectsAdminPage() {
           <h3 className="text-lg font-semibold">Erreur de chargement</h3>
           <p className="text-muted-foreground">{error.message}</p>
         </div>
-        <Button onClick={handleRefresh}>
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Réessayer
+        <Button onClick={load}>
+          <RefreshCw className="mr-2 h-4 w-4" /> Réessayer
         </Button>
       </div>
     );
@@ -232,298 +478,203 @@ export default function SubjectsAdminPage() {
       {/* En-tête */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Matières Académiques
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight">Matières</h1>
           <p className="text-muted-foreground">
-            Gérez toutes les matières et leurs coefficients par série
+            {filtered.length} matière{filtered.length !== 1 ? "s" : ""}
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            disabled={isLoading}
-          >
+          <Button variant="outline" onClick={load} disabled={isLoading}>
             <RefreshCw
               className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
             />
             Actualiser
           </Button>
-          <Button onClick={() => setIsExportDialogOpen(true)} variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Exporter
+          <Button variant="outline" onClick={() => setDialogMode("export")}>
+            <Download className="mr-2 h-4 w-4" /> Exporter
           </Button>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nouvelle Matière
+          <Button onClick={openCreate}>
+            <Plus className="mr-2 h-4 w-4" /> Nouvelle matière
           </Button>
         </div>
       </div>
 
-      {/* Cartes de statistiques */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total des Matières
-            </CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalSubjects}</div>
-            <p className="text-xs text-muted-foreground">
-              Matières académiques enregistrées
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Matières Principales
-            </CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.coreSubjects}</div>
-            <p className="text-xs text-muted-foreground">
-              Matières marquées comme principales
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Avec Coefficients
-            </CardTitle>
-            <Hash className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.withCoefficients}</div>
-            <p className="text-xs text-muted-foreground">
-              Matières avec coefficients définis
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Moyenne</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.averageSeriesPerSubject}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Séries par matière en moyenne
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Barre de recherche et tableau */}
+      {/* Tableau */}
       <Card>
         <CardHeader>
           <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
             <div>
-              <CardTitle>Liste des Matières</CardTitle>
+              <CardTitle>Liste des matières</CardTitle>
               <CardDescription>
-                Gérez toutes les matières et leurs attributions aux séries
+                Créez, modifiez ou supprimez des matières.
               </CardDescription>
             </div>
             <form
-              onSubmit={handleSearch}
-              className="flex w-full md:w-auto space-x-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                setSearchTerm(searchInput);
+              }}
+              className="flex space-x-2"
             >
-              <div className="relative flex-1 md:w-64">
+              <div className="relative">
                 <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher une matière..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
+                  placeholder="Rechercher…"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="pl-8 w-60"
                 />
+                {searchInput && (
+                  <button
+                    type="button"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      setSearchInput("");
+                      setSearchTerm("");
+                    }}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
               </div>
-              <Button type="submit" size="icon" variant="outline">
-                <Filter className="h-4 w-4" />
+              <Button type="submit" variant="outline" size="icon">
+                <Search className="h-4 w-4" />
               </Button>
             </form>
           </div>
         </CardHeader>
         <CardContent>
-          {/* Tableau */}
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nom</TableHead>
-                  <TableHead>Séries</TableHead>
+                  <TableHead>Coefficients / Séries</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  // Skeleton loader
-                  Array.from({ length: 5 }).map((_, index) => (
-                    <TableRow key={index}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-16" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-32" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-48" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-20" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-16" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-24" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-8 w-20 ml-auto" />
-                      </TableCell>
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      {Array.from({ length: 3 }).map((__, j) => (
+                        <TableCell key={j}>
+                          <Skeleton className="h-4 w-full" />
+                        </TableCell>
+                      ))}
                     </TableRow>
                   ))
-                ) : subjects.length === 0 ? (
+                ) : paginated.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
-                      <div className="flex flex-col items-center space-y-2">
+                    <TableCell colSpan={3} className="text-center py-12">
+                      <div className="flex flex-col items-center space-y-3">
                         <BookOpen className="h-12 w-12 text-muted-foreground" />
                         <p className="text-muted-foreground">
-                          Aucune matière trouvée
+                          {searchTerm ? "Aucun résultat." : "Aucune matière."}
                         </p>
-                        <Button variant="outline" size="sm">
-                          <Plus className="mr-2 h-4 w-4" />
-                          Créer une matière
-                        </Button>
+                        {!searchTerm && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={openCreate}
+                          >
+                            <Plus className="mr-2 h-4 w-4" /> Créer la première
+                            matière
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  subjects.map((subject) => (
-                    <TableRow key={subject.id}>
-                      <TableCell className="font-medium">
-                        {subject.name}
-                      </TableCell>
-                      <TableCell>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Badge variant="secondary">
-                                {subject.seriesCoefficients?.length || 0}{" "}
-                                série(s) série(s)
-                              </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <div className="space-y-1">
-                                {subject.seriesCoefficients &&
-                                subject.seriesCoefficients.length > 0 ? (
-                                  subject.seriesCoefficients.map((sc, idx) => {
-                                    // Vérifier que sc existe et a les propriétés attendues
-                                    const serieName =
-                                      sc?.seriesName ||
-                                      sc?.serieId ||
-                                      "Série inconnue";
-                                    const coefficient =
-                                      sc?.coefficient !== undefined
-                                        ? sc.coefficient
-                                        : "N/A";
-
-                                    return (
-                                      <div
-                                        key={sc?.serieId || `coeff-${idx}`}
-                                        className="text-sm"
-                                      >
-                                        {serieName}: coef. {coefficient}
+                  paginated.map((subject) => {
+                    const coeffs = normalizeCoefficients(
+                      (subject as any).seriesCoefficients,
+                    );
+                    return (
+                      <TableRow key={subject.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            <BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
+                            {subject.name}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {coeffs.length === 0 ? (
+                            <span className="text-muted-foreground text-sm">
+                              —
+                            </span>
+                          ) : (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge
+                                    variant="secondary"
+                                    className="cursor-help"
+                                  >
+                                    <Hash className="h-3 w-3 mr-1" />
+                                    {coeffs.length} série
+                                    {coeffs.length > 1 ? "s" : ""}
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <div className="space-y-1">
+                                    {coeffs.map((c) => (
+                                      <div key={c.serieId} className="text-sm">
+                                        {resolveSerieLabel(c.serieId)} : coef.{" "}
+                                        {c.coefficient}
                                       </div>
-                                    );
-                                  })
-                                ) : (
-                                  <div className="text-sm text-muted-foreground">
-                                    Aucune série associée
+                                    ))}
                                   </div>
-                                )}
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-                      <TableCell>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipContent>
-                              {subject.createdAt
-                                ? new Date(
-                                    subject.createdAt,
-                                  ).toLocaleDateString("fr-FR", {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })
-                                : "Non disponible"}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Voir les détails
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Modifier
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <List className="mr-2 h-4 w-4" />
-                              Gérer les coefficients
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => {
-                                setSelectedSubject(subject);
-                                setIsDeleteDialogOpen(true);
-                              }}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Supprimer
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem
+                                onClick={() => openView(subject)}
+                              >
+                                <Eye className="mr-2 h-4 w-4" /> Voir les
+                                détails
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => openEdit(subject)}
+                              >
+                                <Edit className="mr-2 h-4 w-4" /> Modifier
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-red-600 focus:text-red-600"
+                                onClick={() => openDelete(subject)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
           </div>
 
-          {/* Pagination */}
-          {!isLoading && subjects.length > 0 && (
-            <div className="flex items-center justify-between py-4">
-              <div className="text-sm text-muted-foreground">
-                Affichage de <strong>{(currentPage - 1) * limit + 1}</strong> à{" "}
-                <strong>
-                  {Math.min(currentPage * limit, subjects.length)}
-                </strong>{" "}
-                sur <strong>{subjects.length}</strong> matières
-              </div>
+          {!isLoading && filtered.length > ITEMS_PER_PAGE && (
+            <div className="flex items-center justify-between pt-4">
+              <p className="text-sm text-muted-foreground">
+                {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
+                {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} sur{" "}
+                {filtered.length}
+              </p>
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
@@ -531,7 +682,7 @@ export default function SubjectsAdminPage() {
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        if (currentPage > 1) setCurrentPage(currentPage - 1);
+                        if (currentPage > 1) setCurrentPage((p) => p - 1);
                       }}
                       className={
                         currentPage === 1
@@ -540,27 +691,35 @@ export default function SubjectsAdminPage() {
                       }
                     />
                   </PaginationItem>
-                  {[1, 2, 3].map((page) => (
-                    <PaginationItem key={page}>
-                      <PaginationLink
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setCurrentPage(page);
-                        }}
-                        isActive={currentPage === page}
-                      >
-                        {page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  ))}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setCurrentPage(page);
+                          }}
+                          isActive={currentPage === page}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ),
+                  )}
                   <PaginationItem>
                     <PaginationNext
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        setCurrentPage(currentPage + 1);
+                        if (currentPage < totalPages)
+                          setCurrentPage((p) => p + 1);
                       }}
+                      className={
+                        currentPage === totalPages
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
                     />
                   </PaginationItem>
                 </PaginationContent>
@@ -570,77 +729,218 @@ export default function SubjectsAdminPage() {
         </CardContent>
       </Card>
 
-      {/* Dialog de suppression */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+      {/* ── Dialog Création ── */}
+      <Dialog
+        open={dialogMode === "create"}
+        onOpenChange={(o) => !o && closeDialog()}
+      >
+        <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogTitle>Nouvelle matière</DialogTitle>
             <DialogDescription>
-              Êtes-vous sûr de vouloir supprimer la matière{" "}
-              <strong>{selectedSubject?.name}</strong> ? Cette action est
-              irréversible.
+              Remplissez les informations de la matière.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <div className="rounded-lg bg-muted p-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Nom</p>
-                  <p className="font-medium">{selectedSubject?.name}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Séries associées
-                  </p>
-                  <p className="font-medium">
-                    {selectedSubject?.seriesCoefficients?.length || 0}
-                  </p>
-                </div>
-              </div>
+          <SubjectForm
+            mode="create"
+            serieOptions={serieOptions}
+            onSubmit={handleCreate}
+            onCancel={closeDialog}
+            isLoading={actionLoading}
+          />
+          {actionError && (
+            <p className="text-sm text-red-500 flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" /> {actionError}
+            </p>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog Édition ── */}
+      <Dialog
+        open={dialogMode === "edit"}
+        onOpenChange={(o) => !o && closeDialog()}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Modifier la matière</DialogTitle>
+            <DialogDescription>
+              Modifiez les informations de la matière.
+            </DialogDescription>
+          </DialogHeader>
+          <SubjectForm
+            key={selectedSubject?.id}
+            mode="edit"
+            initial={
+              currentSubject?.id === selectedSubject?.id
+                ? (currentSubject ?? selectedSubject ?? undefined)
+                : (selectedSubject ?? undefined)
+            }
+            serieOptions={serieOptions}
+            onSubmit={handleUpdate}
+            onCancel={closeDialog}
+            isLoading={actionLoading}
+          />
+          {actionError && (
+            <p className="text-sm text-red-500 flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" /> {actionError}
+            </p>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog Vue ── */}
+      <Dialog
+        open={dialogMode === "view"}
+        onOpenChange={(o) => !o && closeDialog()}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Détails de la matière</DialogTitle>
+          </DialogHeader>
+          {isLoading ? (
+            <div className="space-y-3 py-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-5 w-full" />
+              ))}
             </div>
-          </div>
+          ) : (
+            (() => {
+              const s =
+                currentSubject?.id === selectedSubject?.id
+                  ? (currentSubject ?? selectedSubject)
+                  : selectedSubject;
+              const coeffs = normalizeCoefficients(
+                (s as any)?.seriesCoefficients,
+              );
+              return (
+                <div className="space-y-4 py-2">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Nom</p>
+                    <p className="font-medium text-lg">{s?.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Coefficients par série
+                    </p>
+                    {coeffs.length === 0 ? (
+                      <p className="text-sm italic text-muted-foreground">
+                        Aucun coefficient défini.
+                      </p>
+                    ) : (
+                      <div className="space-y-1">
+                        {coeffs.map((c) => (
+                          <div
+                            key={c.serieId}
+                            className="flex items-center gap-2"
+                          >
+                            <Badge variant="outline">
+                              {resolveSerieLabel(c.serieId)}
+                            </Badge>
+                            <span className="text-sm">
+                              coef. <strong>{c.coefficient}</strong>
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()
+          )}
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteDialogOpen(false)}
-            >
-              Annuler
+            <Button variant="outline" onClick={closeDialog}>
+              Fermer
             </Button>
             <Button
-              variant="destructive"
-              onClick={() =>
-                selectedSubject && handleDelete(selectedSubject.id)
-              }
+              onClick={() => selectedSubject && openEdit(selectedSubject)}
             >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer définitivement
+              <Edit className="mr-2 h-4 w-4" /> Modifier
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Dialog d'export */}
-      <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+      {/* ── Dialog Suppression ── */}
+      <Dialog
+        open={dialogMode === "delete"}
+        onOpenChange={(o) => !o && closeDialog()}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogDescription>
+              Cette action est <strong>irréversible</strong>. Toutes les notes
+              et dépendances seront supprimées.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-lg bg-muted p-4 my-2">
+            <p className="text-sm text-muted-foreground">Matière concernée</p>
+            <p className="font-semibold text-lg">{selectedSubject?.name}</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {
+                normalizeCoefficients(
+                  (selectedSubject as any)?.seriesCoefficients,
+                ).length
+              }{" "}
+              série(s) associée(s)
+            </p>
+          </div>
+          {actionError && (
+            <p className="text-sm text-red-500 flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" /> {actionError}
+            </p>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={closeDialog}
+              disabled={actionLoading}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={actionLoading}
+            >
+              {actionLoading ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />{" "}
+                  Suppression…
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" /> Supprimer définitivement
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog Export ── */}
+      <Dialog
+        open={dialogMode === "export"}
+        onOpenChange={(o) => !o && closeDialog()}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Exporter les matières</DialogTitle>
             <DialogDescription>
-              Sélectionnez le format d&apos;export souhaité.
+              Choisissez le format d'export.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Format d&apos;export
-              </label>
+              <Label>Format</Label>
               <Select
                 value={exportFormat}
-                onValueChange={(value: "csv" | "json") =>
-                  setExportFormat(value)
-                }
+                onValueChange={(v: "csv" | "json") => setExportFormat(v)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un format" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="csv">CSV (Excel)</SelectItem>
@@ -648,31 +948,32 @@ export default function SubjectsAdminPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="rounded-lg bg-muted p-4">
-              <p className="text-sm text-muted-foreground">
-                L&apos;export inclura toutes les matières avec leurs
-                coefficients par série. Le fichier sera téléchargé
-                automatiquement après l&apos;export.
-              </p>
+            <div className="rounded-lg bg-muted p-4 text-sm text-muted-foreground">
+              Toutes les matières ({filtered.length}) avec leurs coefficients
+              seront incluses.
             </div>
           </div>
+          {actionError && (
+            <p className="text-sm text-red-500 flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" /> {actionError}
+            </p>
+          )}
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setIsExportDialogOpen(false)}
+              onClick={closeDialog}
+              disabled={isExporting}
             >
               Annuler
             </Button>
             <Button onClick={handleExport} disabled={isExporting}>
               {isExporting ? (
                 <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  Export en cours...
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Export…
                 </>
               ) : (
                 <>
-                  <Download className="mr-2 h-4 w-4" />
-                  Exporter maintenant
+                  <Download className="mr-2 h-4 w-4" /> Exporter
                 </>
               )}
             </Button>

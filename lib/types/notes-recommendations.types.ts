@@ -34,6 +34,7 @@ export interface OrientationDegree {
 export interface OrientationUniversity {
   name: string;
   site?: string;
+  website?: string;
 }
 
 export interface Orientation {

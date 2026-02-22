@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -44,21 +46,11 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  BarChart3,
-  Download,
-  Filter,
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  Eye,
-  BookOpen,
-  TrendingUp,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle2,
-  MoreVertical,
-} from "lucide-react";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,109 +59,426 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  BookOpen,
+  Download,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Eye,
+  RefreshCw,
+  AlertCircle,
+  MoreVertical,
+  X,
+  List,
+} from "lucide-react";
 import { useSeries } from "@/lib/hooks";
-import { Serie } from "@/lib/types";
+import { useSubjects } from "@/lib/hooks";
+import type { Serie } from "@/lib/types";
 
-const COLORS = [
-  "#0088FE",
-  "#00C49F",
-  "#FFBB28",
-  "#FF8042",
-  "#8884D8",
-  "#82CA9D",
-];
+// ─── Constantes ───────────────────────────────────────────────────────────────
+
+const ITEMS_PER_PAGE = 10;
+type DialogMode = "create" | "edit" | "view" | "delete" | "export" | null;
+
+// ─── Formulaire série ─────────────────────────────────────────────────────────
+
+interface SubjectRow {
+  subjectId: string;
+  coefficient: number;
+}
+
+interface SerieFormProps {
+  initial?: Partial<Serie>;
+  subjectOptions: Array<{ id: string; name: string }>;
+  onSubmit: (data: {
+    code: string;
+    description: string;
+    subjects: SubjectRow[];
+  }) => Promise<void>;
+  onCancel: () => void;
+  isLoading: boolean;
+  mode: "create" | "edit";
+}
+
+function SerieForm({
+  initial,
+  subjectOptions,
+  onSubmit,
+  onCancel,
+  isLoading,
+  mode,
+}: SerieFormProps) {
+  const [code, setCode] = useState(initial?.code ?? "");
+  const [description, setDescription] = useState(initial?.description ?? "");
+  // subjects de la série : [{ subjectId, coefficient }]
+  const [rows, setRows] = useState<SubjectRow[]>(() =>
+    (initial?.subjects ?? []).map((s: any) => ({
+      subjectId: String(s.subjectId ?? s.id ?? ""),
+      coefficient: s.coefficient ?? 1,
+    })),
+  );
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const addRow = () =>
+    setRows((prev) => [...prev, { subjectId: "", coefficient: 1 }]);
+  const removeRow = (i: number) =>
+    setRows((prev) => prev.filter((_, idx) => idx !== i));
+  const updateRow = (
+    i: number,
+    field: keyof SubjectRow,
+    value: string | number,
+  ) =>
+    setRows((prev) =>
+      prev.map((r, idx) => (idx === i ? { ...r, [field]: value } : r)),
+    );
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    if (!code.trim()) {
+      setFormError("Le code est obligatoire.");
+      return;
+    }
+    if (!description.trim()) {
+      setFormError("La description est obligatoire.");
+      return;
+    }
+    for (const r of rows) {
+      if (!r.subjectId) {
+        setFormError("Chaque ligne doit avoir une matière sélectionnée.");
+        return;
+      }
+      if (
+        typeof r.coefficient !== "number" ||
+        isNaN(r.coefficient) ||
+        r.coefficient < 0
+      ) {
+        setFormError("Le coefficient doit être un nombre positif.");
+        return;
+      }
+    }
+    try {
+      await onSubmit({
+        code: code.trim(),
+        description: description.trim(),
+        subjects: rows,
+      });
+    } catch (err: any) {
+      setFormError(err?.message ?? "Une erreur est survenue.");
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="code">
+            Code <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="ex: S1, L, ES"
+            disabled={isLoading}
+          />
+        </div>
+        <div className="space-y-2 col-span-2">
+          <Label htmlFor="description">
+            Description <span className="text-red-500">*</span>
+          </Label>
+          <Textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Description de la série"
+            disabled={isLoading}
+            rows={2}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label>Matières</Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addRow}
+            disabled={isLoading}
+          >
+            <Plus className="h-3 w-3 mr-1" /> Ajouter
+          </Button>
+        </div>
+        {rows.length === 0 ? (
+          <p className="text-sm text-muted-foreground italic">
+            Aucune matière associée.
+          </p>
+        ) : (
+          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+            {rows.map((row, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Select
+                  value={row.subjectId}
+                  onValueChange={(v) => updateRow(i, "subjectId", v)}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Matière…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subjectOptions.map((s) => (
+                      <SelectItem key={s.id} value={String(s.id)}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  type="number"
+                  min={0}
+                  step={0.5}
+                  value={row.coefficient}
+                  onChange={(e) =>
+                    updateRow(i, "coefficient", parseFloat(e.target.value))
+                  }
+                  className="w-24"
+                  disabled={isLoading}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeRow(i)}
+                  disabled={isLoading}
+                >
+                  <X className="h-4 w-4 text-red-500" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {formError && (
+        <p className="text-sm text-red-500 flex items-center gap-1">
+          <AlertCircle className="h-4 w-4" /> {formError}
+        </p>
+      )}
+      <DialogFooter>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isLoading}
+        >
+          Annuler
+        </Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />{" "}
+              Enregistrement…
+            </>
+          ) : mode === "create" ? (
+            <>
+              <Plus className="mr-2 h-4 w-4" /> Créer
+            </>
+          ) : (
+            <>
+              <Edit className="mr-2 h-4 w-4" /> Mettre à jour
+            </>
+          )}
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+// ─── Page principale ──────────────────────────────────────────────────────────
 
 export default function SeriesAdminPage() {
-  const { series, isLoading, error, fetchSeries, deleteSerie, exportSeries } =
-    useSeries();
+  const {
+    series,
+    currentSerie,
+    isLoading,
+    error,
+    fetchSeries,
+    fetchSerieById,
+    createSerie,
+    updateSerie,
+    deleteSerie,
+    exportSeries,
+  } = useSeries();
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const { subjects, fetchSubjects } = useSubjects();
+
+  const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("createdAt");
-  const [sortOrder, setSortOrder] = useState("desc");
-  const [limit] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [dialogMode, setDialogMode] = useState<DialogMode>(null);
   const [selectedSerie, setSelectedSerie] = useState<Serie | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState<"csv" | "json">("csv");
   const [isExporting, setIsExporting] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const filtered = (series ?? []).filter(
+    (s) =>
+      !searchTerm ||
+      s.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.description.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
+
+  const load = useCallback(() => {
+    fetchSeries();
+  }, [fetchSeries]);
 
   useEffect(() => {
-    fetchSeries({
-      page: currentPage,
-      limit,
-      search: searchTerm || undefined,
-    });
-  }, [currentPage, searchTerm, fetchSeries]);
-
-  // Calculer les statistiques
-  const stats = {
-    totalSeries: series.length,
-    totalSubjects: series.reduce(
-      (acc, serie) => acc + (serie.totalSubjects || 0),
-      0
-    ),
-    averageSubjects:
-      series.length > 0
-        ? (
-            series.reduce((acc, serie) => acc + (serie.totalSubjects || 0), 0) /
-            series.length
-          ).toFixed(1)
-        : "0.0",
-    activeSeries: series.filter((s) => s.totalSubjects && s.totalSubjects > 0)
-      .length,
-  };
-
-  // Préparer les données pour les graphiques
-  const chartData = series.map((serie) => ({
-    name: serie.code,
-    subjects: serie.totalSubjects || 0,
-    createdAt: serie.createdAt ? new Date(serie.createdAt).getTime() : 0,
-  }));
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+    load();
+    fetchSubjects();
+  }, [load, fetchSubjects]);
+  useEffect(() => {
     setCurrentPage(1);
-    fetchSeries({
-      page: 1,
-      limit,
-      search: searchTerm || undefined,
-    });
+  }, [searchTerm]);
+
+  const closeDialog = () => {
+    setDialogMode(null);
+    setSelectedSerie(null);
+    setActionError(null);
   };
 
-  const handleDelete = async (serieId: string) => {
+  const openCreate = () => {
+    setSelectedSerie(null);
+    setActionError(null);
+    setDialogMode("create");
+  };
+
+  const openEdit = async (s: Serie) => {
+    setActionError(null);
+    setSelectedSerie(s);
+    setDialogMode("edit");
+    await fetchSerieById(s.id);
+  };
+
+  const openView = async (s: Serie) => {
+    setActionError(null);
+    setSelectedSerie(s);
+    setDialogMode("view");
+    await fetchSerieById(s.id);
+  };
+
+  const openDelete = (s: Serie) => {
+    setActionError(null);
+    setSelectedSerie(s);
+    setDialogMode("delete");
+  };
+
+  // ── Actions ──
+
+  const handleCreate = async (data: {
+    code: string;
+    description: string;
+    subjects: SubjectRow[];
+  }) => {
+    setActionLoading(true);
+    setActionError(null);
     try {
-      await deleteSerie(serieId);
-      setIsDeleteDialogOpen(false);
-      setSelectedSerie(null);
-    } catch (err) {
-      console.error("Error deleting serie:", err);
+      await createSerie({
+        code: data.code,
+        description: data.description,
+        subjects: data.subjects.map((r) => ({
+          subjectId: r.subjectId,
+          coefficient: r.coefficient,
+        })),
+      });
+      closeDialog();
+    } catch (err: any) {
+      setActionError(err?.message ?? "Erreur lors de la création.");
+      throw err;
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUpdate = async (data: {
+    code: string;
+    description: string;
+    subjects: SubjectRow[];
+  }) => {
+    if (!selectedSerie) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await updateSerie(selectedSerie.id, {
+        code: data.code,
+        description: data.description,
+        subjects: data.subjects.map((r) => ({
+          subjectId: r.subjectId,
+          coefficient: r.coefficient,
+        })),
+      });
+      closeDialog();
+    } catch (err: any) {
+      setActionError(err?.message ?? "Erreur lors de la mise à jour.");
+      throw err;
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedSerie) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await deleteSerie(selectedSerie.id);
+      closeDialog();
+    } catch (err: any) {
+      setActionError(err?.message ?? "Erreur lors de la suppression.");
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const handleExport = async () => {
     setIsExporting(true);
+    setActionError(null);
     try {
-      await exportSeries({
-        format: exportFormat,
-        includeSubjects: true,
-      });
-      setIsExportDialogOpen(false);
-    } catch (err) {
-      console.error("Error exporting series:", err);
+      await exportSeries({ format: exportFormat });
+      closeDialog();
+    } catch (err: any) {
+      setActionError(err?.message ?? "Erreur lors de l'export.");
     } finally {
       setIsExporting(false);
     }
   };
 
-  const handleRefresh = () => {
-    fetchSeries({
-      page: currentPage,
-      limit,
-      search: searchTerm || undefined,
-    });
+  const subjectOptions = (subjects ?? []).map((s) => ({
+    id: String(s.id),
+    name: s.name,
+  }));
+
+  const resolveSubjectName = (subjectId: string) => {
+    const s = subjects?.find((s) => String(s.id) === String(subjectId));
+    return s?.name ?? subjectId;
   };
+
+  // getById retourne { id, code, description, subjects } direct (sans enveloppe serie:)
+  // Le hook useSeries stocke dans currentSerie via response.serie — mais le backend ne renvoie pas { serie: ... }
+  // On utilise donc selectedSerie pour l'affichage et currentSerie si disponible
+  const activeSerie =
+    currentSerie?.id === selectedSerie?.id
+      ? (currentSerie ?? selectedSerie)
+      : selectedSerie;
 
   if (error) {
     return (
@@ -179,9 +488,8 @@ export default function SeriesAdminPage() {
           <h3 className="text-lg font-semibold">Erreur de chargement</h3>
           <p className="text-muted-foreground">{error.message}</p>
         </div>
-        <Button onClick={handleRefresh}>
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Réessayer
+        <Button onClick={load}>
+          <RefreshCw className="mr-2 h-4 w-4" /> Réessayer
         </Button>
       </div>
     );
@@ -192,124 +500,72 @@ export default function SeriesAdminPage() {
       {/* En-tête */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Séries Académiques
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight">Séries</h1>
           <p className="text-muted-foreground">
-            Gérez les séries et leurs matières associées
+            {filtered.length} série{filtered.length !== 1 ? "s" : ""}
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            disabled={isLoading}
-          >
+          <Button variant="outline" onClick={load} disabled={isLoading}>
             <RefreshCw
               className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
             />
             Actualiser
           </Button>
-          <Button onClick={() => setIsExportDialogOpen(true)} variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Exporter
+          <Button variant="outline" onClick={() => setDialogMode("export")}>
+            <Download className="mr-2 h-4 w-4" /> Exporter
           </Button>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nouvelle Série
+          <Button onClick={openCreate}>
+            <Plus className="mr-2 h-4 w-4" /> Nouvelle série
           </Button>
         </div>
       </div>
 
-      {/* Cartes de statistiques */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total des Séries
-            </CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalSeries}</div>
-            <p className="text-xs text-muted-foreground">
-              Séries académiques enregistrées
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total des Matières
-            </CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalSubjects}</div>
-            <p className="text-xs text-muted-foreground">
-              Matières réparties sur toutes les séries
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Moyenne</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.averageSubjects}</div>
-            <p className="text-xs text-muted-foreground">
-              Matières par série en moyenne
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Séries Actives
-            </CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.activeSeries}</div>
-            <p className="text-xs text-muted-foreground">
-              Séries avec au moins une matière
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Barre de recherche et filtres */}
+      {/* Tableau */}
       <Card>
         <CardHeader>
           <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
             <div>
-              <CardTitle>Liste des Séries</CardTitle>
+              <CardTitle>Liste des séries</CardTitle>
               <CardDescription>
-                Gérez toutes les séries académiques
+                Créez, modifiez ou supprimez des séries académiques.
               </CardDescription>
             </div>
             <form
-              onSubmit={handleSearch}
-              className="flex w-full md:w-auto space-x-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                setSearchTerm(searchInput);
+              }}
+              className="flex space-x-2"
             >
-              <div className="relative flex-1 md:w-64">
+              <div className="relative">
                 <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher une série..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
+                  placeholder="Code ou description…"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="pl-8 w-60"
                 />
+                {searchInput && (
+                  <button
+                    type="button"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      setSearchInput("");
+                      setSearchTerm("");
+                    }}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
               </div>
-              <Button type="submit" size="icon" variant="outline">
-                <Filter className="h-4 w-4" />
+              <Button type="submit" variant="outline" size="icon">
+                <Search className="h-4 w-4" />
               </Button>
             </form>
           </div>
         </CardHeader>
         <CardContent>
-          {/* Tableau */}
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -322,63 +578,91 @@ export default function SeriesAdminPage() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  // Skeleton loader
-                  Array.from({ length: 5 }).map((_, index) => (
-                    <TableRow key={index}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-20" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-40" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-10" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-24" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-16" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-8 w-20 ml-auto" />
-                      </TableCell>
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      {Array.from({ length: 4 }).map((__, j) => (
+                        <TableCell key={j}>
+                          <Skeleton className="h-4 w-full" />
+                        </TableCell>
+                      ))}
                     </TableRow>
                   ))
-                ) : series.length === 0 ? (
+                ) : paginated.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      <div className="flex flex-col items-center space-y-2">
+                    <TableCell colSpan={4} className="text-center py-12">
+                      <div className="flex flex-col items-center space-y-3">
                         <BookOpen className="h-12 w-12 text-muted-foreground" />
                         <p className="text-muted-foreground">
-                          Aucune série trouvée
+                          {searchTerm ? "Aucun résultat." : "Aucune série."}
                         </p>
-                        <Button variant="outline" size="sm">
-                          <Plus className="mr-2 h-4 w-4" />
-                          Créer une série
-                        </Button>
+                        {!searchTerm && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={openCreate}
+                          >
+                            <Plus className="mr-2 h-4 w-4" /> Créer la première
+                            série
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  series.map((serie) => (
+                  paginated.map((serie) => (
                     <TableRow key={serie.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="outline" className="font-mono">
-                            {serie.code}
-                          </Badge>
-                        </div>
-                      </TableCell>
                       <TableCell>
-                        <div className="max-w-[300px] truncate">
-                          {serie.description}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">
-                          {serie.totalSubjects || 0} matières
+                        <Badge variant="secondary" className="font-mono">
+                          {serie.code}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-[260px]">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="truncate block cursor-help">
+                                {serie.description}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs">{serie.description}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </TableCell>
+                      <TableCell>
+                        {(serie.subjects?.length ?? 0) === 0 ? (
+                          <span className="text-muted-foreground text-sm">
+                            —
+                          </span>
+                        ) : (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge
+                                  variant="outline"
+                                  className="cursor-help"
+                                >
+                                  <List className="h-3 w-3 mr-1" />
+                                  {serie.subjects?.length} matière
+                                  {(serie.subjects?.length ?? 0) > 1 ? "s" : ""}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <div className="space-y-1">
+                                  {serie.subjects?.map((s: any) => (
+                                    <div
+                                      key={s.id ?? s.subjectId}
+                                      className="text-sm"
+                                    >
+                                      {s.name} — coef. {s.coefficient}
+                                    </div>
+                                  ))}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
@@ -389,24 +673,18 @@ export default function SeriesAdminPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Voir les détails
+                            <DropdownMenuItem onClick={() => openView(serie)}>
+                              <Eye className="mr-2 h-4 w-4" /> Voir les détails
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Modifier
+                            <DropdownMenuItem onClick={() => openEdit(serie)}>
+                              <Edit className="mr-2 h-4 w-4" /> Modifier
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => {
-                                setSelectedSerie(serie);
-                                setIsDeleteDialogOpen(true);
-                              }}
+                              className="text-red-600 focus:text-red-600"
+                              onClick={() => openDelete(serie)}
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Supprimer
+                              <Trash2 className="mr-2 h-4 w-4" /> Supprimer
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -418,14 +696,13 @@ export default function SeriesAdminPage() {
             </Table>
           </div>
 
-          {/* Pagination */}
-          {!isLoading && series.length > 0 && (
-            <div className="flex items-center justify-between py-4">
-              <div className="text-sm text-muted-foreground">
-                Affichage de <strong>{(currentPage - 1) * limit + 1}</strong> à{" "}
-                <strong>{Math.min(currentPage * limit, series.length)}</strong>{" "}
-                sur <strong>{series.length}</strong> séries
-              </div>
+          {!isLoading && filtered.length > ITEMS_PER_PAGE && (
+            <div className="flex items-center justify-between pt-4">
+              <p className="text-sm text-muted-foreground">
+                {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
+                {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} sur{" "}
+                {filtered.length}
+              </p>
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
@@ -433,7 +710,7 @@ export default function SeriesAdminPage() {
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        if (currentPage > 1) setCurrentPage(currentPage - 1);
+                        if (currentPage > 1) setCurrentPage((p) => p - 1);
                       }}
                       className={
                         currentPage === 1
@@ -442,27 +719,35 @@ export default function SeriesAdminPage() {
                       }
                     />
                   </PaginationItem>
-                  {[1, 2, 3].map((page) => (
-                    <PaginationItem key={page}>
-                      <PaginationLink
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setCurrentPage(page);
-                        }}
-                        isActive={currentPage === page}
-                      >
-                        {page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  ))}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setCurrentPage(page);
+                          }}
+                          isActive={currentPage === page}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ),
+                  )}
                   <PaginationItem>
                     <PaginationNext
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        setCurrentPage(currentPage + 1);
+                        if (currentPage < totalPages)
+                          setCurrentPage((p) => p + 1);
                       }}
+                      className={
+                        currentPage === totalPages
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
                     />
                   </PaginationItem>
                 </PaginationContent>
@@ -472,75 +757,207 @@ export default function SeriesAdminPage() {
         </CardContent>
       </Card>
 
-      {/* Dialog de suppression */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+      {/* ── Dialog Création ── */}
+      <Dialog
+        open={dialogMode === "create"}
+        onOpenChange={(o) => !o && closeDialog()}
+      >
+        <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogTitle>Nouvelle série</DialogTitle>
             <DialogDescription>
-              Êtes-vous sûr de vouloir supprimer la série{" "}
-              <strong>{selectedSerie?.code}</strong> ? Cette action est
-              irréversible.
+              Remplissez les informations de la série.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <div className="rounded-lg bg-muted p-4">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <p className="text-sm text-muted-foreground">Code</p>
-                  <p className="font-medium">{selectedSerie?.code}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Matières</p>
-                  <p className="font-medium">
-                    {selectedSerie?.totalSubjects || 0}
+          <SerieForm
+            mode="create"
+            subjectOptions={subjectOptions}
+            onSubmit={handleCreate}
+            onCancel={closeDialog}
+            isLoading={actionLoading}
+          />
+          {actionError && (
+            <p className="text-sm text-red-500 flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" /> {actionError}
+            </p>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog Édition ── */}
+      <Dialog
+        open={dialogMode === "edit"}
+        onOpenChange={(o) => !o && closeDialog()}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Modifier la série</DialogTitle>
+            <DialogDescription>
+              Modifiez les informations de la série.
+            </DialogDescription>
+          </DialogHeader>
+          <SerieForm
+            key={selectedSerie?.id}
+            mode="edit"
+            initial={activeSerie ?? undefined}
+            subjectOptions={subjectOptions}
+            onSubmit={handleUpdate}
+            onCancel={closeDialog}
+            isLoading={actionLoading}
+          />
+          {actionError && (
+            <p className="text-sm text-red-500 flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" /> {actionError}
+            </p>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog Vue ── */}
+      <Dialog
+        open={dialogMode === "view"}
+        onOpenChange={(o) => !o && closeDialog()}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Détails de la série</DialogTitle>
+          </DialogHeader>
+          {isLoading ? (
+            <div className="space-y-3 py-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-5 w-full" />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4 py-2">
+              <div className="flex items-center gap-3">
+                <Badge
+                  variant="secondary"
+                  className="font-mono text-base px-3 py-1"
+                >
+                  {activeSerie?.code}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Description</p>
+                <p className="font-medium">{activeSerie?.description}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Matières ({activeSerie?.subjects?.length ?? 0})
+                </p>
+                {(activeSerie?.subjects?.length ?? 0) === 0 ? (
+                  <p className="text-sm italic text-muted-foreground">
+                    Aucune matière associée.
                   </p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-sm text-muted-foreground">Description</p>
-                  <p className="font-medium">{selectedSerie?.description}</p>
-                </div>
+                ) : (
+                  <div className="space-y-1 max-h-48 overflow-y-auto">
+                    {activeSerie?.subjects?.map((s: any) => (
+                      <div
+                        key={s.id ?? s.subjectId}
+                        className="flex items-center justify-between text-sm border rounded px-3 py-1.5"
+                      >
+                        <span className="font-medium">
+                          {s.name ?? resolveSubjectName(s.subjectId)}
+                        </span>
+                        <Badge variant="outline">coef. {s.coefficient}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          )}
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteDialogOpen(false)}
-            >
-              Annuler
+            <Button variant="outline" onClick={closeDialog}>
+              Fermer
             </Button>
-            <Button
-              variant="destructive"
-              onClick={() => selectedSerie && handleDelete(selectedSerie.id)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer définitivement
+            <Button onClick={() => selectedSerie && openEdit(selectedSerie)}>
+              <Edit className="mr-2 h-4 w-4" /> Modifier
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Dialog d'export */}
-      <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+      {/* ── Dialog Suppression ── */}
+      <Dialog
+        open={dialogMode === "delete"}
+        onOpenChange={(o) => !o && closeDialog()}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogDescription>
+              Cette action est <strong>irréversible</strong>. Toutes les
+              dépendances seront supprimées en cascade.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-lg bg-muted p-4 my-2">
+            <p className="text-sm text-muted-foreground">Série concernée</p>
+            <p className="font-semibold text-lg font-mono">
+              {selectedSerie?.code}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {selectedSerie?.description}
+            </p>
+            <p className="text-sm mt-1">
+              {selectedSerie?.subjects?.length ?? 0} matière(s) associée(s)
+            </p>
+          </div>
+          {actionError && (
+            <p className="text-sm text-red-500 flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" /> {actionError}
+            </p>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={closeDialog}
+              disabled={actionLoading}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={actionLoading}
+            >
+              {actionLoading ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />{" "}
+                  Suppression…
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" /> Supprimer définitivement
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog Export ── */}
+      <Dialog
+        open={dialogMode === "export"}
+        onOpenChange={(o) => !o && closeDialog()}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Exporter les séries</DialogTitle>
             <DialogDescription>
-              Sélectionnez le format d&apos;export et les options souhaitées.
+              Choisissez le format d'export.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Format d&apos;export</label>
+              <Label>Format</Label>
               <Select
                 value={exportFormat}
-                onValueChange={(value: "csv" | "json") =>
-                  setExportFormat(value)
-                }
+                onValueChange={(v: "csv" | "json") => setExportFormat(v)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un format" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="csv">CSV (Excel)</SelectItem>
@@ -548,31 +965,32 @@ export default function SeriesAdminPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="rounded-lg bg-muted p-4">
-              <p className="text-sm text-muted-foreground">
-                L&apos;export inclura toutes les séries avec leurs matières
-                associées. Le fichier sera téléchargé automatiquement après
-                l&apos;export.
-              </p>
+            <div className="rounded-lg bg-muted p-4 text-sm text-muted-foreground">
+              Toutes les séries ({filtered.length}) avec leurs matières seront
+              incluses.
             </div>
           </div>
+          {actionError && (
+            <p className="text-sm text-red-500 flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" /> {actionError}
+            </p>
+          )}
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setIsExportDialogOpen(false)}
+              onClick={closeDialog}
+              disabled={isExporting}
             >
               Annuler
             </Button>
             <Button onClick={handleExport} disabled={isExporting}>
               {isExporting ? (
                 <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  Export en cours...
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Export…
                 </>
               ) : (
                 <>
-                  <Download className="mr-2 h-4 w-4" />
-                  Exporter maintenant
+                  <Download className="mr-2 h-4 w-4" /> Exporter
                 </>
               )}
             </Button>
