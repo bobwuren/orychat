@@ -2,67 +2,30 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  Eye,
-  RefreshCw,
-  AlertCircle,
-  MoreVertical,
-  X,
-  UserCheck,
-  UserX,
-  Mail,
-  Phone,
-  User,
-} from "lucide-react";
+  AdminPage,
+  PageHeader,
+  AdminCard,
+  Btn,
+  AdminTable,
+  THead,
+  Th,
+  TBody,
+  Tr,
+  Td,
+  SkeletonRows,
+  EmptyRow,
+  AdminDialog,
+  DialogActions,
+  FormField,
+  AdminInput,
+  AdminTextarea,
+  AdminBadge,
+  Toggle,
+  PaginationBar,
+  SearchBar,
+  InlineError,
+  PageError,
+} from "@/components/admin/ui";
 import { counselorsApi } from "@/lib/api";
 import type {
   Counselor,
@@ -70,12 +33,98 @@ import type {
   UpdateCounselorRequest,
 } from "@/lib/types";
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Constantes
+// ---------------------------------------------------------------------------
 
 const ITEMS_PER_PAGE = 10;
 type DialogMode = "create" | "edit" | "view" | "delete" | null;
+type FilterActive = "all" | "active" | "inactive";
 
-// ─── Formulaire conseiller ────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Icônes SVG inline
+// ---------------------------------------------------------------------------
+
+function IconRefresh() {
+  return (
+    <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
+      <path
+        d="M2 8a6 6 0 0110.472-4M14 8a6 6 0 01-10.472 4M2 8h2m10 0h-2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+function IconPlus() {
+  return (
+    <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
+      <path
+        d="M6 2v8M2 6h8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+function IconX() {
+  return (
+    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+      <path
+        d="M2 2l8 8M10 2l-8 8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+function IconMail() {
+  return (
+    <svg className="w-3 h-3" viewBox="0 0 16 16" fill="none">
+      <path
+        d="M2 4h12v9a1 1 0 01-1 1H3a1 1 0 01-1-1V4zM2 4l6 5 6-5"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+function IconPhone() {
+  return (
+    <svg className="w-3 h-3" viewBox="0 0 16 16" fill="none">
+      <path
+        d="M3 3l2 2-1.5 2.5S4.5 10 7 12.5l2.5-1.5 2 2-2 2C4 17 -1 9.5 1 3l2-1z"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+function IconExternal() {
+  return (
+    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+      <path
+        d="M7 1h4v4M11 1L6 6M5 2H2a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V8"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Formulaire conseiller
+// Logique métier originale préservée : specialties[], isActive, photo URL, validation
+// ---------------------------------------------------------------------------
 
 interface CounselorFormProps {
   initial?: Partial<Counselor>;
@@ -108,9 +157,7 @@ function CounselorForm({
 
   const addSpecialty = () => {
     const s = specialtyInput.trim();
-    if (s && !specialties.includes(s)) {
-      setSpecialties((prev) => [...prev, s]);
-    }
+    if (s && !specialties.includes(s)) setSpecialties((prev) => [...prev, s]);
     setSpecialtyInput("");
   };
   const removeSpecialty = (s: string) =>
@@ -153,68 +200,63 @@ function CounselorForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2 col-span-2">
-          <Label htmlFor="c-name">
-            Nom complet <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="c-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="ex: Jean Dupont"
-            disabled={isLoading}
-          />
+        <div className="col-span-2">
+          <FormField label="Nom complet" required>
+            <AdminInput
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="ex: Jean Dupont"
+              disabled={isLoading}
+            />
+          </FormField>
         </div>
-        <div className="space-y-2 col-span-2 md:col-span-1">
-          <Label htmlFor="c-email">
-            Email <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="c-email"
+        <FormField label="Email" required>
+          <AdminInput
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="conseiller@example.com"
             disabled={isLoading}
           />
-        </div>
-        <div className="space-y-2 col-span-2 md:col-span-1">
-          <Label htmlFor="c-phone">Téléphone</Label>
-          <Input
-            id="c-phone"
+        </FormField>
+        <FormField label="Téléphone">
+          <AdminInput
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="+228 90 12 34 56"
             disabled={isLoading}
           />
+        </FormField>
+        <div className="col-span-2">
+          <FormField label="URL Photo">
+            <AdminInput
+              value={photo}
+              onChange={(e) => setPhoto(e.target.value)}
+              placeholder="https://…"
+              disabled={isLoading}
+            />
+          </FormField>
         </div>
-        <div className="space-y-2 col-span-2">
-          <Label htmlFor="c-photo">URL Photo</Label>
-          <Input
-            id="c-photo"
-            value={photo}
-            onChange={(e) => setPhoto(e.target.value)}
-            placeholder="https://…"
-            disabled={isLoading}
-          />
-        </div>
-        <div className="space-y-2 col-span-2">
-          <Label htmlFor="c-bio">Biographie</Label>
-          <Textarea
-            id="c-bio"
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            rows={3}
-            placeholder="Présentation du conseiller…"
-            disabled={isLoading}
-          />
+        <div className="col-span-2">
+          <FormField label="Biographie">
+            <AdminTextarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              rows={3}
+              placeholder="Présentation du conseiller…"
+              disabled={isLoading}
+            />
+          </FormField>
         </div>
       </div>
 
+      {/* Spécialités — gestion dynamique */}
       <div className="space-y-2">
-        <Label>Spécialités</Label>
+        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#666]">
+          Spécialités
+        </p>
         <div className="flex gap-2">
-          <Input
+          <AdminInput
             value={specialtyInput}
             onChange={(e) => setSpecialtyInput(e.target.value)}
             placeholder="ex: Orientation post-bac"
@@ -226,90 +268,106 @@ function CounselorForm({
               }
             }}
           />
-          <Button
+          <Btn
             type="button"
-            variant="outline"
+            variant="secondary"
+            size="sm"
             onClick={addSpecialty}
             disabled={isLoading || !specialtyInput.trim()}
+            icon={<IconPlus />}
           >
-            <Plus className="h-4 w-4" />
-          </Button>
+            Ajouter
+          </Btn>
         </div>
         {specialties.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1">
+          <div className="flex flex-wrap gap-1.5 mt-1">
             {specialties.map((s) => (
-              <Badge key={s} variant="secondary" className="gap-1">
+              <span
+                key={s}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-[#141414] border border-[#222] text-[#888] rounded-lg"
+              >
                 {s}
                 <button
                   type="button"
                   onClick={() => removeSpecialty(s)}
-                  className="hover:text-red-500"
+                  className="text-[#444] hover:text-red-400 transition-colors"
                 >
-                  <X className="h-3 w-3" />
+                  <IconX />
                 </button>
-              </Badge>
+              </span>
             ))}
           </div>
         )}
       </div>
 
-      <div className="flex items-center gap-3">
-        <Switch
-          id="c-active"
-          checked={isActive}
-          onCheckedChange={setIsActive}
-          disabled={isLoading}
-        />
-        <Label htmlFor="c-active">Conseiller actif</Label>
-      </div>
-
-      {formError && (
-        <p className="text-sm text-red-500 flex items-center gap-1">
-          <AlertCircle className="h-4 w-4" /> {formError}
-        </p>
-      )}
-      <DialogFooter>
-        <Button
+      <Toggle
+        checked={isActive}
+        onChange={setIsActive}
+        label="Conseiller actif"
+        disabled={isLoading}
+      />
+      <InlineError message={formError} />
+      <DialogActions>
+        <Btn
+          variant="ghost"
           type="button"
-          variant="outline"
           onClick={onCancel}
           disabled={isLoading}
         >
           Annuler
-        </Button>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />{" "}
-              Enregistrement…
-            </>
-          ) : mode === "create" ? (
-            <>
-              <Plus className="mr-2 h-4 w-4" /> Créer
-            </>
-          ) : (
-            <>
-              <Edit className="mr-2 h-4 w-4" /> Mettre à jour
-            </>
-          )}
-        </Button>
-      </DialogFooter>
+        </Btn>
+        <Btn variant="primary" type="submit" loading={isLoading}>
+          {mode === "create" ? "Créer le conseiller" : "Enregistrer"}
+        </Btn>
+      </DialogActions>
     </form>
   );
 }
 
-// ─── Page principale ──────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Avatar conseiller
+// ---------------------------------------------------------------------------
+
+function CounselorAvatar({
+  counselor,
+  size = "sm",
+}: {
+  counselor: Counselor;
+  size?: "sm" | "lg";
+}) {
+  const dim = size === "lg" ? "w-16 h-16" : "w-8 h-8";
+  const textSize = size === "lg" ? "text-xl" : "text-sm";
+
+  if (counselor.photo) {
+    return (
+      <img
+        src={counselor.photo}
+        alt={counselor.name}
+        className={`${dim} rounded-full object-cover border border-[#1a1a1a] shrink-0`}
+      />
+    );
+  }
+  return (
+    <div
+      className={`${dim} rounded-full bg-[#141414] border border-[#1a1a1a] flex items-center justify-center ${textSize} font-bold text-[#555] shrink-0`}
+    >
+      {counselor.name[0].toUpperCase()}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Page principale
+// ---------------------------------------------------------------------------
 
 export default function CounselorsAdminPage() {
   const [counselors, setCounselors] = useState<Counselor[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterActive, setFilterActive] = useState<
-    "all" | "active" | "inactive"
-  >("all");
+  const [filterActive, setFilterActive] = useState<FilterActive>("all");
   const [currentPage, setCurrentPage] = useState(1);
 
   const [dialogMode, setDialogMode] = useState<DialogMode>(null);
@@ -317,17 +375,17 @@ export default function CounselorsAdminPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  // ── Chargement ──────────────────────────────────────────────────────────────
+  // ── Chargement ─────────────────────────────────────────────────────────────
+  // counselorsApi.getAllAdmin() → { success, counselors, count }
 
   const load = useCallback(async () => {
     setIsLoading(true);
-    setError(null);
+    setLoadError(null);
     try {
-      // getAllAdmin retourne { success, counselors, count }
       const res = await counselorsApi.getAllAdmin();
       setCounselors(res.counselors ?? []);
     } catch (err: any) {
-      setError(err?.message ?? "Erreur de chargement.");
+      setLoadError(err?.message ?? "Erreur de chargement.");
     } finally {
       setIsLoading(false);
     }
@@ -340,7 +398,7 @@ export default function CounselorsAdminPage() {
     setCurrentPage(1);
   }, [searchTerm, filterActive]);
 
-  // ── Filtrage ────────────────────────────────────────────────────────────────
+  // ── Filtrage ───────────────────────────────────────────────────────────────
 
   const filtered = counselors.filter((c) => {
     const matchSearch =
@@ -356,13 +414,14 @@ export default function CounselorsAdminPage() {
       (filterActive === "inactive" && !c.isActive);
     return matchSearch && matchActive;
   });
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const paginated = filtered.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
 
-  // ── Dialogs ─────────────────────────────────────────────────────────────────
+  // ── Dialogs ────────────────────────────────────────────────────────────────
 
   const closeDialog = () => {
     setDialogMode(null);
@@ -389,7 +448,8 @@ export default function CounselorsAdminPage() {
     setDialogMode("delete");
   };
 
-  // ── Actions ─────────────────────────────────────────────────────────────────
+  // ── Actions ────────────────────────────────────────────────────────────────
+  // Appels directs counselorsApi : create / update / delete / activate / deactivate
 
   const handleCreate = async (
     data: CreateCounselorRequest | UpdateCounselorRequest,
@@ -448,6 +508,10 @@ export default function CounselorsAdminPage() {
     }
   };
 
+  /**
+   * Toggle actif/inactif directement dans le tableau sans ouvrir de dialog.
+   * counselorsApi.activate / counselorsApi.deactivate
+   */
   const handleToggleActive = async (c: Counselor) => {
     try {
       if (c.isActive) {
@@ -459,560 +523,427 @@ export default function CounselorsAdminPage() {
         prev.map((x) => (x.id === c.id ? { ...x, isActive: !x.isActive } : x)),
       );
     } catch (err: any) {
-      setError(err?.message ?? "Erreur lors du changement de statut.");
+      setLoadError(err?.message ?? "Erreur lors du changement de statut.");
     }
   };
 
-  // ── Rendu ────────────────────────────────────────────────────────────────────
-
-  if (error && counselors.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <AlertCircle className="h-12 w-12 text-red-500" />
-        <div className="text-center">
-          <h3 className="text-lg font-semibold">Erreur de chargement</h3>
-          <p className="text-muted-foreground">{error}</p>
-        </div>
-        <Button onClick={load}>
-          <RefreshCw className="mr-2 h-4 w-4" /> Réessayer
-        </Button>
-      </div>
-    );
-  }
-
   const activeCount = counselors.filter((c) => c.isActive).length;
 
-  return (
-    <div className="space-y-6">
-      {/* En-tête */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Conseillers</h1>
-          <p className="text-muted-foreground">
-            {counselors.length} conseiller{counselors.length !== 1 ? "s" : ""}
-            {" · "}
-            {activeCount} actif{activeCount !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={load} disabled={isLoading}>
-            <RefreshCw
-              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-            />{" "}
-            Actualiser
-          </Button>
-          <Button onClick={openCreate}>
-            <Plus className="mr-2 h-4 w-4" /> Nouveau conseiller
-          </Button>
-        </div>
-      </div>
+  if (loadError && counselors.length === 0) {
+    return <PageError message={loadError} onRetry={load} />;
+  }
 
-      {/* Tableau */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-            <div>
-              <CardTitle>Liste des conseillers</CardTitle>
-              <CardDescription>
-                Créez, modifiez, activez ou supprimez des conseillers.
-              </CardDescription>
+  return (
+    <AdminPage>
+      <PageHeader
+        title="Conseillers"
+        subtitle={`${counselors.length} conseiller${counselors.length !== 1 ? "s" : ""} · ${activeCount} actif${activeCount !== 1 ? "s" : ""}`}
+        actions={
+          <>
+            <Btn
+              variant="secondary"
+              size="sm"
+              loading={isLoading}
+              onClick={load}
+              icon={<IconRefresh />}
+            >
+              Actualiser
+            </Btn>
+            <Btn
+              variant="primary"
+              size="sm"
+              onClick={openCreate}
+              icon={<IconPlus />}
+            >
+              Nouveau conseiller
+            </Btn>
+          </>
+        }
+      />
+
+      <AdminCard
+        title="Liste des conseillers"
+        description="Créez, modifiez, activez ou supprimez des conseillers d'orientation."
+        toolbar={
+          <div className="flex items-center gap-2">
+            {/* Filtre actif/inactif */}
+            <div className="flex rounded-lg border border-[#1a1a1a] overflow-hidden text-xs">
+              {(["all", "active", "inactive"] as FilterActive[]).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilterActive(f)}
+                  className={[
+                    "px-3 py-2 font-medium transition-all",
+                    filterActive === f
+                      ? "bg-[#c9a84c]/10 text-[#c9a84c]"
+                      : "bg-[#0e0e0e] text-[#444] hover:text-[#888]",
+                  ].join(" ")}
+                >
+                  {f === "all"
+                    ? "Tous"
+                    : f === "active"
+                      ? "Actifs"
+                      : "Inactifs"}
+                </button>
+              ))}
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Filtre actif */}
-              <div className="flex rounded-md border overflow-hidden text-sm">
-                {(["all", "active", "inactive"] as const).map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => setFilterActive(f)}
-                    className={`px-3 py-1.5 ${filterActive === f ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
-                  >
-                    {f === "all"
-                      ? "Tous"
-                      : f === "active"
-                        ? "Actifs"
-                        : "Inactifs"}
-                  </button>
-                ))}
-              </div>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setSearchTerm(searchInput);
-                }}
-                className="flex space-x-2"
-              >
-                <div className="relative">
-                  <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Nom, email, spécialité…"
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    className="pl-8 w-56"
-                  />
-                  {searchInput && (
-                    <button
-                      type="button"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      onClick={() => {
-                        setSearchInput("");
-                        setSearchTerm("");
-                      }}
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  )}
-                </div>
-                <Button type="submit" variant="outline" size="icon">
-                  <Search className="h-4 w-4" />
-                </Button>
-              </form>
-            </div>
+            <SearchBar
+              value={searchInput}
+              onChange={(v) => {
+                setSearchInput(v);
+                if (!v) setSearchTerm("");
+              }}
+              onSubmit={() => setSearchTerm(searchInput)}
+              placeholder="Nom, email, spécialité…"
+            />
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Spécialités</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      {Array.from({ length: 5 }).map((__, j) => (
-                        <TableCell key={j}>
-                          <Skeleton className="h-4 w-full" />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : paginated.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-12">
-                      <div className="flex flex-col items-center space-y-3">
-                        <User className="h-12 w-12 text-muted-foreground" />
-                        <p className="text-muted-foreground">
-                          {searchTerm || filterActive !== "all"
-                            ? "Aucun résultat."
-                            : "Aucun conseiller."}
-                        </p>
-                        {!searchTerm && filterActive === "all" && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={openCreate}
+        }
+      >
+        <AdminTable>
+          <THead>
+            <Th>Conseiller</Th>
+            <Th>Contact</Th>
+            <Th>Spécialités</Th>
+            <Th>Statut</Th>
+            <Th right>Actions</Th>
+          </THead>
+          <TBody>
+            {isLoading ? (
+              <SkeletonRows cols={5} />
+            ) : paginated.length === 0 ? (
+              <EmptyRow
+                colSpan={5}
+                label={
+                  searchTerm || filterActive !== "all"
+                    ? "Aucun résultat pour ces filtres."
+                    : "Aucun conseiller enregistré."
+                }
+                action={
+                  !searchTerm &&
+                  filterActive === "all" && (
+                    <Btn
+                      variant="secondary"
+                      size="sm"
+                      onClick={openCreate}
+                      icon={<IconPlus />}
+                    >
+                      Créer le premier conseiller
+                    </Btn>
+                  )
+                }
+              />
+            ) : (
+              paginated.map((c) => (
+                <div key={c.id} className={!c.isActive ? "opacity-50" : ""}>
+                  <Tr>
+                    <Td>
+                      <div className="flex items-center gap-2.5">
+                        <CounselorAvatar counselor={c} />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-white truncate">
+                            {c.name}
+                          </p>
+                          {c.bio && (
+                            <p className="text-xs text-[#444] truncate max-w-[180px]">
+                              {c.bio}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5 text-xs text-[#666]">
+                          <IconMail />
+                          <a
+                            href={`mailto:${c.email}`}
+                            className="hover:text-white transition-colors"
                           >
-                            <Plus className="mr-2 h-4 w-4" /> Créer le premier
-                            conseiller
-                          </Button>
+                            {c.email}
+                          </a>
+                        </div>
+                        {c.phone && (
+                          <div className="flex items-center gap-1.5 text-xs text-[#555]">
+                            <IconPhone />
+                            {c.phone}
+                          </div>
                         )}
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  paginated.map((c) => (
-                    <TableRow
-                      key={c.id}
-                      className={!c.isActive ? "opacity-60" : ""}
-                    >
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          {c.photo ? (
-                            <img
-                              src={c.photo}
-                              alt={c.name}
-                              className="h-8 w-8 rounded-full object-cover shrink-0"
-                            />
-                          ) : (
-                            <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                              <User className="h-4 w-4 text-muted-foreground" />
-                            </div>
-                          )}
-                          <div>
-                            <p>{c.name}</p>
-                            {c.bio && (
-                              <p className="text-xs text-muted-foreground line-clamp-1 max-w-[200px]">
-                                {c.bio}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-1 text-sm">
-                            <Mail className="h-3 w-3 text-muted-foreground" />
-                            <a
-                              href={`mailto:${c.email}`}
-                              className="hover:underline"
-                            >
-                              {c.email}
-                            </a>
-                          </div>
-                          {c.phone && (
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                              <Phone className="h-3 w-3" />
-                              {c.phone}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {(c.specialties ?? []).length === 0 ? (
-                            <span className="text-muted-foreground text-sm">
-                              —
-                            </span>
-                          ) : (
-                            (c.specialties ?? []).slice(0, 2).map((s) => (
-                              <Badge
-                                key={s}
-                                variant="outline"
-                                className="text-xs"
-                              >
-                                {s}
-                              </Badge>
-                            ))
-                          )}
-                          {(c.specialties ?? []).length > 2 && (
-                            <Badge variant="secondary" className="text-xs">
-                              +{(c.specialties ?? []).length - 2}
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {c.isActive ? (
-                          <Badge className="bg-green-100 text-green-800 border border-green-300 hover:bg-green-100">
-                            <UserCheck className="h-3 w-3 mr-1" /> Actif
-                          </Badge>
+                    </Td>
+                    <Td>
+                      <div className="flex flex-wrap gap-1">
+                        {(c.specialties ?? []).length === 0 ? (
+                          <span className="text-[#333] text-xs">—</span>
                         ) : (
-                          <Badge
-                            variant="outline"
-                            className="text-muted-foreground"
-                          >
-                            <UserX className="h-3 w-3 mr-1" /> Inactif
-                          </Badge>
+                          <>
+                            {(c.specialties ?? []).slice(0, 2).map((s) => (
+                              <AdminBadge key={s} color="gray">
+                                {s}
+                              </AdminBadge>
+                            ))}
+                            {(c.specialties ?? []).length > 2 && (
+                              <AdminBadge color="gray">
+                                +{(c.specialties ?? []).length - 2}
+                              </AdminBadge>
+                            )}
+                          </>
                         )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => openView(c)}>
-                              <Eye className="mr-2 h-4 w-4" /> Voir les détails
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openEdit(c)}>
-                              <Edit className="mr-2 h-4 w-4" /> Modifier
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleToggleActive(c)}
-                            >
-                              {c.isActive ? (
-                                <>
-                                  <UserX className="mr-2 h-4 w-4" /> Désactiver
-                                </>
-                              ) : (
-                                <>
-                                  <UserCheck className="mr-2 h-4 w-4" /> Activer
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600 focus:text-red-600"
-                              onClick={() => openDelete(c)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {!isLoading && filtered.length > ITEMS_PER_PAGE && (
-            <div className="flex items-center justify-between pt-4">
-              <p className="text-sm text-muted-foreground">
-                {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
-                {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} sur{" "}
-                {filtered.length}
-              </p>
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (currentPage > 1) setCurrentPage((p) => p - 1);
-                      }}
-                      className={
-                        currentPage === 1
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }
-                    />
-                  </PaginationItem>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setCurrentPage(page);
-                          }}
-                          isActive={currentPage === page}
+                      </div>
+                    </Td>
+                    <Td>
+                      {c.isActive ? (
+                        <AdminBadge color="green">Actif</AdminBadge>
+                      ) : (
+                        <AdminBadge color="gray">Inactif</AdminBadge>
+                      )}
+                    </Td>
+                    <Td right>
+                      <div className="flex items-center justify-end gap-1">
+                        <Btn
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openView(c)}
                         >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ),
-                  )}
-                  <PaginationItem>
-                    <PaginationNext
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (currentPage < totalPages)
-                          setCurrentPage((p) => p + 1);
-                      }}
-                      className={
-                        currentPage === totalPages
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                          Voir
+                        </Btn>
+                        <Btn
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEdit(c)}
+                        >
+                          Modifier
+                        </Btn>
+                        <Btn
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleActive(c)}
+                          className={
+                            c.isActive
+                              ? "text-yellow-500/70 hover:text-yellow-400"
+                              : "text-green-500/70 hover:text-green-400"
+                          }
+                        >
+                          {c.isActive ? "Désactiver" : "Activer"}
+                        </Btn>
+                        <Btn
+                          variant="danger"
+                          size="sm"
+                          onClick={() => openDelete(c)}
+                        >
+                          Supprimer
+                        </Btn>
+                      </div>
+                    </Td>
+                  </Tr>
+                </div>
+              ))
+            )}
+          </TBody>
+        </AdminTable>
+        <PaginationBar
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filtered.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+          onPageChange={setCurrentPage}
+        />
+      </AdminCard>
 
       {/* ── Dialog Création ── */}
-      <Dialog
+      <AdminDialog
         open={dialogMode === "create"}
-        onOpenChange={(o) => !o && closeDialog()}
+        onClose={closeDialog}
+        size="md"
+        title="Nouveau conseiller"
+        description="Nom et email sont obligatoires."
       >
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Nouveau conseiller</DialogTitle>
-            <DialogDescription>
-              Remplissez les informations du conseiller. Nom et email sont
-              obligatoires.
-            </DialogDescription>
-          </DialogHeader>
-          <CounselorForm
-            mode="create"
-            onSubmit={handleCreate}
-            onCancel={closeDialog}
-            isLoading={actionLoading}
-          />
-          {actionError && (
-            <p className="text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle className="h-4 w-4" /> {actionError}
-            </p>
-          )}
-        </DialogContent>
-      </Dialog>
+        <CounselorForm
+          mode="create"
+          onSubmit={handleCreate}
+          onCancel={closeDialog}
+          isLoading={actionLoading}
+        />
+        <InlineError message={actionError} />
+      </AdminDialog>
 
       {/* ── Dialog Édition ── */}
-      <Dialog
+      <AdminDialog
         open={dialogMode === "edit"}
-        onOpenChange={(o) => !o && closeDialog()}
+        onClose={closeDialog}
+        size="md"
+        title="Modifier le conseiller"
       >
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Modifier le conseiller</DialogTitle>
-            <DialogDescription>
-              Tous les champs sont optionnels sauf si vous souhaitez les
-              modifier.
-            </DialogDescription>
-          </DialogHeader>
-          <CounselorForm
-            key={selected?.id}
-            mode="edit"
-            initial={selected ?? undefined}
-            onSubmit={handleUpdate}
-            onCancel={closeDialog}
-            isLoading={actionLoading}
-          />
-          {actionError && (
-            <p className="text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle className="h-4 w-4" /> {actionError}
-            </p>
-          )}
-        </DialogContent>
-      </Dialog>
+        <CounselorForm
+          key={selected?.id}
+          mode="edit"
+          initial={selected ?? undefined}
+          onSubmit={handleUpdate}
+          onCancel={closeDialog}
+          isLoading={actionLoading}
+        />
+        <InlineError message={actionError} />
+      </AdminDialog>
 
       {/* ── Dialog Vue ── */}
-      <Dialog
+      <AdminDialog
         open={dialogMode === "view"}
-        onOpenChange={(o) => !o && closeDialog()}
+        onClose={closeDialog}
+        title="Détails du conseiller"
+        size="md"
       >
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Détails du conseiller</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="flex items-center gap-4">
-              {selected?.photo ? (
-                <img
-                  src={selected.photo}
-                  alt={selected.name}
-                  className="h-16 w-16 rounded-full object-cover"
-                />
-              ) : (
-                <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-                  <User className="h-8 w-8 text-muted-foreground" />
+        {selected && (
+          <div className="space-y-5">
+            {/* En-tête profil */}
+            <div className="flex items-center gap-4 p-4 bg-[#0a0a0a] border border-[#141414] rounded-xl">
+              <CounselorAvatar counselor={selected} size="lg" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-semibold text-white text-lg">
+                    {selected.name}
+                  </p>
+                  {selected.isActive ? (
+                    <AdminBadge color="green">Actif</AdminBadge>
+                  ) : (
+                    <AdminBadge color="gray">Inactif</AdminBadge>
+                  )}
                 </div>
-              )}
-              <div>
-                <p className="font-semibold text-lg">{selected?.name}</p>
-                {selected?.isActive ? (
-                  <Badge className="bg-green-100 text-green-800 border border-green-300 hover:bg-green-100 mt-1">
-                    <UserCheck className="h-3 w-3 mr-1" /> Actif
-                  </Badge>
-                ) : (
-                  <Badge
-                    variant="outline"
-                    className="text-muted-foreground mt-1"
+                <div className="flex items-center gap-1.5 text-xs text-[#555] mt-1">
+                  <IconMail />
+                  <a
+                    href={`mailto:${selected.email}`}
+                    className="hover:text-[#888] transition-colors"
                   >
-                    <UserX className="h-3 w-3 mr-1" /> Inactif
-                  </Badge>
+                    {selected.email}
+                  </a>
+                </div>
+                {selected.phone && (
+                  <div className="flex items-center gap-1.5 text-xs text-[#555] mt-0.5">
+                    <IconPhone />
+                    {selected.phone}
+                  </div>
                 )}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-sm">
+
+            {/* Bio */}
+            {selected.bio && (
               <div>
-                <p className="text-muted-foreground">Email</p>
-                <a
-                  href={`mailto:${selected?.email}`}
-                  className="font-medium hover:underline"
-                >
-                  {selected?.email}
-                </a>
-              </div>
-              {selected?.phone && (
-                <div>
-                  <p className="text-muted-foreground">Téléphone</p>
-                  <p className="font-medium">{selected.phone}</p>
-                </div>
-              )}
-            </div>
-            {selected?.bio && (
-              <div>
-                <p className="text-sm text-muted-foreground">Biographie</p>
-                <p className="text-sm mt-1">{selected.bio}</p>
+                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1.5">
+                  Biographie
+                </p>
+                <p className="text-sm text-[#888] leading-relaxed">
+                  {selected.bio}
+                </p>
               </div>
             )}
-            {(selected?.specialties ?? []).length > 0 && (
+
+            {/* Spécialités */}
+            {(selected.specialties ?? []).length > 0 && (
               <div>
-                <p className="text-sm text-muted-foreground mb-1">
+                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-2">
                   Spécialités
                 </p>
-                <div className="flex flex-wrap gap-1">
-                  {(selected?.specialties ?? []).map((s) => (
-                    <Badge key={s} variant="secondary" className="text-xs">
+                <div className="flex flex-wrap gap-1.5">
+                  {(selected.specialties ?? []).map((s) => (
+                    <AdminBadge key={s} color="gold">
                       {s}
-                    </Badge>
+                    </AdminBadge>
                   ))}
                 </div>
               </div>
             )}
-            <div className="text-xs text-muted-foreground border-t pt-2">
-              {selected?.createdAt && (
-                <p>
-                  Créé le{" "}
-                  {new Date(selected.createdAt).toLocaleDateString("fr-FR")}
+
+            {/* Photo URL */}
+            {selected.photo && (
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
+                  Photo
                 </p>
-              )}
-              {selected?.updatedAt && (
-                <p>
-                  Modifié le{" "}
-                  {new Date(selected.updatedAt).toLocaleDateString("fr-FR")}
-                </p>
-              )}
+                <a
+                  href={selected.photo}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs text-[#c9a84c] hover:underline"
+                >
+                  Voir la photo <IconExternal />
+                </a>
+              </div>
+            )}
+
+            {/* Dates */}
+            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-[#111]">
+              {[
+                {
+                  label: "Créé le",
+                  value: selected.createdAt
+                    ? new Date(selected.createdAt).toLocaleDateString("fr-FR", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : undefined,
+                },
+                {
+                  label: "Modifié le",
+                  value: selected.updatedAt
+                    ? new Date(selected.updatedAt).toLocaleDateString("fr-FR", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : undefined,
+                },
+              ].map(({ label, value }) => (
+                <div key={label}>
+                  <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
+                    {label}
+                  </p>
+                  <p className="text-xs text-[#666]">{value ?? "—"}</p>
+                </div>
+              ))}
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={closeDialog}>
-              Fermer
-            </Button>
-            <Button onClick={() => selected && openEdit(selected)}>
-              <Edit className="mr-2 h-4 w-4" /> Modifier
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        )}
+        <DialogActions>
+          <Btn variant="ghost" onClick={closeDialog}>
+            Fermer
+          </Btn>
+          <Btn
+            variant="secondary"
+            onClick={() => selected && openEdit(selected)}
+          >
+            Modifier
+          </Btn>
+        </DialogActions>
+      </AdminDialog>
 
       {/* ── Dialog Suppression ── */}
-      <Dialog
+      <AdminDialog
         open={dialogMode === "delete"}
-        onOpenChange={(o) => !o && closeDialog()}
+        onClose={closeDialog}
+        title="Confirmer la suppression"
+        description="Cette action est irréversible."
+        size="sm"
       >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
-            <DialogDescription>
-              Cette action est <strong>irréversible</strong>.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="rounded-lg bg-muted p-4 my-2">
-            <p className="text-sm text-muted-foreground">Conseiller concerné</p>
-            <p className="font-semibold text-lg">{selected?.name}</p>
-            <p className="text-sm text-muted-foreground">{selected?.email}</p>
+        {selected && (
+          <div className="flex items-center gap-3 p-4 bg-[#141414] border border-[#1e1e1e] rounded-xl mb-2">
+            <CounselorAvatar counselor={selected} />
+            <div>
+              <p className="font-semibold text-white">{selected.name}</p>
+              <p className="text-xs text-[#555]">{selected.email}</p>
+            </div>
           </div>
-          {actionError && (
-            <p className="text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle className="h-4 w-4" /> {actionError}
-            </p>
-          )}
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={closeDialog}
-              disabled={actionLoading}
-            >
-              Annuler
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={actionLoading}
-            >
-              {actionLoading ? (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />{" "}
-                  Suppression…
-                </>
-              ) : (
-                <>
-                  <Trash2 className="mr-2 h-4 w-4" /> Supprimer définitivement
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+        )}
+        <InlineError message={actionError} />
+        <DialogActions>
+          <Btn variant="ghost" onClick={closeDialog} disabled={actionLoading}>
+            Annuler
+          </Btn>
+          <Btn variant="danger" onClick={handleDelete} loading={actionLoading}>
+            Supprimer définitivement
+          </Btn>
+        </DialogActions>
+      </AdminDialog>
+    </AdminPage>
   );
 }
