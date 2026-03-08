@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { recommendationsApi, notesApi } from "@/lib/api";
@@ -10,7 +10,7 @@ import Link from "next/link";
 /** Page de résultat de la recommandation IA */
 export default function RecommendationPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const [recommendation, setRecommendation] = useState<Recommendation | null>(
     null,
@@ -18,18 +18,40 @@ export default function RecommendationPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Ref pour éviter un double appel API en StrictMode React
+  const hasStarted = useRef(false);
+
   useEffect(() => {
+    // Attendre que l'auth soit résolue avant de vérifier l'état
+    if (authLoading) return;
+
+    // Auth résolue mais pas d'utilisateur connecté
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
+
+    // Éviter le double appel en StrictMode
+    if (hasStarted.current) return;
+    hasStarted.current = true;
+
     const notesRaw = sessionStorage.getItem("notesPayload");
     const serieRaw = sessionStorage.getItem("selectedSerie");
 
-    if (!notesRaw || !serieRaw || !user) {
+    if (!notesRaw || !serieRaw) {
       router.replace("/dashboard");
       return;
     }
 
-    const notesPayload: Array<{ subjectId: string; value: number }> =
-      JSON.parse(notesRaw);
+    const notesPayload: Array<{
+      subjectId: string;
+      value: number;
+    }> = JSON.parse(notesRaw);
     const serie: Serie = JSON.parse(serieRaw);
+
+    // Récupérer l'ID questionnaire s'il existe (soumis à l'étape précédente)
+    const questionnaireId =
+      sessionStorage.getItem("questionnaireId") ?? undefined;
 
     const generate = async () => {
       try {
@@ -43,18 +65,25 @@ export default function RecommendationPage() {
           })),
         });
 
-        // 2. Générer la recommandation IA
+        // 2. Générer la recommandation IA (enrichie si questionnaireId présent)
         const res = await recommendationsApi.generate({
           serieId: serie.id,
           notes: notesPayload.map((n) => ({
             subjectId: n.subjectId,
             value: n.value,
           })),
+          ...(questionnaireId && { questionnaireId }),
         });
 
         setRecommendation(res.recommendation);
 
-        // 3. Nettoyage sessionStorage
+        // 3. Stocker l'ID de la recommandation pour la demande de consultation
+        sessionStorage.setItem(
+          "consultationRecommendationId",
+          res.recommendation.id,
+        );
+
+        // 4. Nettoyage sessionStorage (notes seulement, garder questionnaireId pour la consultation)
         sessionStorage.removeItem("notesPayload");
       } catch (err: any) {
         setError(err?.message ?? "Erreur lors de la génération.");
@@ -64,7 +93,7 @@ export default function RecommendationPage() {
     };
 
     generate();
-  }, [user, router]);
+  }, [user, authLoading, router]);
 
   // --- État chargement ---
   if (loading) {
@@ -97,7 +126,6 @@ export default function RecommendationPage() {
             L&apos;IA analyse votre profil et génère vos recommandations
           </p>
         </div>
-        {/* Dots animés */}
         <div className="flex gap-1.5">
           {[0, 1, 2].map((i) => (
             <div
@@ -203,7 +231,7 @@ export default function RecommendationPage() {
       {/* En-tête résultat */}
       <div className="mb-10">
         <p className="text-xs uppercase tracking-[0.15em] text-[#c9a84c] font-semibold mb-3">
-          Étape 3 sur 3 — Terminé
+          Étape 4 sur 4 — Terminé
         </p>
         <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-2">
           Votre recommandation
@@ -216,18 +244,11 @@ export default function RecommendationPage() {
         </p>
       </div>
 
-      {/* Indicateur progression — étape 3 complète */}
+      {/* Indicateur progression — étape 4 complète */}
       <div className="flex items-center gap-2 mb-10">
-        {["Série", "Notes", "Résultat"].map((step, i) => (
+        {["Série", "Notes", "Profil", "Résultat"].map((step, i) => (
           <div key={step} className="flex items-center gap-2">
-            <div
-              className={[
-                "flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-bold border transition-all",
-                i < 3
-                  ? "bg-[#c9a84c]/20 border-[#c9a84c]/40 text-[#c9a84c]"
-                  : "border-[#2a2a2a] text-[#444]",
-              ].join(" ")}
-            >
+            <div className="flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-bold border bg-[#c9a84c]/20 border-[#c9a84c]/40 text-[#c9a84c] transition-all">
               <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
                 <path
                   d="M2 6l3 3 5-5"
@@ -239,7 +260,7 @@ export default function RecommendationPage() {
               </svg>
             </div>
             <span className="text-xs font-medium text-[#555]">{step}</span>
-            {i < 2 && <div className="w-8 h-[1px] bg-[#1e1e1e] mx-1" />}
+            {i < 3 && <div className="w-8 h-[1px] bg-[#1e1e1e] mx-1" />}
           </div>
         ))}
       </div>
@@ -377,8 +398,56 @@ export default function RecommendationPage() {
         ))}
       </div>
 
+      {/* Bannière consultation conseiller */}
+      <div className="mt-8 bg-[#0e0e0e] border border-[#1a1a1a] rounded-2xl p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-[#c9a84c]/10 border border-[#c9a84c]/20 flex items-center justify-center shrink-0">
+            <svg
+              className="w-5 h-5 text-[#c9a84c]"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <path
+                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-white mb-1">
+              Besoin d&apos;un accompagnement personnalisé ?
+            </p>
+            <p className="text-xs text-[#555] leading-relaxed">
+              Un conseiller d&apos;orientation professionnel peut vous guider
+              dans votre choix de filière lors d&apos;un entretien individuel.
+            </p>
+          </div>
+          <Link
+            href="/dashboard/consultation"
+            className="shrink-0 group relative px-4 py-2.5 rounded-xl text-xs font-semibold text-[#0e0e0e] overflow-hidden"
+          >
+            <span className="absolute inset-0 bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] transition-transform duration-300 group-hover:scale-105" />
+            <span className="relative flex items-center gap-1.5">
+              Consulter un conseiller
+              <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+                <path
+                  d="M3 6h6M6 3l3 3-3 3"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+          </Link>
+        </div>
+      </div>
+
       {/* Actions */}
-      <div className="mt-8 flex gap-3">
+      <div className="mt-4 flex gap-3">
         <button
           onClick={() => router.push("/dashboard")}
           className="flex-1 py-3.5 border border-[#2a2a2a] text-sm font-medium text-[#888] hover:text-white hover:border-[#3a3a3a] rounded-xl transition-all duration-200"

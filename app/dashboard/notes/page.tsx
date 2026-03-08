@@ -72,13 +72,16 @@ export default function NotesPage() {
         s.coefficient ??
         1,
     }));
+
     sessionStorage.setItem("notesPayload", JSON.stringify(notesPayload));
-    // Cookie lu par le middleware pour autoriser /dashboard/recommendation
+
+    // Cookie lu par le middleware pour autoriser les étapes suivantes
     document.cookie = "flow_notes=1; path=/; SameSite=Strict";
-    router.push("/dashboard/recommendation");
+
+    // Aller au questionnaire (étape 3) avant la génération IA
+    router.push("/dashboard/questionnaire");
   };
 
-  /** Calcule le nombre de matières remplies */
   const filledCount = subjects.filter(
     (s) => notes[s.id] !== "" && notes[s.id] !== undefined,
   ).length;
@@ -127,7 +130,7 @@ export default function NotesPage() {
       {/* En-tête */}
       <div className="mb-10">
         <p className="text-xs uppercase tracking-[0.15em] text-[#c9a84c] font-semibold mb-3">
-          Étape 2 sur 3
+          Étape 2 sur 4
         </p>
         <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-2">
           Vos notes
@@ -141,8 +144,8 @@ export default function NotesPage() {
       </div>
 
       {/* Indicateur de progression */}
-      <div className="flex items-center gap-2 mb-8">
-        {["Série", "Notes", "Résultat"].map((step, i) => (
+      <div className="flex items-center gap-2 mb-10">
+        {["Série", "Notes", "Profil", "Résultat"].map((step, i) => (
           <div key={step} className="flex items-center gap-2">
             <div
               className={[
@@ -176,7 +179,7 @@ export default function NotesPage() {
             >
               {step}
             </span>
-            {i < 2 && <div className="w-8 h-[1px] bg-[#1e1e1e] mx-1" />}
+            {i < 3 && <div className="w-8 h-[1px] bg-[#1e1e1e] mx-1" />}
           </div>
         ))}
       </div>
@@ -293,7 +296,7 @@ export default function NotesPage() {
       >
         <span className="absolute inset-0 bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] transition-transform duration-300 group-hover:scale-105 group-disabled:scale-100" />
         <span className="relative flex items-center justify-center gap-2">
-          Obtenir ma recommandation
+          Continuer
           <svg
             className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
             viewBox="0 0 16 16"

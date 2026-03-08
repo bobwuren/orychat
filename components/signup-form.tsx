@@ -179,7 +179,7 @@ export function SignupForm({
                 autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Jean Dupont"
+                placeholder="Utilisateur"
                 className="w-full px-4 py-3 bg-[#141414] border border-[#222] rounded-lg text-sm text-white placeholder:text-[#444] focus:outline-none focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c]/30 transition-all duration-200"
               />
             </div>
