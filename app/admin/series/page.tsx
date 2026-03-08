@@ -244,7 +244,7 @@ function SerieForm({
                 <input
                   type="number"
                   min={0}
-                  step={0.5}
+                  step={1}
                   value={row.coefficient}
                   onChange={(e) =>
                     updateRow(i, "coefficient", parseFloat(e.target.value))

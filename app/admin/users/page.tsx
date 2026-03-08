@@ -297,82 +297,6 @@ function EditUserForm({
 }
 
 // ---------------------------------------------------------------------------
-// Formulaire création admin
-// ---------------------------------------------------------------------------
-
-interface CreateAdminFormProps {
-  onSubmit: (email: string) => Promise<void>;
-  onCancel: () => void;
-  isLoading: boolean;
-}
-
-function CreateAdminForm({
-  onSubmit,
-  onCancel,
-  isLoading,
-}: CreateAdminFormProps) {
-  const [email, setEmail] = useState("");
-  const [formError, setFormError] = useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError(null);
-    if (!email.trim()) {
-      setFormError("L'email est obligatoire.");
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setFormError("Format d'email invalide.");
-      return;
-    }
-    try {
-      await onSubmit(email.trim().toLowerCase());
-    } catch (err: any) {
-      setFormError(err?.message ?? "Erreur.");
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <FormField label="Email du nouvel admin" required>
-        <AdminInput
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="admin@example.com"
-          disabled={isLoading}
-        />
-      </FormField>
-      <div className="px-4 py-3 bg-[#141414] border border-[#1e1e1e] rounded-lg">
-        <p className="text-xs text-[#555]">
-          Un mot de passe sécurisé sera généré automatiquement et affiché une
-          seule fois.
-        </p>
-      </div>
-      <InlineError message={formError} />
-      <DialogActions>
-        <Btn
-          variant="ghost"
-          type="button"
-          onClick={onCancel}
-          disabled={isLoading}
-        >
-          Annuler
-        </Btn>
-        <Btn
-          variant="primary"
-          type="submit"
-          loading={isLoading}
-          icon={<IconShield />}
-        >
-          Créer l'admin
-        </Btn>
-      </DialogActions>
-    </form>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Page principale
 // ---------------------------------------------------------------------------
 
@@ -467,11 +391,6 @@ export default function UsersAdminPage() {
     setSelected(u);
     setActionError(null);
     setDialogMode("delete");
-  };
-  const openCreateAdmin = () => {
-    setActionError(null);
-    setGeneratedCredentials(null);
-    setDialogMode("create-admin");
   };
 
   // ── Actions ────────────────────────────────────────────────────────────────
@@ -635,14 +554,6 @@ export default function UsersAdminPage() {
               icon={<IconRefresh />}
             >
               Actualiser
-            </Btn>
-            <Btn
-              variant="primary"
-              size="sm"
-              onClick={openCreateAdmin}
-              icon={<IconShield />}
-            >
-              Nouvel admin
             </Btn>
           </>
         }
@@ -881,88 +792,6 @@ export default function UsersAdminPage() {
             Supprimer définitivement
           </Btn>
         </DialogActions>
-      </AdminDialog>
-
-      {/* ── Dialog Création Admin ── */}
-      <AdminDialog
-        open={dialogMode === "create-admin"}
-        onClose={closeDialog}
-        title={
-          generatedCredentials
-            ? "Admin créé avec succès"
-            : "Créer un compte administrateur"
-        }
-        description={
-          generatedCredentials
-            ? "Notez ces identifiants maintenant. Ils ne seront plus affichés."
-            : "Un mot de passe sécurisé sera généré automatiquement."
-        }
-      >
-        {generatedCredentials ? (
-          /* ── Écran credentials générés ── */
-          <div className="space-y-4">
-            <div className="p-4 bg-[#0a0a0a] border border-[#1e1e1e] rounded-xl space-y-4">
-              {/* Email */}
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-2">
-                  Email
-                </p>
-                <div className="flex items-center justify-between gap-3">
-                  <code className="text-sm font-mono text-white">
-                    {generatedCredentials.email}
-                  </code>
-                  <button
-                    onClick={() =>
-                      copyToClipboard(generatedCredentials.email, "email")
-                    }
-                    className="w-7 h-7 flex items-center justify-center rounded-lg text-[#444] hover:text-white hover:bg-[#1a1a1a] transition-all shrink-0"
-                  >
-                    <IconCopy checked={copiedField === "email"} />
-                  </button>
-                </div>
-              </div>
-              {/* Divider */}
-              <div className="h-px bg-[#1a1a1a]" />
-              {/* Password */}
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-2">
-                  Mot de passe généré
-                </p>
-                <div className="flex items-center justify-between gap-3">
-                  <code className="text-sm font-mono text-[#c9a84c] bg-[#c9a84c]/5 border border-[#c9a84c]/15 px-3 py-1.5 rounded-lg break-all">
-                    {generatedCredentials.password}
-                  </code>
-                  <button
-                    onClick={() =>
-                      copyToClipboard(generatedCredentials.password, "password")
-                    }
-                    className="w-7 h-7 flex items-center justify-center rounded-lg text-[#444] hover:text-white hover:bg-[#1a1a1a] transition-all shrink-0"
-                  >
-                    <IconCopy checked={copiedField === "password"} />
-                  </button>
-                </div>
-              </div>
-            </div>
-            <p className="text-xs text-[#444]">
-              Partagez ces identifiants de façon sécurisée. L'admin devra
-              changer son mot de passe à la première connexion.
-            </p>
-            <DialogActions>
-              <Btn variant="primary" onClick={closeDialog}>
-                Fermer
-              </Btn>
-            </DialogActions>
-          </div>
-        ) : (
-          <>
-            <CreateAdminForm
-              onSubmit={handleCreateAdmin}
-              onCancel={closeDialog}
-              isLoading={actionLoading}
-            />
-            <InlineError message={actionError} />
-          </>
-        )}
       </AdminDialog>
     </AdminPage>
   );

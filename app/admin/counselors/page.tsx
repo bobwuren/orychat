@@ -57,6 +57,7 @@ function IconRefresh() {
     </svg>
   );
 }
+
 function IconPlus() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
@@ -69,6 +70,7 @@ function IconPlus() {
     </svg>
   );
 }
+
 function IconX() {
   return (
     <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
@@ -81,6 +83,7 @@ function IconX() {
     </svg>
   );
 }
+
 function IconMail() {
   return (
     <svg className="w-3 h-3" viewBox="0 0 16 16" fill="none">
@@ -94,6 +97,7 @@ function IconMail() {
     </svg>
   );
 }
+
 function IconPhone() {
   return (
     <svg className="w-3 h-3" viewBox="0 0 16 16" fill="none">
@@ -107,6 +111,7 @@ function IconPhone() {
     </svg>
   );
 }
+
 function IconExternal() {
   return (
     <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
@@ -123,7 +128,6 @@ function IconExternal() {
 
 // ---------------------------------------------------------------------------
 // Formulaire conseiller
-// Logique métier originale préservée : specialties[], isActive, photo URL, validation
 // ---------------------------------------------------------------------------
 
 interface CounselorFormProps {
@@ -160,12 +164,14 @@ function CounselorForm({
     if (s && !specialties.includes(s)) setSpecialties((prev) => [...prev, s]);
     setSpecialtyInput("");
   };
+
   const removeSpecialty = (s: string) =>
     setSpecialties((prev) => prev.filter((x) => x !== s));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+
     if (!name.trim()) {
       setFormError("Le nom est obligatoire.");
       return;
@@ -182,6 +188,7 @@ function CounselorForm({
       setFormError("L'URL de la photo doit commencer par http(s)://");
       return;
     }
+
     try {
       await onSubmit({
         name: name.trim(),
@@ -250,7 +257,6 @@ function CounselorForm({
         </div>
       </div>
 
-      {/* Spécialités — gestion dynamique */}
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#666]">
           Spécialités
@@ -347,6 +353,7 @@ function CounselorAvatar({
       />
     );
   }
+
   return (
     <div
       className={`${dim} rounded-full bg-[#141414] border border-[#1a1a1a] flex items-center justify-center ${textSize} font-bold text-[#555] shrink-0`}
@@ -376,7 +383,6 @@ export default function CounselorsAdminPage() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   // ── Chargement ─────────────────────────────────────────────────────────────
-  // counselorsApi.getAllAdmin() → { success, counselors, count }
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -394,6 +400,7 @@ export default function CounselorsAdminPage() {
   useEffect(() => {
     load();
   }, [load]);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterActive]);
@@ -408,10 +415,12 @@ export default function CounselorsAdminPage() {
       (c.specialties ?? []).some((s) =>
         s.toLowerCase().includes(searchTerm.toLowerCase()),
       );
+
     const matchActive =
       filterActive === "all" ||
       (filterActive === "active" && c.isActive) ||
       (filterActive === "inactive" && !c.isActive);
+
     return matchSearch && matchActive;
   });
 
@@ -449,7 +458,6 @@ export default function CounselorsAdminPage() {
   };
 
   // ── Actions ────────────────────────────────────────────────────────────────
-  // Appels directs counselorsApi : create / update / delete / activate / deactivate
 
   const handleCreate = async (
     data: CreateCounselorRequest | UpdateCounselorRequest,
@@ -509,8 +517,8 @@ export default function CounselorsAdminPage() {
   };
 
   /**
-   * Toggle actif/inactif directement dans le tableau sans ouvrir de dialog.
-   * counselorsApi.activate / counselorsApi.deactivate
+   * Bascule le statut actif/inactif d'un conseiller directement depuis le tableau,
+   * sans ouvrir de dialog.
    */
   const handleToggleActive = async (c: Counselor) => {
     try {
@@ -566,7 +574,6 @@ export default function CounselorsAdminPage() {
         description="Créez, modifiez, activez ou supprimez des conseillers d'orientation."
         toolbar={
           <div className="flex items-center gap-2">
-            {/* Filtre actif/inactif */}
             <div className="flex rounded-lg border border-[#1a1a1a] overflow-hidden text-xs">
               {(["all", "active", "inactive"] as FilterActive[]).map((f) => (
                 <button
@@ -619,8 +626,7 @@ export default function CounselorsAdminPage() {
                     : "Aucun conseiller enregistré."
                 }
                 action={
-                  !searchTerm &&
-                  filterActive === "all" && (
+                  !searchTerm && filterActive === "all" ? (
                     <Btn
                       variant="secondary"
                       size="sm"
@@ -629,113 +635,113 @@ export default function CounselorsAdminPage() {
                     >
                       Créer le premier conseiller
                     </Btn>
-                  )
+                  ) : undefined
                 }
               />
             ) : (
               paginated.map((c) => (
-                <div key={c.id} className={!c.isActive ? "opacity-50" : ""}>
-                  <Tr>
-                    <Td>
-                      <div className="flex items-center gap-2.5">
-                        <CounselorAvatar counselor={c} />
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-white truncate">
-                            {c.name}
+                // Correction : <Tr> est directement enfant de <TBody> (<tbody>).
+                // L'opacité est portée par className sur <Tr>, qui la transfère au <tr>.
+                <Tr key={c.id} className={!c.isActive ? "opacity-50" : ""}>
+                  <Td>
+                    <div className="flex items-center gap-2.5">
+                      <CounselorAvatar counselor={c} />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-white truncate">
+                          {c.name}
+                        </p>
+                        {c.bio && (
+                          <p className="text-xs text-[#444] truncate max-w-[180px]">
+                            {c.bio}
                           </p>
-                          {c.bio && (
-                            <p className="text-xs text-[#444] truncate max-w-[180px]">
-                              {c.bio}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </Td>
-                    <Td>
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-1.5 text-xs text-[#666]">
-                          <IconMail />
-                          <a
-                            href={`mailto:${c.email}`}
-                            className="hover:text-white transition-colors"
-                          >
-                            {c.email}
-                          </a>
-                        </div>
-                        {c.phone && (
-                          <div className="flex items-center gap-1.5 text-xs text-[#555]">
-                            <IconPhone />
-                            {c.phone}
-                          </div>
                         )}
                       </div>
-                    </Td>
-                    <Td>
-                      <div className="flex flex-wrap gap-1">
-                        {(c.specialties ?? []).length === 0 ? (
-                          <span className="text-[#333] text-xs">—</span>
-                        ) : (
-                          <>
-                            {(c.specialties ?? []).slice(0, 2).map((s) => (
-                              <AdminBadge key={s} color="gray">
-                                {s}
-                              </AdminBadge>
-                            ))}
-                            {(c.specialties ?? []).length > 2 && (
-                              <AdminBadge color="gray">
-                                +{(c.specialties ?? []).length - 2}
-                              </AdminBadge>
-                            )}
-                          </>
-                        )}
+                    </div>
+                  </Td>
+                  <Td>
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-1.5 text-xs text-[#666]">
+                        <IconMail />
+                        <a
+                          href={`mailto:${c.email}`}
+                          className="hover:text-white transition-colors"
+                        >
+                          {c.email}
+                        </a>
                       </div>
-                    </Td>
-                    <Td>
-                      {c.isActive ? (
-                        <AdminBadge color="green">Actif</AdminBadge>
-                      ) : (
-                        <AdminBadge color="gray">Inactif</AdminBadge>
+                      {c.phone && (
+                        <div className="flex items-center gap-1.5 text-xs text-[#555]">
+                          <IconPhone />
+                          {c.phone}
+                        </div>
                       )}
-                    </Td>
-                    <Td right>
-                      <div className="flex items-center justify-end gap-1">
-                        <Btn
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openView(c)}
-                        >
-                          Voir
-                        </Btn>
-                        <Btn
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEdit(c)}
-                        >
-                          Modifier
-                        </Btn>
-                        <Btn
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleActive(c)}
-                          className={
-                            c.isActive
-                              ? "text-yellow-500/70 hover:text-yellow-400"
-                              : "text-green-500/70 hover:text-green-400"
-                          }
-                        >
-                          {c.isActive ? "Désactiver" : "Activer"}
-                        </Btn>
-                        <Btn
-                          variant="danger"
-                          size="sm"
-                          onClick={() => openDelete(c)}
-                        >
-                          Supprimer
-                        </Btn>
-                      </div>
-                    </Td>
-                  </Tr>
-                </div>
+                    </div>
+                  </Td>
+                  <Td>
+                    <div className="flex flex-wrap gap-1">
+                      {(c.specialties ?? []).length === 0 ? (
+                        <span className="text-[#333] text-xs">—</span>
+                      ) : (
+                        <>
+                          {(c.specialties ?? []).slice(0, 2).map((s) => (
+                            <AdminBadge key={s} color="gray">
+                              {s}
+                            </AdminBadge>
+                          ))}
+                          {(c.specialties ?? []).length > 2 && (
+                            <AdminBadge color="gray">
+                              +{(c.specialties ?? []).length - 2}
+                            </AdminBadge>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </Td>
+                  <Td>
+                    {c.isActive ? (
+                      <AdminBadge color="green">Actif</AdminBadge>
+                    ) : (
+                      <AdminBadge color="gray">Inactif</AdminBadge>
+                    )}
+                  </Td>
+                  <Td right>
+                    <div className="flex items-center justify-end gap-1">
+                      <Btn
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openView(c)}
+                      >
+                        Voir
+                      </Btn>
+                      <Btn
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEdit(c)}
+                      >
+                        Modifier
+                      </Btn>
+                      <Btn
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleActive(c)}
+                        className={
+                          c.isActive
+                            ? "text-yellow-500/70 hover:text-yellow-400"
+                            : "text-green-500/70 hover:text-green-400"
+                        }
+                      >
+                        {c.isActive ? "Désactiver" : "Activer"}
+                      </Btn>
+                      <Btn
+                        variant="danger"
+                        size="sm"
+                        onClick={() => openDelete(c)}
+                      >
+                        Supprimer
+                      </Btn>
+                    </div>
+                  </Td>
+                </Tr>
               ))
             )}
           </TBody>
@@ -749,7 +755,7 @@ export default function CounselorsAdminPage() {
         />
       </AdminCard>
 
-      {/* ── Dialog Création ── */}
+      {/* Dialog Création */}
       <AdminDialog
         open={dialogMode === "create"}
         onClose={closeDialog}
@@ -766,7 +772,7 @@ export default function CounselorsAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
-      {/* ── Dialog Édition ── */}
+      {/* Dialog Édition */}
       <AdminDialog
         open={dialogMode === "edit"}
         onClose={closeDialog}
@@ -784,7 +790,7 @@ export default function CounselorsAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
-      {/* ── Dialog Vue ── */}
+      {/* Dialog Vue */}
       <AdminDialog
         open={dialogMode === "view"}
         onClose={closeDialog}
@@ -793,7 +799,6 @@ export default function CounselorsAdminPage() {
       >
         {selected && (
           <div className="space-y-5">
-            {/* En-tête profil */}
             <div className="flex items-center gap-4 p-4 bg-[#0a0a0a] border border-[#141414] rounded-xl">
               <CounselorAvatar counselor={selected} size="lg" />
               <div className="flex-1 min-w-0">
@@ -825,7 +830,6 @@ export default function CounselorsAdminPage() {
               </div>
             </div>
 
-            {/* Bio */}
             {selected.bio && (
               <div>
                 <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1.5">
@@ -837,7 +841,6 @@ export default function CounselorsAdminPage() {
               </div>
             )}
 
-            {/* Spécialités */}
             {(selected.specialties ?? []).length > 0 && (
               <div>
                 <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-2">
@@ -853,7 +856,6 @@ export default function CounselorsAdminPage() {
               </div>
             )}
 
-            {/* Photo URL */}
             {selected.photo && (
               <div>
                 <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
@@ -870,7 +872,6 @@ export default function CounselorsAdminPage() {
               </div>
             )}
 
-            {/* Dates */}
             <div className="grid grid-cols-2 gap-4 pt-3 border-t border-[#111]">
               {[
                 {
@@ -917,7 +918,7 @@ export default function CounselorsAdminPage() {
         </DialogActions>
       </AdminDialog>
 
-      {/* ── Dialog Suppression ── */}
+      {/* Dialog Suppression */}
       <AdminDialog
         open={dialogMode === "delete"}
         onClose={closeDialog}

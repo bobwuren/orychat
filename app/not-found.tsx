@@ -16,17 +16,6 @@ export const metadata: Metadata = {
  * Header + Footer injectés par ConditionalShell.
  */
 
-const QUICK_LINKS = [
-  { href: "/", label: "Accueil", desc: "Retour à la page principale" },
-  { href: "/login", label: "Connexion", desc: "Accédez à votre compte" },
-  {
-    href: "/signup",
-    label: "Inscription",
-    desc: "Créez votre compte gratuitement",
-  },
-  { href: "/contact", label: "Contact", desc: "Contactez notre équipe" },
-];
-
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
@@ -46,14 +35,6 @@ export default function NotFound() {
             >
               404
             </p>
-            {/* Diamond décoratif centré */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-              <div className="relative w-16 h-16 opacity-80">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#c9a84c] to-[#e8c97a] rounded-xl rotate-45" />
-                <div className="absolute inset-[3px] bg-[#0a0a0a] rounded-xl rotate-45" />
-                <div className="absolute inset-[7px] bg-gradient-to-br from-[#c9a84c] to-[#e8c97a] rounded-lg rotate-45" />
-              </div>
-            </div>
           </div>
 
           {/* Message */}
@@ -66,7 +47,7 @@ export default function NotFound() {
           </p>
 
           {/* CTA principal */}
-          <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
             <Link
               href="/"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] text-[#0e0e0e] text-sm font-bold hover:brightness-110 transition-all"
@@ -88,24 +69,6 @@ export default function NotFound() {
             </Link>
             {/* Composant client — history.back() interdit dans un Server Component */}
             <BackButton />
-          </div>
-
-          {/* Liens rapides */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {QUICK_LINKS.map(({ href, label, desc }) => (
-              <Link
-                key={href}
-                href={href}
-                className="group flex flex-col gap-1.5 p-4 bg-[#0e0e0e] border border-[#1a1a1a] rounded-xl hover:border-[#c9a84c]/25 hover:bg-[#c9a84c]/[0.03] transition-all duration-200 text-left"
-              >
-                <span className="text-sm font-semibold text-white group-hover:text-[#c9a84c] transition-colors">
-                  {label}
-                </span>
-                <span className="text-xs text-[#444] group-hover:text-[#666] transition-colors leading-snug">
-                  {desc}
-                </span>
-              </Link>
-            ))}
           </div>
         </div>
       </div>
