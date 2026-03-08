@@ -5,32 +5,13 @@
  * Gère les demandes de consultation entre étudiants et conseillers
  *
  * @module models/consultationModel
- * @version 2.0
+ * @version 2.1
  */
 
 const db = require('../config/database/db');
 
 const ConsultationModel = {
     table: 'consultation_requests',
-
-    /**
-     * Colonnes de la table consultation_requests
-     */
-    columns: [
-        'id',
-        'student_id',
-        'counselor_id',
-        'questionnaire_id',
-        'recommendation_id',
-        'student_email',
-        'student_phone',
-        'additional_comment',
-        'status',
-        'whatsapp_sent',
-        'email_sent_to_counselor',
-        'created_at',
-        'assigned_at'
-    ],
 
     /**
      * Statuts possibles d'une consultation
@@ -43,7 +24,7 @@ const ConsultationModel = {
     },
 
     /**
-     * Transforme une ligne SQL en objet JavaScript (camelCase)
+     * Transforme une ligne SQL en objet JavaScript (camelCase).
      *
      * @param {Object} row - Ligne de résultat SQL
      * @returns {Object|null} Objet consultation formaté ou null
@@ -69,7 +50,7 @@ const ConsultationModel = {
     },
 
     /**
-     * Transforme un objet JavaScript en entité SQL (snake_case)
+     * Transforme un objet JavaScript en entité SQL (snake_case).
      *
      * @param {Object} consultation - Objet consultation (camelCase)
      * @returns {Object|null} Entité SQL formatée ou null
@@ -92,7 +73,7 @@ const ConsultationModel = {
     },
 
     /**
-     * Crée une nouvelle demande de consultation
+     * Crée une nouvelle demande de consultation.
      *
      * @param {Object} consultationData - Données de la consultation
      * @returns {Promise<number>} ID de la consultation créée
@@ -132,7 +113,7 @@ const ConsultationModel = {
     },
 
     /**
-     * Récupère une consultation par son ID
+     * Récupère une consultation par son ID.
      *
      * @param {number} id - ID de la consultation
      * @returns {Promise<Object|null>} Consultation ou null si non trouvée
@@ -147,63 +128,63 @@ const ConsultationModel = {
     },
 
     /**
-     * Récupère toutes les consultations d'un étudiant
+     * Récupère toutes les consultations d'un étudiant.
      *
      * @param {number} studentId - ID de l'étudiant
-     * @returns {Promise<Array>} Liste des consultations
+     * @returns {Promise<Object[]>} Liste des consultations triées par date décroissante
      */
     async getByStudentId(studentId) {
         const [rows] = await db.execute(
-            `SELECT * FROM ${this.table} 
-             WHERE student_id = ? 
+            `SELECT * FROM ${this.table}
+             WHERE student_id = ?
              ORDER BY created_at DESC`,
             [studentId]
         );
 
-        return rows.map(this.toObject);
+        return rows.map(row => this.toObject(row));
     },
 
     /**
-     * Récupère toutes les consultations d'un conseiller
+     * Récupère toutes les consultations d'un conseiller.
      *
      * @param {number} counselorId - ID du conseiller
-     * @returns {Promise<Array>} Liste des consultations
+     * @returns {Promise<Object[]>} Liste des consultations triées par date décroissante
      */
     async getByCounselorId(counselorId) {
         const [rows] = await db.execute(
-            `SELECT * FROM ${this.table} 
-             WHERE counselor_id = ? 
+            `SELECT * FROM ${this.table}
+             WHERE counselor_id = ?
              ORDER BY created_at DESC`,
             [counselorId]
         );
 
-        return rows.map(this.toObject);
+        return rows.map(row => this.toObject(row));
     },
 
     /**
-     * Récupère toutes les consultations par statut
+     * Récupère toutes les consultations par statut.
      *
      * @param {string} status - Statut recherché
-     * @returns {Promise<Array>} Liste des consultations
+     * @returns {Promise<Object[]>} Liste des consultations triées par date décroissante
      */
     async getByStatus(status) {
         const [rows] = await db.execute(
-            `SELECT * FROM ${this.table} 
-             WHERE status = ? 
+            `SELECT * FROM ${this.table}
+             WHERE status = ?
              ORDER BY created_at DESC`,
             [status]
         );
 
-        return rows.map(this.toObject);
+        return rows.map(row => this.toObject(row));
     },
 
     /**
-     * Récupère toutes les consultations (admin)
+     * Récupère toutes les consultations avec filtres optionnels.
      *
-     * @param {Object} filters - Filtres optionnels
-     * @param {string} filters.status - Filtrer par statut
-     * @param {number} filters.counselorId - Filtrer par conseiller
-     * @returns {Promise<Array>} Liste de toutes les consultations
+     * @param {Object} [filters={}] - Filtres optionnels
+     * @param {string} [filters.status] - Filtrer par statut
+     * @param {number} [filters.counselorId] - Filtrer par conseiller
+     * @returns {Promise<Object[]>} Liste des consultations triées par date décroissante
      */
     async getAll(filters = {}) {
         let query = `SELECT * FROM ${this.table}`;
@@ -228,22 +209,23 @@ const ConsultationModel = {
 
         const [rows] = await db.execute(query, params);
 
-        return rows.map(this.toObject);
+        return rows.map(row => this.toObject(row));
     },
 
     /**
-     * Assigne un conseiller à une consultation
+     * Assigne un conseiller à une consultation.
+     * Met automatiquement le statut à 'assigned' et enregistre la date.
      *
      * @param {number} consultationId - ID de la consultation
      * @param {number} counselorId - ID du conseiller
-     * @returns {Promise<boolean>} True si assignation réussie
+     * @returns {Promise<boolean>} True si l'assignation a réussi
      */
     async assignCounselor(consultationId, counselorId) {
         const [result] = await db.execute(
-            `UPDATE ${this.table} 
-             SET counselor_id = ?, 
-                 status = ?, 
-                 assigned_at = NOW() 
+            `UPDATE ${this.table}
+             SET counselor_id = ?,
+                 status = ?,
+                 assigned_at = NOW()
              WHERE id = ?`,
             [counselorId, this.STATUS.ASSIGNED, consultationId]
         );
@@ -252,15 +234,15 @@ const ConsultationModel = {
     },
 
     /**
-     * Marque le WhatsApp comme envoyé
+     * Marque le message WhatsApp de confirmation comme envoyé.
      *
      * @param {number} consultationId - ID de la consultation
-     * @returns {Promise<boolean>} True si mise à jour réussie
+     * @returns {Promise<boolean>} True si la mise à jour a réussi
      */
     async markWhatsappSent(consultationId) {
         const [result] = await db.execute(
-            `UPDATE ${this.table} 
-             SET whatsapp_sent = true 
+            `UPDATE ${this.table}
+             SET whatsapp_sent = true
              WHERE id = ?`,
             [consultationId]
         );
@@ -269,15 +251,15 @@ const ConsultationModel = {
     },
 
     /**
-     * Marque l'email au conseiller comme envoyé
+     * Marque l'email d'assignation au conseiller comme envoyé.
      *
      * @param {number} consultationId - ID de la consultation
-     * @returns {Promise<boolean>} True si mise à jour réussie
+     * @returns {Promise<boolean>} True si la mise à jour a réussi
      */
     async markEmailSent(consultationId) {
         const [result] = await db.execute(
-            `UPDATE ${this.table} 
-             SET email_sent_to_counselor = true 
+            `UPDATE ${this.table}
+             SET email_sent_to_counselor = true
              WHERE id = ?`,
             [consultationId]
         );
@@ -286,16 +268,16 @@ const ConsultationModel = {
     },
 
     /**
-     * Met à jour le statut d'une consultation
+     * Met à jour le statut d'une consultation.
      *
      * @param {number} consultationId - ID de la consultation
-     * @param {string} status - Nouveau statut
-     * @returns {Promise<boolean>} True si mise à jour réussie
+     * @param {string} status - Nouveau statut (pending|assigned|completed|cancelled)
+     * @returns {Promise<boolean>} True si la mise à jour a réussi
      */
     async updateStatus(consultationId, status) {
         const [result] = await db.execute(
-            `UPDATE ${this.table} 
-             SET status = ? 
+            `UPDATE ${this.table}
+             SET status = ?
              WHERE id = ?`,
             [status, consultationId]
         );
@@ -304,21 +286,22 @@ const ConsultationModel = {
     },
 
     /**
-     * Récupère les détails complets d'une consultation avec données liées
+     * Récupère les détails complets d'une consultation avec les données liées
+     * (étudiant et conseiller via JOIN).
      *
      * @param {number} consultationId - ID de la consultation
-     * @returns {Promise<Object|null>} Consultation enrichie avec données liées
+     * @returns {Promise<Object|null>} Consultation enrichie ou null si non trouvée
      */
     async getFullDetails(consultationId) {
         const [rows] = await db.execute(
-            `SELECT 
+            `SELECT
                 cr.*,
-                u.name as student_name,
-                u.email as student_account_email,
-                c.name as counselor_name,
-                c.email as counselor_email
+                u.name  AS student_name,
+                u.email AS student_account_email,
+                c.name  AS counselor_name,
+                c.email AS counselor_email
              FROM ${this.table} cr
-             LEFT JOIN users u ON cr.student_id = u.id
+             LEFT JOIN users      u ON cr.student_id  = u.id
              LEFT JOIN counselors c ON cr.counselor_id = c.id
              WHERE cr.id = ?
              LIMIT 1`,
@@ -339,14 +322,14 @@ const ConsultationModel = {
     },
 
     /**
-     * Compte le nombre de consultations par statut
+     * Compte le nombre de consultations par statut.
      *
-     * @returns {Promise<Object>} Compteur par statut
+     * @returns {Promise<Object>} Objet { pending, assigned, completed, cancelled }
      */
     async countByStatus() {
         const [rows] = await db.execute(
-            `SELECT status, COUNT(*) as count 
-             FROM ${this.table} 
+            `SELECT status, COUNT(*) as count
+             FROM ${this.table}
              GROUP BY status`
         );
 
@@ -365,10 +348,10 @@ const ConsultationModel = {
     },
 
     /**
-     * Supprime une consultation
+     * Supprime une consultation.
      *
      * @param {number} consultationId - ID de la consultation
-     * @returns {Promise<boolean>} True si suppression réussie
+     * @returns {Promise<boolean>} True si la suppression a réussi
      */
     async delete(consultationId) {
         const [result] = await db.execute(
@@ -380,74 +363,65 @@ const ConsultationModel = {
     },
 
     /**
-     * Récupère les détails complets pour l'email au conseiller
-     * Inclut: consultation, étudiant, série, notes, questionnaire, recommandations
+     * Récupère les données complètes nécessaires à la composition de l'email
+     * d'assignation envoyé au conseiller.
+     *
+     * Inclut : consultation, étudiant, série, notes avec coefficients,
+     * questionnaire, recommandation et conseiller.
      *
      * @param {number} consultationId - ID de la consultation
-     * @returns {Promise<Object>} Données complètes pour l'email
+     * @returns {Promise<Object|null>} Données complètes ou null si non trouvée
+     * @throws {Error} Si une requête sous-jacente échoue
      */
     async getFullDetailsForEmail(consultationId) {
-        try {
-            // 1. Récupérer la consultation
-            const consultation = await this.getById(consultationId);
-            if (!consultation) return null;
-            // 2. Récupérer l'étudiant
-            const UserModel = require('./userModel');
-            const student = await UserModel.findById(consultation.studentId);
+        const consultation = await this.getById(consultationId);
+        if (!consultation) return null;
 
-            // 3. Récupérer le questionnaire
-            const QuestionnaireModel = require('./questionnaireModel');
-            const questionnaire = await QuestionnaireModel.getById(consultation.questionnaireId);
+        const UserModel          = require('./userModel');
+        const QuestionnaireModel = require('./questionnaireModel');
+        const RecommendationModel = require('./recommendationModel');
+        const SerieModel         = require('./serieModel');
+        const NoteModel          = require('./noteModel');
+        const SubjectModel       = require('./subjectModel');
+        const CounselorModel     = require('./counselorModel');
 
-            // 4. Récupérer la recommandation
-            const RecommendationModel = require('./recommendationModel');
-            const recommendation = await RecommendationModel.getById(consultation.recommendationId);
+        const student       = await UserModel.findById(consultation.studentId);
+        const questionnaire = await QuestionnaireModel.getById(consultation.questionnaireId);
+        const recommendation = await RecommendationModel.getById(consultation.recommendationId);
+        const serie         = await SerieModel.getById(questionnaire.serieId);
+        const counselor     = await CounselorModel.getById(consultation.counselorId);
 
-            // 5. Récupérer la série
-            const SerieModel = require('./serieModel');
-            const serie = await SerieModel.getById(questionnaire.serieId);
+        const notes = [];
 
-            // 6. Récupérer les notes avec détails des matières
-            const NoteModel = require('./noteModel');
-            const SubjectModel = require('./subjectModel');
+        if (Array.isArray(recommendation.noteIds)) {
+            // Charger les sujets de la série une seule fois
+            const serieSubjects = await SubjectModel.getBySerieId(questionnaire.serieId);
 
-            const notes = [];
-            if (recommendation.noteIds && Array.isArray(recommendation.noteIds)) {
-                for (const noteId of recommendation.noteIds) {
-                    const note = await NoteModel.getById(noteId);
-                    if (note) {
-                        const subject = await SubjectModel.getById(note.subjectId);
-                        const subjects = await SubjectModel.getBySerieId(questionnaire.serieId);
-                        const subjectWithCoef = subjects.find(s => s.id === note.subjectId);
+            for (const noteId of recommendation.noteIds) {
+                const note = await NoteModel.getById(noteId);
+                if (!note) continue;
 
-                        notes.push({
-                            id: note.id,
-                            value: note.value,
-                            subjectName: subject ? subject.name : 'Matière inconnue',
-                            coefficient: subjectWithCoef ? subjectWithCoef.coefficient : 1
-                        });
-                    }
-                }
+                const subject        = await SubjectModel.getById(note.subjectId);
+                const subjectWithCoef = serieSubjects.find(s => s.id === note.subjectId);
+
+                notes.push({
+                    id: note.id,
+                    value: note.value,
+                    subjectName: subject ? subject.name : 'Matière inconnue',
+                    coefficient: subjectWithCoef ? subjectWithCoef.coefficient : 1
+                });
             }
-
-            // 7. Récupérer le conseiller
-            const CounselorModel = require('./counselorModel');
-            const counselor = await CounselorModel.getById(consultation.counselorId);
-
-            return {
-                consultation,
-                student,
-                serie,
-                notes,
-                questionnaire,
-                recommendation,
-                counselor
-            };
-
-        } catch (error) {
-            console.error('❌ [ConsultationModel] Erreur getFullDetailsForEmail:', error);
-            throw error;
         }
+
+        return {
+            consultation,
+            student,
+            serie,
+            notes,
+            questionnaire,
+            recommendation,
+            counselor
+        };
     }
 };
 

@@ -5,10 +5,40 @@
  * Gère les opérations CRUD pour les conseillers d'orientation
  *
  * @module models/counselorModel
- * @version 2.0
+ * @version 2.1
  */
 
 const db = require('../config/database/db');
+
+/**
+ * Parse la colonne specialties depuis la base de données.
+ *
+ * Gère les cas suivants sans lever d'exception :
+ *   - NULL        → []
+ *   - ""          → []  (chaîne vide insérée par erreur)
+ *   - "[]"        → []
+ *   - '["a","b"]' → ["a", "b"]
+ *   - JSON invalide → []  (données corrompues)
+ *
+ * @param {string|null} value - Valeur brute de la colonne specialties
+ * @returns {string[]} Tableau de spécialités, vide par défaut
+ */
+function parseSpecialties(value) {
+    if (value === null || value === undefined) {
+        return [];
+    }
+
+    if (typeof value !== 'string' || value.trim() === '') {
+        return [];
+    }
+
+    try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
 
 const CounselorModel = {
     table: 'counselors',
@@ -30,7 +60,8 @@ const CounselorModel = {
     ],
 
     /**
-     * Transforme une ligne SQL en objet JavaScript (camelCase)
+     * Transforme une ligne SQL en objet JavaScript (camelCase).
+     * Utilise parseSpecialties pour éviter tout crash sur JSON invalide.
      *
      * @param {Object} row - Ligne de résultat SQL
      * @returns {Object|null} Objet conseiller formaté ou null
@@ -45,7 +76,7 @@ const CounselorModel = {
             phone: row.phone,
             photo: row.photo,
             bio: row.bio,
-            specialties: row.specialties ? JSON.parse(row.specialties) : [],
+            specialties: parseSpecialties(row.specialties),
             isActive: row.is_active,
             createdAt: row.created_at,
             updatedAt: row.updated_at
@@ -53,7 +84,7 @@ const CounselorModel = {
     },
 
     /**
-     * Transforme un objet JavaScript en entité SQL (snake_case)
+     * Transforme un objet JavaScript en entité SQL (snake_case).
      *
      * @param {Object} counselor - Objet conseiller (camelCase)
      * @returns {Object|null} Entité SQL formatée ou null
@@ -73,16 +104,16 @@ const CounselorModel = {
     },
 
     /**
-     * Crée un nouveau conseiller
+     * Crée un nouveau conseiller.
      *
      * @param {Object} counselorData - Données du conseiller
      * @param {string} counselorData.name - Nom complet
      * @param {string} counselorData.email - Email unique
-     * @param {string} counselorData.phone - Téléphone (optionnel)
-     * @param {string} counselorData.photo - URL photo (optionnel)
-     * @param {string} counselorData.bio - Biographie (optionnel)
-     * @param {Array} counselorData.specialties - Spécialités (optionnel)
-     * @param {boolean} counselorData.isActive - Statut actif (défaut: true)
+     * @param {string} [counselorData.phone] - Téléphone
+     * @param {string} [counselorData.photo] - URL photo
+     * @param {string} [counselorData.bio] - Biographie
+     * @param {string[]} [counselorData.specialties] - Spécialités
+     * @param {boolean} [counselorData.isActive] - Statut actif (défaut: true)
      * @returns {Promise<number>} ID du conseiller créé
      * @throws {Error} Si l'insertion échoue
      */
@@ -114,36 +145,36 @@ const CounselorModel = {
     },
 
     /**
-     * Récupère tous les conseillers actifs
+     * Récupère tous les conseillers actifs.
      *
-     * @returns {Promise<Array>} Liste des conseillers actifs
+     * @returns {Promise<Object[]>} Liste des conseillers actifs
      */
     async getAllActive() {
         const [rows] = await db.execute(
-            `SELECT * FROM ${this.table} 
-             WHERE is_active = true 
+            `SELECT * FROM ${this.table}
+             WHERE is_active = true
              ORDER BY name ASC`
         );
 
-        return rows.map(this.toObject);
+        return rows.map(row => this.toObject(row));
     },
 
     /**
-     * Récupère tous les conseillers (actifs + inactifs)
+     * Récupère tous les conseillers (actifs + inactifs).
      *
-     * @returns {Promise<Array>} Liste de tous les conseillers
+     * @returns {Promise<Object[]>} Liste de tous les conseillers
      */
     async getAll() {
         const [rows] = await db.execute(
-            `SELECT * FROM ${this.table} 
+            `SELECT * FROM ${this.table}
              ORDER BY name ASC`
         );
 
-        return rows.map(this.toObject);
+        return rows.map(row => this.toObject(row));
     },
 
     /**
-     * Récupère un conseiller par son ID
+     * Récupère un conseiller par son ID.
      *
      * @param {number} id - ID du conseiller
      * @returns {Promise<Object|null>} Conseiller ou null si non trouvé
@@ -158,7 +189,7 @@ const CounselorModel = {
     },
 
     /**
-     * Récupère un conseiller par son email
+     * Récupère un conseiller par son email.
      *
      * @param {string} email - Email du conseiller
      * @returns {Promise<Object|null>} Conseiller ou null si non trouvé
@@ -173,34 +204,35 @@ const CounselorModel = {
     },
 
     /**
-     * Récupère les conseillers par spécialité
+     * Récupère les conseillers actifs par spécialité.
+     * Utilise JSON_CONTAINS pour filtrer dans le tableau JSON stocké.
      *
      * @param {string} specialty - Spécialité recherchée
-     * @returns {Promise<Array>} Liste des conseillers avec cette spécialité
+     * @returns {Promise<Object[]>} Liste des conseillers correspondants
      */
     async getBySpecialty(specialty) {
         const [rows] = await db.execute(
-            `SELECT * FROM ${this.table} 
-             WHERE is_active = true 
+            `SELECT * FROM ${this.table}
+             WHERE is_active = true
              AND JSON_CONTAINS(specialties, ?, '$')
              ORDER BY name ASC`,
             [JSON.stringify(specialty)]
         );
 
-        return rows.map(this.toObject);
+        return rows.map(row => this.toObject(row));
     },
 
     /**
-     * Met à jour un conseiller
+     * Met à jour un conseiller.
+     * Construit dynamiquement la requête en fonction des champs fournis.
      *
      * @param {number} id - ID du conseiller
-     * @param {Object} updateData - Données à mettre à jour
-     * @returns {Promise<boolean>} True si mise à jour réussie
+     * @param {Object} updateData - Champs à mettre à jour (tous optionnels)
+     * @returns {Promise<boolean>} True si au moins une ligne modifiée
      */
     async update(id, updateData) {
         const entity = this.toEntity(updateData);
 
-        // Construire dynamiquement la requête SQL
         const fields = [];
         const values = [];
 
@@ -212,7 +244,7 @@ const CounselorModel = {
         }
 
         if (fields.length === 0) {
-            return false; // Aucune donnée à mettre à jour
+            return false;
         }
 
         values.push(id);
@@ -226,7 +258,7 @@ const CounselorModel = {
     },
 
     /**
-     * Désactive un conseiller (soft delete)
+     * Désactive un conseiller (soft delete).
      *
      * @param {number} id - ID du conseiller
      * @returns {Promise<boolean>} True si désactivation réussie
@@ -241,7 +273,7 @@ const CounselorModel = {
     },
 
     /**
-     * Active un conseiller
+     * Active un conseiller.
      *
      * @param {number} id - ID du conseiller
      * @returns {Promise<boolean>} True si activation réussie
@@ -256,7 +288,7 @@ const CounselorModel = {
     },
 
     /**
-     * Supprime définitivement un conseiller (hard delete)
+     * Supprime définitivement un conseiller (hard delete).
      *
      * @param {number} id - ID du conseiller
      * @returns {Promise<boolean>} True si suppression réussie
@@ -271,7 +303,7 @@ const CounselorModel = {
     },
 
     /**
-     * Compte le nombre de conseillers actifs
+     * Compte le nombre de conseillers actifs.
      *
      * @returns {Promise<number>} Nombre de conseillers actifs
      */
@@ -284,11 +316,11 @@ const CounselorModel = {
     },
 
     /**
-     * Vérifie si un email est déjà utilisé
+     * Vérifie si un email est déjà utilisé.
      *
      * @param {string} email - Email à vérifier
-     * @param {number} excludeId - ID à exclure de la vérification (pour update)
-     * @returns {Promise<boolean>} True si l'email existe déjà
+     * @param {number|null} excludeId - ID à exclure (utile lors d'un update)
+     * @returns {Promise<boolean>} True si l'email est déjà pris
      */
     async emailExists(email, excludeId = null) {
         let query = `SELECT COUNT(*) as count FROM ${this.table} WHERE email = ?`;
