@@ -6,6 +6,122 @@ import type { Serie, SubjectWithCoefficients } from "@/lib/types";
 import { subjectsApi } from "@/lib/api";
 import { useAuth } from "@/lib/hooks/useAuth";
 
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Calcule la moyenne pondérée à partir des notes saisies et des coefficients.
+ * Retourne null si au moins une note est manquante.
+ */
+function computeWeightedAverage(
+  subjects: SubjectWithCoefficients[],
+  notes: Record<string, string>,
+  serieId: string,
+): number | null {
+  let totalPoints = 0;
+  let totalCoefficients = 0;
+
+  for (const subject of subjects) {
+    const raw = notes[subject.id];
+    if (raw === "" || raw === undefined) return null;
+
+    const value = parseFloat(raw);
+    const coeff =
+      subject.seriesCoefficients?.find((sc) => sc.serieId === serieId)
+        ?.coefficient ??
+      subject.coefficient ??
+      1;
+
+    totalPoints += value * coeff;
+    totalCoefficients += coeff;
+  }
+
+  if (totalCoefficients === 0) return null;
+
+  return totalPoints / totalCoefficients;
+}
+
+// ---------------------------------------------------------------------------
+// Sub-components
+// ---------------------------------------------------------------------------
+
+/**
+ * Écran affiché quand la moyenne calculée est inférieure à 10.
+ * Le bac n'est pas validé : on bloque la progression.
+ * Deux actions disponibles : retourner au choix de série ou corriger les notes.
+ */
+function BelowAverageScreen({
+  average,
+  onRetry,
+  onGoHome,
+}: {
+  average: number;
+  onRetry: () => void;
+  onGoHome: () => void;
+}) {
+  return (
+    <div className="max-w-2xl mx-auto px-6 py-16 flex flex-col items-center text-center">
+      {/* Icone résultat */}
+      <div className="w-20 h-20 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-8">
+        <svg className="w-9 h-9 text-red-400" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M12 8v4M12 16h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+
+      {/* Moyenne affichée */}
+      <p className="text-xs uppercase tracking-[0.15em] text-red-400 font-semibold mb-3">
+        Résultat insuffisant
+      </p>
+      <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-4">
+        Moyenne :{" "}
+        <span className="text-red-400">{average.toFixed(2)} / 20</span>
+      </h1>
+      <p className="text-[#666] max-w-md leading-relaxed mb-10">
+        Avec cette moyenne, l'obtention du baccalauréat n'est pas validée. Il
+        n'est pas possible de passer à l'orientation pour le moment.
+      </p>
+
+      {/* Actions */}
+      <div className="flex flex-col sm:flex-row gap-3 w-full">
+        <button
+          onClick={onGoHome}
+          className="group relative flex-1 py-4 font-semibold text-sm text-[#0e0e0e] rounded-xl overflow-hidden"
+        >
+          <span className="absolute inset-0 bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] transition-transform duration-300 group-hover:scale-105" />
+          <span className="relative flex items-center justify-center gap-2">
+            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Choisir une autre série
+          </span>
+        </button>
+        <button
+          onClick={onRetry}
+          className="flex-1 py-4 font-semibold text-sm text-[#666] bg-[#0e0e0e] border border-[#1e1e1e] rounded-xl hover:text-white hover:border-[#2a2a2a] transition-all"
+        >
+          Corriger mes notes
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
+
 /** Page de saisie des notes par matière */
 export default function NotesPage() {
   const router = useRouter();
@@ -16,6 +132,18 @@ export default function NotesPage() {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  /**
+   * Moyenne calculée en temps réel dès que toutes les notes sont saisies.
+   * Null si au moins une note est manquante.
+   */
+  const [computedAverage, setComputedAverage] = useState<number | null>(null);
+
+  /**
+   * true = soumission effectuée et moyenne < 10.
+   * Déclenche l'affichage de BelowAverageScreen.
+   */
+  const [showFailureScreen, setShowFailureScreen] = useState(false);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("selectedSerie");
@@ -44,6 +172,13 @@ export default function NotesPage() {
       .finally(() => setLoading(false));
   }, [router]);
 
+  // Recalcul en temps réel dès que toutes les notes sont saisies
+  useEffect(() => {
+    if (!serie || subjects.length === 0) return;
+    const avg = computeWeightedAverage(subjects, notes, serie.id);
+    setComputedAverage(avg);
+  }, [notes, subjects, serie]);
+
   const handleChange = (id: string, value: string) => {
     if (value === "" || (parseFloat(value) >= 0 && parseFloat(value) <= 20)) {
       setNotes((prev) => ({ ...prev, [id]: value }));
@@ -62,6 +197,15 @@ export default function NotesPage() {
       return;
     }
 
+    const average = computeWeightedAverage(subjects, notes, serie!.id);
+
+    // Gate : bac non validé, bloquer la progression
+    if (average !== null && average < 10) {
+      setShowFailureScreen(true);
+      return;
+    }
+
+    // Moyenne >= 10 : continuer le flow
     const notesPayload = subjects.map((s) => ({
       subjectId: s.id,
       value: parseFloat(notes[s.id]),
@@ -74,11 +218,7 @@ export default function NotesPage() {
     }));
 
     sessionStorage.setItem("notesPayload", JSON.stringify(notesPayload));
-
-    // Cookie lu par le middleware pour autoriser les étapes suivantes
     document.cookie = "flow_notes=1; path=/; SameSite=Strict";
-
-    // Aller au questionnaire (étape 3) avant la génération IA
     router.push("/dashboard/questionnaire");
   };
 
@@ -88,6 +228,22 @@ export default function NotesPage() {
   const progress =
     subjects.length > 0 ? (filledCount / subjects.length) * 100 : 0;
 
+  // ------------------------------------------------------------------
+  // Écran d'échec (moyenne < 10 après soumission)
+  // ------------------------------------------------------------------
+  if (showFailureScreen && computedAverage !== null) {
+    return (
+      <BelowAverageScreen
+        average={computedAverage}
+        onRetry={() => setShowFailureScreen(false)}
+        onGoHome={() => router.push("/dashboard")}
+      />
+    );
+  }
+
+  // ------------------------------------------------------------------
+  // Skeleton loader
+  // ------------------------------------------------------------------
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto px-6 py-12">
@@ -104,6 +260,9 @@ export default function NotesPage() {
     );
   }
 
+  // ------------------------------------------------------------------
+  // Formulaire de saisie
+  // ------------------------------------------------------------------
   return (
     <div className="max-w-2xl mx-auto px-6 py-12">
       {/* Retour */}
@@ -143,7 +302,7 @@ export default function NotesPage() {
         </p>
       </div>
 
-      {/* Indicateur de progression */}
+      {/* Indicateur d'étapes */}
       <div className="flex items-center gap-2 mb-10">
         {["Série", "Notes", "Profil", "Résultat"].map((step, i) => (
           <div key={step} className="flex items-center gap-2">
@@ -190,9 +349,22 @@ export default function NotesPage() {
           <span className="text-xs text-[#555]">
             {filledCount} / {subjects.length} matières renseignées
           </span>
-          <span className="text-xs text-[#c9a84c] font-semibold">
-            {Math.round(progress)}%
-          </span>
+          <div className="flex items-center gap-3">
+            {/* Aperçu moyenne en temps réel (visible seulement quand tout est rempli) */}
+            {computedAverage !== null && (
+              <span
+                className={[
+                  "text-xs font-semibold",
+                  computedAverage >= 10 ? "text-emerald-400" : "text-red-400",
+                ].join(" ")}
+              >
+                Moy. {computedAverage.toFixed(2)}
+              </span>
+            )}
+            <span className="text-xs text-[#c9a84c] font-semibold">
+              {Math.round(progress)}%
+            </span>
+          </div>
         </div>
         <div className="h-1 bg-[#1a1a1a] rounded-full overflow-hidden">
           <div
