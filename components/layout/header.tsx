@@ -54,7 +54,7 @@ export default function Header() {
           <div className="flex items-center justify-between h-16 lg:h-20">
             <Link href="/" className="flex items-center gap-3 group">
               <OrientysLogo
-                size={36}
+                height={36}
                 className="transition-transform duration-500 group-hover:scale-105"
               />
               <span

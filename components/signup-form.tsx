@@ -106,7 +106,7 @@ export function SignupForm({
           />
 
           <div className="relative z-10 flex flex-col items-center justify-center p-12 text-center gap-8 w-full">
-            <OrientysLogo size={72} />
+            <OrientysLogo height={72} />
 
             <div>
               <p
@@ -170,7 +170,7 @@ export function SignupForm({
             className="inline-flex items-center gap-2.5 mb-10 group w-fit"
           >
             <OrientysLogo
-              size={30}
+              height={30}
               className="transition-transform duration-500 group-hover:scale-105"
             />
             <span

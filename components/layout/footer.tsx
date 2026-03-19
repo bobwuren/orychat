@@ -74,7 +74,7 @@ export default function Footer() {
               className="inline-flex items-center gap-3 group mb-6"
             >
               <OrientysLogo
-                size={36}
+                height={36}
                 className="transition-transform duration-500 group-hover:scale-105"
               />
               <span

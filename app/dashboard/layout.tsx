@@ -72,7 +72,7 @@ export default function ClientLayout({
             className="flex items-center gap-2.5 group shrink-0"
           >
             <OrientysLogo
-              size={28}
+              height={28}
               className="transition-transform duration-500 group-hover:scale-105"
             />
             <span
