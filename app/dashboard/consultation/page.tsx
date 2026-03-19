@@ -5,14 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { consultationsApi } from "@/lib/api";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Validation minimale d'un numéro de téléphone international.
- * On accepte les numéros commençant par + suivis d'au moins 7 chiffres/espaces.
- */
 function isValidPhone(value: string): boolean {
   return /^\+?[\d\s\-().]{7,20}$/.test(value.trim());
 }
@@ -21,15 +13,7 @@ function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
-// ---------------------------------------------------------------------------
-// Page principale
-// ---------------------------------------------------------------------------
-
-/**
- * Page de demande de consultation conseiller.
- * Étape 6 (optionnelle) du parcours étudiant.
- * Requiert questionnaireId et recommendationId en sessionStorage.
- */
+/** Page de demande de consultation conseiller — étape 6 (optionnelle) */
 export default function ConsultationPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -41,37 +25,23 @@ export default function ConsultationPage() {
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Pré-remplir l'email depuis le compte utilisateur
   useEffect(() => {
-    if (user?.email) {
-      setEmail(user.email);
-    }
+    if (user?.email) setEmail(user.email);
   }, [user]);
-
-  // ---------------------------------------------------------------------------
-  // Validation
-  // ---------------------------------------------------------------------------
 
   const validate = (): boolean => {
     const next: Record<string, string> = {};
-
     if (!phone.trim()) {
       next.phone = "Le numéro de téléphone est obligatoire.";
     } else if (!isValidPhone(phone)) {
       next.phone = "Format invalide (ex : +228 90 12 34 56).";
     }
-
     if (email && !isValidEmail(email)) {
       next.email = "Format d'email invalide.";
     }
-
     setErrors(next);
     return Object.keys(next).length === 0;
   };
-
-  // ---------------------------------------------------------------------------
-  // Soumission
-  // ---------------------------------------------------------------------------
 
   const handleSubmit = async () => {
     if (!validate()) return;
@@ -90,7 +60,6 @@ export default function ConsultationPage() {
     }
 
     setSubmitting(true);
-
     try {
       await consultationsApi.request({
         questionnaireId,
@@ -99,7 +68,6 @@ export default function ConsultationPage() {
         studentPhone: phone.trim(),
         additionalComment: comment.trim() || undefined,
       });
-
       setSuccess(true);
     } catch (err: any) {
       setErrors({
@@ -110,21 +78,51 @@ export default function ConsultationPage() {
     }
   };
 
-  // ---------------------------------------------------------------------------
-  // État succès
-  // ---------------------------------------------------------------------------
+  /* Styles partagés inputs */
+  const inputBase = {
+    backgroundColor: "var(--color-input-bg)",
+    borderColor: "var(--color-input-border)",
+    color: "var(--color-text-primary)",
+  };
+  const inputClass =
+    "w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-1 transition-all duration-200";
 
+  const onFocus = (
+    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    e.currentTarget.style.borderColor = "var(--color-input-border-focus)";
+    e.currentTarget.style.boxShadow = "0 0 0 3px var(--color-input-ring)";
+  };
+  const onBlur = (
+    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+    hasError: boolean,
+  ) => {
+    e.currentTarget.style.borderColor = hasError
+      ? "var(--color-state-error-border)"
+      : "var(--color-input-border)";
+    e.currentTarget.style.boxShadow = "none";
+  };
+
+  /* -------------------------------------------------------------------------
+   * Succès
+   * ------------------------------------------------------------------------- */
   if (success) {
     return (
       <div className="max-w-lg mx-auto px-6 py-24 flex flex-col items-center gap-6 text-center">
-        {/* Icône succès */}
-        <div className="w-16 h-16 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/30 flex items-center justify-center">
+        <div
+          className="w-16 h-16 rounded-full border flex items-center justify-center"
+          style={{
+            backgroundColor: "var(--color-state-success-bg)",
+            borderColor: "var(--color-state-success-border)",
+          }}
+        >
           <svg
-            className="w-7 h-7 text-[#c9a84c]"
+            className="w-7 h-7"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.5"
+            style={{ color: "var(--color-state-success)" }}
           >
             <path
               d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
@@ -135,10 +133,16 @@ export default function ConsultationPage() {
         </div>
 
         <div>
-          <h2 className="font-display text-2xl font-bold text-white mb-3">
+          <h2
+            className="font-display text-2xl font-bold mb-3"
+            style={{ color: "var(--color-text-primary)" }}
+          >
             Demande enregistrée
           </h2>
-          <p className="text-sm text-[#666] leading-relaxed max-w-sm">
+          <p
+            className="text-sm leading-relaxed max-w-sm"
+            style={{ color: "var(--color-text-muted)" }}
+          >
             Votre demande de consultation a été transmise avec succès. Vous
             allez recevoir un message WhatsApp avec les modalités de paiement et
             les prochaines étapes.
@@ -146,8 +150,17 @@ export default function ConsultationPage() {
         </div>
 
         {/* Étapes */}
-        <div className="w-full bg-[#0e0e0e] border border-[#1a1a1a] rounded-2xl p-6 text-left mt-2">
-          <p className="text-xs uppercase tracking-[0.15em] text-[#c9a84c] font-semibold mb-4">
+        <div
+          className="w-full border rounded-2xl p-6 text-left mt-2"
+          style={{
+            backgroundColor: "var(--color-bg-base)",
+            borderColor: "var(--color-border-default)",
+          }}
+        >
+          <p
+            className="text-xs uppercase tracking-[0.15em] font-semibold mb-4"
+            style={{ color: "var(--color-brand-accent)" }}
+          >
             Prochaines étapes
           </p>
           <ol className="flex flex-col gap-3">
@@ -158,12 +171,26 @@ export default function ConsultationPage() {
               "Le conseiller vous contactera pour organiser l'entretien",
             ].map((step, i) => (
               <li key={i} className="flex items-start gap-3">
-                <div className="w-5 h-5 rounded-full bg-[#141414] border border-[#1e1e1e] flex items-center justify-center shrink-0 mt-0.5">
-                  <span className="text-[10px] font-bold text-[#555]">
+                <div
+                  className="w-5 h-5 rounded-full border flex items-center justify-center shrink-0 mt-0.5"
+                  style={{
+                    backgroundColor: "var(--color-bg-surface)",
+                    borderColor: "var(--color-border-default)",
+                  }}
+                >
+                  <span
+                    className="text-[10px] font-bold"
+                    style={{ color: "var(--color-text-disabled)" }}
+                  >
                     {i + 1}
                   </span>
                 </div>
-                <span className="text-sm text-[#888] leading-snug">{step}</span>
+                <span
+                  className="text-sm leading-snug"
+                  style={{ color: "var(--color-text-secondary)" }}
+                >
+                  {step}
+                </span>
               </li>
             ))}
           </ol>
@@ -171,25 +198,35 @@ export default function ConsultationPage() {
 
         <button
           onClick={() => router.push("/dashboard/history")}
-          className="group relative px-8 py-3 rounded-xl text-sm font-semibold text-[#0e0e0e] overflow-hidden mt-2"
+          className="group relative px-8 py-3 rounded-xl text-sm font-semibold overflow-hidden mt-2"
+          style={{ color: "var(--color-bg-base)" }}
         >
-          <span className="absolute inset-0 bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] transition-transform duration-300 group-hover:scale-105" />
+          <span
+            className="absolute inset-0 transition-transform duration-300 group-hover:scale-105"
+            style={{ background: "var(--gradient-brand)" }}
+          />
           <span className="relative">Voir mon historique</span>
         </button>
       </div>
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Formulaire
-  // ---------------------------------------------------------------------------
-
+  /* -------------------------------------------------------------------------
+   * Formulaire
+   * ------------------------------------------------------------------------- */
   return (
     <div className="max-w-lg mx-auto px-6 py-12">
       {/* Retour */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-sm text-[#555] hover:text-white transition-colors mb-10 group"
+        className="flex items-center gap-2 text-sm mb-10 group transition-colors duration-200"
+        style={{ color: "var(--color-text-muted)" }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = "var(--color-text-primary)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = "var(--color-text-muted)";
+        }}
       >
         <svg
           className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-0.5"
@@ -209,23 +246,45 @@ export default function ConsultationPage() {
 
       {/* En-tête */}
       <div className="mb-8">
-        <p className="text-xs uppercase tracking-[0.15em] text-[#c9a84c] font-semibold mb-3">
+        <p
+          className="text-xs uppercase tracking-[0.15em] font-semibold mb-3"
+          style={{ color: "var(--color-brand-accent)" }}
+        >
           Consultation conseiller
         </p>
-        <h1 className="font-display text-3xl font-bold text-white mb-2">
+        <h1
+          className="font-display text-3xl font-bold mb-2"
+          style={{ color: "var(--color-text-primary)" }}
+        >
           Parler à un expert
         </h1>
-        <p className="text-[#666] text-sm leading-relaxed">
+        <p
+          className="text-sm leading-relaxed"
+          style={{ color: "var(--color-text-muted)" }}
+        >
           Un conseiller d'orientation professionnel analysera votre profil et
           vous guidera personnellement dans votre choix de filière.
         </p>
       </div>
 
       {/* Info service */}
-      <div className="bg-[#0e0e0e] border border-[#1a1a1a] rounded-2xl p-5 mb-8 flex gap-4">
-        <div className="w-10 h-10 rounded-xl bg-[#c9a84c]/10 border border-[#c9a84c]/20 flex items-center justify-center shrink-0">
+      <div
+        className="border rounded-2xl p-5 mb-8 flex gap-4"
+        style={{
+          backgroundColor: "var(--color-bg-base)",
+          borderColor: "var(--color-border-default)",
+        }}
+      >
+        <div
+          className="w-10 h-10 rounded-xl border flex items-center justify-center shrink-0"
+          style={{
+            backgroundColor: "var(--color-accent-bg)",
+            borderColor: "var(--color-accent-border)",
+            color: "var(--color-brand-accent)",
+          }}
+        >
           <svg
-            className="w-5 h-5 text-[#c9a84c]"
+            className="w-5 h-5"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -239,10 +298,16 @@ export default function ConsultationPage() {
           </svg>
         </div>
         <div>
-          <p className="text-sm font-semibold text-white mb-1">
+          <p
+            className="text-sm font-semibold mb-1"
+            style={{ color: "var(--color-text-primary)" }}
+          >
             Entretien individuel personnalisé
           </p>
-          <p className="text-xs text-[#555] leading-relaxed">
+          <p
+            className="text-xs leading-relaxed"
+            style={{ color: "var(--color-text-muted)" }}
+          >
             Votre profil académique, questionnaire et recommandations IA seront
             transmis à votre conseiller avant l'entretien.
           </p>
@@ -253,9 +318,15 @@ export default function ConsultationPage() {
       <div className="flex flex-col gap-5">
         {/* Email */}
         <div>
-          <label className="block text-xs font-semibold text-[#888] uppercase tracking-[0.1em] mb-2">
+          <label
+            className="block text-xs font-semibold uppercase tracking-[0.1em] mb-2"
+            style={{ color: "var(--color-text-secondary)" }}
+          >
             Email{" "}
-            <span className="text-[#444] font-normal normal-case tracking-normal">
+            <span
+              className="font-normal normal-case tracking-normal"
+              style={{ color: "var(--color-text-disabled)" }}
+            >
               (optionnel)
             </span>
           </label>
@@ -267,22 +338,36 @@ export default function ConsultationPage() {
               if (errors.email) setErrors((p) => ({ ...p, email: "" }));
             }}
             placeholder="votre@email.com"
-            className={[
-              "w-full px-4 py-3 bg-[#0e0e0e] border rounded-xl text-sm text-white placeholder:text-[#333] focus:outline-none focus:ring-1 transition-all duration-200",
+            className={inputClass}
+            style={
               errors.email
-                ? "border-red-500/40 focus:border-red-500/60 focus:ring-red-500/20"
-                : "border-[#1e1e1e] focus:border-[#c9a84c]/50 focus:ring-[#c9a84c]/20",
-            ].join(" ")}
+                ? {
+                    ...inputBase,
+                    borderColor: "var(--color-state-error-border)",
+                  }
+                : inputBase
+            }
+            onFocus={onFocus}
+            onBlur={(e) => onBlur(e, !!errors.email)}
           />
           {errors.email && (
-            <p className="mt-1.5 text-xs text-red-400">{errors.email}</p>
+            <p
+              className="mt-1.5 text-xs"
+              style={{ color: "var(--color-state-error)" }}
+            >
+              {errors.email}
+            </p>
           )}
         </div>
 
         {/* Téléphone */}
         <div>
-          <label className="block text-xs font-semibold text-[#888] uppercase tracking-[0.1em] mb-2">
-            Téléphone <span className="text-red-400">*</span>
+          <label
+            className="block text-xs font-semibold uppercase tracking-[0.1em] mb-2"
+            style={{ color: "var(--color-text-secondary)" }}
+          >
+            Téléphone{" "}
+            <span style={{ color: "var(--color-state-error)" }}>*</span>
           </label>
           <input
             type="tel"
@@ -292,26 +377,45 @@ export default function ConsultationPage() {
               if (errors.phone) setErrors((p) => ({ ...p, phone: "" }));
             }}
             placeholder="+228 90 12 34 56"
-            className={[
-              "w-full px-4 py-3 bg-[#0e0e0e] border rounded-xl text-sm text-white placeholder:text-[#333] focus:outline-none focus:ring-1 transition-all duration-200",
+            className={inputClass}
+            style={
               errors.phone
-                ? "border-red-500/40 focus:border-red-500/60 focus:ring-red-500/20"
-                : "border-[#1e1e1e] focus:border-[#c9a84c]/50 focus:ring-[#c9a84c]/20",
-            ].join(" ")}
+                ? {
+                    ...inputBase,
+                    borderColor: "var(--color-state-error-border)",
+                  }
+                : inputBase
+            }
+            onFocus={onFocus}
+            onBlur={(e) => onBlur(e, !!errors.phone)}
           />
           {errors.phone && (
-            <p className="mt-1.5 text-xs text-red-400">{errors.phone}</p>
+            <p
+              className="mt-1.5 text-xs"
+              style={{ color: "var(--color-state-error)" }}
+            >
+              {errors.phone}
+            </p>
           )}
-          <p className="mt-1.5 text-[11px] text-[#444]">
+          <p
+            className="mt-1.5 text-[11px]"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
             Vous recevrez les modalités de paiement sur ce numéro WhatsApp.
           </p>
         </div>
 
         {/* Commentaire */}
         <div>
-          <label className="block text-xs font-semibold text-[#888] uppercase tracking-[0.1em] mb-2">
+          <label
+            className="block text-xs font-semibold uppercase tracking-[0.1em] mb-2"
+            style={{ color: "var(--color-text-secondary)" }}
+          >
             Commentaire additionnel{" "}
-            <span className="text-[#444] font-normal normal-case tracking-normal">
+            <span
+              className="font-normal normal-case tracking-normal"
+              style={{ color: "var(--color-text-disabled)" }}
+            >
               (optionnel)
             </span>
           </label>
@@ -323,9 +427,15 @@ export default function ConsultationPage() {
               }}
               placeholder="Un point particulier à aborder pendant l'entretien..."
               rows={4}
-              className="w-full px-4 py-3 bg-[#0e0e0e] border border-[#1e1e1e] rounded-xl text-sm text-white placeholder:text-[#333] resize-none focus:outline-none focus:border-[#c9a84c]/50 focus:ring-1 focus:ring-[#c9a84c]/20 transition-all duration-200"
+              className={`${inputClass} resize-none`}
+              style={inputBase}
+              onFocus={onFocus}
+              onBlur={(e) => onBlur(e, false)}
             />
-            <span className="absolute bottom-3 right-3 text-[10px] text-[#333]">
+            <span
+              className="absolute bottom-3 right-3 text-[10px]"
+              style={{ color: "var(--color-text-disabled)" }}
+            >
               {comment.length}/1000
             </span>
           </div>
@@ -334,11 +444,18 @@ export default function ConsultationPage() {
 
       {/* Erreur globale */}
       {errors.global && (
-        <div className="mt-5 flex items-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+        <div
+          className="mt-5 flex items-center gap-2 px-4 py-3 border rounded-lg"
+          style={{
+            backgroundColor: "var(--color-state-error-bg)",
+            borderColor: "var(--color-state-error-border)",
+          }}
+        >
           <svg
-            className="w-4 h-4 text-red-400 shrink-0"
+            className="w-4 h-4 shrink-0"
             viewBox="0 0 16 16"
             fill="none"
+            style={{ color: "var(--color-state-error)" }}
           >
             <path
               d="M8 5v3M8 11h.01M14.5 8a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z"
@@ -347,7 +464,12 @@ export default function ConsultationPage() {
               strokeLinecap="round"
             />
           </svg>
-          <span className="text-sm text-red-400">{errors.global}</span>
+          <span
+            className="text-sm"
+            style={{ color: "var(--color-state-error)" }}
+          >
+            {errors.global}
+          </span>
         </div>
       )}
 
@@ -355,13 +477,23 @@ export default function ConsultationPage() {
       <button
         onClick={handleSubmit}
         disabled={submitting}
-        className="group relative w-full mt-8 py-4 font-semibold text-sm text-[#0e0e0e] rounded-xl overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
+        className="group relative w-full mt-8 py-4 font-semibold text-sm rounded-xl overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
+        style={{ color: "var(--color-bg-base)" }}
       >
-        <span className="absolute inset-0 bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] transition-transform duration-300 group-hover:scale-105 group-disabled:scale-100" />
+        <span
+          className="absolute inset-0 transition-transform duration-300 group-hover:scale-105 group-disabled:scale-100"
+          style={{ background: "var(--gradient-brand)" }}
+        />
         <span className="relative flex items-center justify-center gap-2">
           {submitting ? (
             <>
-              <div className="w-4 h-4 border-2 border-[#0e0e0e]/30 border-t-[#0e0e0e] rounded-full animate-spin" />
+              <div
+                className="w-4 h-4 border-2 rounded-full animate-spin"
+                style={{
+                  borderColor: "rgba(255,255,255,0.3)",
+                  borderTopColor: "white",
+                }}
+              />
               Envoi en cours...
             </>
           ) : (
@@ -385,7 +517,10 @@ export default function ConsultationPage() {
         </span>
       </button>
 
-      <p className="text-center text-[11px] text-[#444] mt-4 leading-relaxed">
+      <p
+        className="text-center text-[11px] mt-4 leading-relaxed"
+        style={{ color: "var(--color-text-disabled)" }}
+      >
         En soumettant, vous acceptez que vos données académiques soient
         transmises au conseiller assigné.
       </p>

@@ -71,6 +71,7 @@ function IconRefresh() {
     </svg>
   );
 }
+
 function IconDownload() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
@@ -84,6 +85,7 @@ function IconDownload() {
     </svg>
   );
 }
+
 function IconPlus() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
@@ -96,6 +98,7 @@ function IconPlus() {
     </svg>
   );
 }
+
 function IconX() {
   return (
     <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
@@ -108,6 +111,30 @@ function IconX() {
     </svg>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Styles partagés pour les inputs inline
+// ---------------------------------------------------------------------------
+
+const inlineSelectStyle: React.CSSProperties = {
+  backgroundColor: "var(--color-input-bg)",
+  border: "1px solid var(--color-input-border)",
+  color: "var(--color-text-primary)",
+};
+
+const inlineInputFocus = (
+  e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>,
+) => {
+  e.currentTarget.style.borderColor = "var(--color-input-border-focus)";
+  e.currentTarget.style.boxShadow = "0 0 0 3px var(--color-input-ring)";
+};
+
+const inlineInputBlur = (
+  e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>,
+) => {
+  e.currentTarget.style.borderColor = "var(--color-input-border)";
+  e.currentTarget.style.boxShadow = "none";
+};
 
 // ---------------------------------------------------------------------------
 // Formulaire matière
@@ -194,10 +221,12 @@ function SubjectForm({
         />
       </FormField>
 
-      {/* Coefficients par série */}
       <div className="space-y-2">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#666]">
+          <p
+            className="text-xs font-semibold uppercase tracking-[0.1em]"
+            style={{ color: "var(--color-text-muted)" }}
+          >
             Coefficients par série
           </p>
           <Btn
@@ -212,22 +241,28 @@ function SubjectForm({
           </Btn>
         </div>
         {rows.length === 0 ? (
-          <p className="text-sm text-[#444] italic py-2">
+          <p
+            className="text-sm italic py-2"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
             Aucun coefficient défini.
           </p>
         ) : (
-          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
             {rows.map((row, i) => (
               <div key={i} className="flex items-center gap-2">
                 <select
                   value={row.serieId}
                   onChange={(e) => updateRow(i, "serieId", e.target.value)}
                   disabled={isLoading}
-                  className="flex-1 px-3 py-2 bg-[#141414] border border-[#222] rounded-lg text-sm text-white focus:outline-none focus:border-[#c9a84c] transition-all"
+                  className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none transition-all"
+                  style={inlineSelectStyle}
+                  onFocus={inlineInputFocus}
+                  onBlur={inlineInputBlur}
                 >
                   <option value="">Série…</option>
                   {serieOptions.map((s) => (
-                    <option key={s.id} value={s.id} className="bg-[#141414]">
+                    <option key={s.id} value={s.id}>
                       {s.code} — {s.description}
                     </option>
                   ))}
@@ -241,13 +276,26 @@ function SubjectForm({
                     updateRow(i, "coefficient", parseFloat(e.target.value))
                   }
                   disabled={isLoading}
-                  className="w-20 px-3 py-2 bg-[#141414] border border-[#222] rounded-lg text-sm text-white text-center focus:outline-none focus:border-[#c9a84c] transition-all"
+                  className="w-20 px-3 py-2 rounded-lg text-sm text-center focus:outline-none transition-all"
+                  style={inlineSelectStyle}
+                  onFocus={inlineInputFocus}
+                  onBlur={inlineInputBlur}
                 />
                 <button
                   type="button"
                   onClick={() => removeRow(i)}
                   disabled={isLoading}
-                  className="w-7 h-7 flex items-center justify-center text-[#444] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg transition-all shrink-0"
+                  style={{ color: "var(--color-text-disabled)" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "var(--color-state-error)";
+                    e.currentTarget.style.backgroundColor =
+                      "var(--color-state-error-bg)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "var(--color-text-disabled)";
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                 >
                   <IconX />
                 </button>
@@ -292,7 +340,6 @@ export default function SubjectsAdminPage() {
     deleteSubject,
     exportSubjects,
   } = useSubjects();
-
   const { series, fetchSeries } = useSeries();
 
   const [searchInput, setSearchInput] = useState("");
@@ -309,6 +356,7 @@ export default function SubjectsAdminPage() {
   const load = useCallback(() => {
     fetchSubjects();
   }, [fetchSubjects]);
+
   useEffect(() => {
     load();
     fetchSeries();
@@ -336,18 +384,21 @@ export default function SubjectsAdminPage() {
     setActionError(null);
     setDialogMode("create");
   };
+
   const openEdit = async (s: SubjectWithCoefficients) => {
     setActionError(null);
     setSelectedSubject(s);
     setDialogMode("edit");
     await fetchSubjectById(s.id);
   };
+
   const openView = async (s: SubjectWithCoefficients) => {
     setActionError(null);
     setSelectedSubject(s);
     setDialogMode("view");
     await fetchSubjectById(s.id);
   };
+
   const openDelete = (s: SubjectWithCoefficients) => {
     setActionError(null);
     setSelectedSubject(s);
@@ -430,7 +481,6 @@ export default function SubjectsAdminPage() {
   const resolveSerieLabel = (serieId: string) =>
     series?.find((s) => String(s.id) === String(serieId))?.code ?? serieId;
 
-  // currentSubject prioritaire si l'ID correspond
   const activeSubject =
     currentSubject?.id === selectedSubject?.id
       ? (currentSubject ?? selectedSubject)
@@ -507,11 +557,11 @@ export default function SubjectsAdminPage() {
                     : "Aucune matière."
                 }
                 action={
-                  !searchTerm && (
+                  !searchTerm ? (
                     <Btn variant="secondary" size="sm" onClick={openCreate}>
                       Créer la première matière
                     </Btn>
-                  )
+                  ) : undefined
                 }
               />
             ) : (
@@ -522,13 +572,21 @@ export default function SubjectsAdminPage() {
                 return (
                   <Tr key={subject.id}>
                     <Td>
-                      <span className="font-medium text-white">
+                      <span
+                        className="font-medium"
+                        style={{ color: "var(--color-text-primary)" }}
+                      >
                         {subject.name}
                       </span>
                     </Td>
                     <Td>
                       {coeffs.length === 0 ? (
-                        <span className="text-[#444] text-sm">—</span>
+                        <span
+                          className="text-sm"
+                          style={{ color: "var(--color-text-disabled)" }}
+                        >
+                          —
+                        </span>
                       ) : (
                         <div className="flex flex-wrap gap-1">
                           {coeffs.slice(0, 4).map((c, idx) => (
@@ -568,7 +626,7 @@ export default function SubjectsAdminPage() {
                           size="sm"
                           onClick={() => openDelete(subject)}
                         >
-                          Supprimer
+                          Suppr.
                         </Btn>
                       </div>
                     </Td>
@@ -633,7 +691,11 @@ export default function SubjectsAdminPage() {
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-5 bg-[#1a1a1a] rounded animate-pulse" />
+              <div
+                key={i}
+                className="h-5 rounded animate-pulse"
+                style={{ backgroundColor: "var(--color-bg-elevated)" }}
+              />
             ))}
           </div>
         ) : (
@@ -645,17 +707,31 @@ export default function SubjectsAdminPage() {
             return (
               <div className="space-y-5">
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
+                  <p
+                    className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-1"
+                    style={{ color: "var(--color-text-disabled)" }}
+                  >
                     Nom
                   </p>
-                  <p className="font-semibold text-lg text-white">{s?.name}</p>
+                  <p
+                    className="font-semibold text-lg"
+                    style={{ color: "var(--color-text-primary)" }}
+                  >
+                    {s?.name}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-2">
+                  <p
+                    className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-2"
+                    style={{ color: "var(--color-text-disabled)" }}
+                  >
                     Coefficients par série
                   </p>
                   {coeffs.length === 0 ? (
-                    <p className="text-sm text-[#444] italic">
+                    <p
+                      className="text-sm italic"
+                      style={{ color: "var(--color-text-disabled)" }}
+                    >
                       Aucun coefficient défini.
                     </p>
                   ) : (
@@ -663,14 +739,23 @@ export default function SubjectsAdminPage() {
                       {coeffs.map((c) => (
                         <div
                           key={c.serieId}
-                          className="flex items-center justify-between px-3 py-2 bg-[#141414] border border-[#1e1e1e] rounded-lg"
+                          className="flex items-center justify-between px-3 py-2 border rounded-lg"
+                          style={{
+                            backgroundColor: "var(--color-bg-surface)",
+                            borderColor: "var(--color-border-default)",
+                          }}
                         >
                           <AdminBadge color="gold">
                             {resolveSerieLabel(c.serieId)}
                           </AdminBadge>
-                          <span className="text-sm text-[#aaa]">
+                          <span
+                            className="text-sm"
+                            style={{ color: "var(--color-text-secondary)" }}
+                          >
                             coef.{" "}
-                            <strong className="text-white">
+                            <strong
+                              style={{ color: "var(--color-text-primary)" }}
+                            >
                               {c.coefficient}
                             </strong>
                           </span>
@@ -704,10 +789,26 @@ export default function SubjectsAdminPage() {
         description="Cette action est irréversible. Toutes les notes et dépendances seront supprimées."
         size="sm"
       >
-        <div className="p-4 bg-[#141414] border border-[#1e1e1e] rounded-xl mb-2 space-y-1">
-          <p className="text-xs text-[#555]">Matière concernée</p>
-          <p className="font-semibold text-white">{selectedSubject?.name}</p>
-          <p className="text-xs text-[#444]">
+        <div
+          className="p-4 border rounded-xl mb-2 space-y-1"
+          style={{
+            backgroundColor: "var(--color-bg-surface)",
+            borderColor: "var(--color-border-default)",
+          }}
+        >
+          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+            Matière concernée
+          </p>
+          <p
+            className="font-semibold"
+            style={{ color: "var(--color-text-primary)" }}
+          >
+            {selectedSubject?.name}
+          </p>
+          <p
+            className="text-xs"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
             {
               normalizeCoefficients(
                 (selectedSubject as any)?.seriesCoefficients,
@@ -747,7 +848,14 @@ export default function SubjectsAdminPage() {
               ]}
             />
           </FormField>
-          <p className="text-xs text-[#444] bg-[#141414] border border-[#1e1e1e] rounded-lg px-4 py-3">
+          <p
+            className="text-xs px-4 py-3 border rounded-lg"
+            style={{
+              color: "var(--color-text-disabled)",
+              backgroundColor: "var(--color-bg-surface)",
+              borderColor: "var(--color-border-default)",
+            }}
+          >
             Toutes les matières ({filtered.length}) avec leurs coefficients
             seront incluses.
           </p>

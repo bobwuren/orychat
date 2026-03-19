@@ -4,13 +4,16 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import Link from "next/link";
+import OrientysLogo from "@/components/OrientysLogo";
 
 /**
  * Layout de la zone client authentifiée (/dashboard/*)
  *
- * Responsabilités (inchangées) :
+ * Responsabilités :
  * - Redirige vers /login si l'utilisateur n'est pas authentifié
- * - Affiche la navbar avec lien Historique et bouton Déconnexion
+ * - Affiche la navbar avec liens de navigation et bouton Déconnexion
+ *
+ * Couleurs via variables CSS du design system — aucune valeur hardcodée.
  */
 export default function ClientLayout({
   children,
@@ -28,8 +31,17 @@ export default function ClientLayout({
 
   if (loading || !isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0e0e0e] flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-[#c9a84c]/30 border-t-[#c9a84c] rounded-full animate-spin" />
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "var(--color-bg-base)" }}
+      >
+        <div
+          className="w-6 h-6 border-2 rounded-full animate-spin"
+          style={{
+            borderColor: "var(--color-accent-border)",
+            borderTopColor: "var(--color-brand-accent)",
+          }}
+        />
       </div>
     );
   }
@@ -40,21 +52,33 @@ export default function ClientLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: "var(--color-bg-page)" }}
+    >
       {/* Navbar */}
-      <header className="sticky top-0 z-50 bg-[#0e0e0e]/95 backdrop-blur-md border-b border-[#1a1a1a]">
+      <header
+        className="sticky top-0 z-50 backdrop-blur-md border-b"
+        style={{
+          backgroundColor:
+            "color-mix(in srgb, var(--color-bg-base) 95%, transparent)",
+          borderColor: "var(--color-border-default)",
+        }}
+      >
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between gap-6">
           {/* Logo */}
           <Link
             href="/dashboard"
             className="flex items-center gap-2.5 group shrink-0"
           >
-            <div className="relative w-6 h-6">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#c9a84c] to-[#e8c97a] rounded-sm rotate-45 group-hover:rotate-[60deg] transition-transform duration-500" />
-              <div className="absolute inset-[2px] bg-[#0e0e0e] rounded-sm rotate-45" />
-              <div className="absolute inset-[4px] bg-gradient-to-br from-[#c9a84c] to-[#e8c97a] rounded-sm rotate-45" />
-            </div>
-            <span className="font-display text-sm font-bold text-white tracking-tight">
+            <OrientysLogo
+              size={28}
+              className="transition-transform duration-500 group-hover:scale-105"
+            />
+            <span
+              className="font-display text-sm font-bold tracking-tight"
+              style={{ color: "var(--color-text-primary)" }}
+            >
               Orientys
             </span>
           </Link>
@@ -67,12 +91,17 @@ export default function ClientLayout({
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={[
-                    "px-3 py-1.5 rounded text-sm font-medium transition-all duration-200",
+                  className="px-3 py-1.5 rounded text-sm font-medium transition-all duration-200"
+                  style={
                     isActive
-                      ? "bg-[#c9a84c]/10 text-[#c9a84c]"
-                      : "text-[#666] hover:text-white hover:bg-[#141414]",
-                  ].join(" ")}
+                      ? {
+                          backgroundColor: "var(--color-accent-bg)",
+                          color: "var(--color-brand-accent)",
+                        }
+                      : {
+                          color: "var(--color-text-muted)",
+                        }
+                  }
                 >
                   {link.label}
                 </Link>
@@ -82,10 +111,17 @@ export default function ClientLayout({
 
           {/* Actions droite */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Initiale utilisateur */}
+            {/* Avatar initiale */}
             {user?.email && (
               <div className="hidden sm:flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-[#c9a84c]/15 border border-[#c9a84c]/20 flex items-center justify-center text-[11px] font-bold text-[#c9a84c]">
+                <div
+                  className="w-7 h-7 rounded-full border flex items-center justify-center text-[11px] font-bold"
+                  style={{
+                    backgroundColor: "var(--color-accent-bg)",
+                    borderColor: "var(--color-accent-border)",
+                    color: "var(--color-brand-accent)",
+                  }}
+                >
                   {user.email[0].toUpperCase()}
                 </div>
               </div>
@@ -94,7 +130,8 @@ export default function ClientLayout({
             {/* Déconnexion */}
             <button
               onClick={logout}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#555] hover:text-red-400 hover:bg-red-500/5 rounded transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded transition-all duration-200 hover:bg-red-500/5 hover:text-red-400"
+              style={{ color: "var(--color-text-disabled)" }}
             >
               <svg
                 className="w-3.5 h-3.5"
@@ -117,10 +154,10 @@ export default function ClientLayout({
 
       {/* Contenu */}
       <main className="relative">
-        {/* Fond subtil */}
-        <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[radial-gradient(ellipse_at_top,rgba(201,168,76,0.04),transparent_60%)]" />
-        </div>
+        <div
+          className="fixed inset-0 pointer-events-none"
+          style={{ background: "var(--gradient-hero-radial)" }}
+        />
         <div className="relative">{children}</div>
       </main>
     </div>

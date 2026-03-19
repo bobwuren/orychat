@@ -59,6 +59,7 @@ function IconRefresh() {
     </svg>
   );
 }
+
 function IconDownload() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
@@ -72,6 +73,7 @@ function IconDownload() {
     </svg>
   );
 }
+
 function IconPlus() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
@@ -84,6 +86,7 @@ function IconPlus() {
     </svg>
   );
 }
+
 function IconX() {
   return (
     <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
@@ -96,6 +99,7 @@ function IconX() {
     </svg>
   );
 }
+
 function IconExternal() {
   return (
     <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
@@ -226,10 +230,13 @@ function UniversityForm({
       {/* Formations */}
       <div className="space-y-2">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#666]">
+          <p
+            className="text-xs font-semibold uppercase tracking-[0.1em]"
+            style={{ color: "var(--color-text-muted)" }}
+          >
             Formations{" "}
             {mode === "create" && (
-              <span className="text-[#c9a84c] ml-1">*</span>
+              <span style={{ color: "var(--color-brand-accent)" }}>*</span>
             )}
           </p>
           <Btn
@@ -244,13 +251,16 @@ function UniversityForm({
           </Btn>
         </div>
         {degrees.length === 0 ? (
-          <p className="text-sm text-[#444] italic py-2">
+          <p
+            className="text-sm italic py-2"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
             {mode === "create"
               ? "Au moins une formation requise."
               : "Aucune formation associée."}
           </p>
         ) : (
-          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
             {degrees.map((d, i) => (
               <div key={i} className="flex items-start gap-2">
                 <div className="flex-1 space-y-1.5">
@@ -273,7 +283,17 @@ function UniversityForm({
                   type="button"
                   onClick={() => removeDegree(i)}
                   disabled={isLoading}
-                  className="w-7 h-7 mt-1 flex items-center justify-center text-[#444] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all shrink-0"
+                  className="w-7 h-7 mt-1 flex items-center justify-center rounded-lg transition-all shrink-0"
+                  style={{ color: "var(--color-text-disabled)" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "var(--color-state-error)";
+                    e.currentTarget.style.backgroundColor =
+                      "var(--color-state-error-bg)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "var(--color-text-disabled)";
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                 >
                   <IconX />
                 </button>
@@ -318,7 +338,6 @@ export default function UniversitiesAdminPage() {
     deleteUniversity,
     exportUniversities,
   } = useUniversities();
-
   const { degrees: availableDegrees, fetchDegrees } = useDegrees();
 
   const [searchInput, setSearchInput] = useState("");
@@ -336,6 +355,7 @@ export default function UniversitiesAdminPage() {
   const load = useCallback(() => {
     fetchUniversities();
   }, [fetchUniversities]);
+
   useEffect(() => {
     load();
     fetchDegrees();
@@ -369,18 +389,21 @@ export default function UniversitiesAdminPage() {
     setActionError(null);
     setDialogMode("create");
   };
+
   const openEdit = async (u: University) => {
     setActionError(null);
     setSelectedUniversity(u);
     setDialogMode("edit");
     await fetchUniversityById(u.id);
   };
+
   const openView = async (u: University) => {
     setActionError(null);
     setSelectedUniversity(u);
     setDialogMode("view");
     await fetchUniversityById(u.id);
   };
+
   const openDelete = (u: University) => {
     setActionError(null);
     setSelectedUniversity(u);
@@ -447,7 +470,6 @@ export default function UniversitiesAdminPage() {
     currentUniversity?.id === selectedUniversity?.id
       ? (currentUniversity ?? selectedUniversity)
       : selectedUniversity;
-
   const degreesForForm = (availableDegrees ?? []).map((d) => ({
     id: String(d.id),
     name: d.name,
@@ -495,14 +517,25 @@ export default function UniversitiesAdminPage() {
         title="Liste des universités"
         description="Créez, modifiez ou supprimez des universités."
         toolbar={
-          <div className="flex items-center gap-2">
-            {/* Filtre sponsor */}
+          <div className="flex items-center gap-2 flex-wrap">
             <select
               value={filterSponsor}
               onChange={(e) =>
                 setFilterSponsor(e.target.value as SponsorFilter)
               }
-              className="px-3 py-2 bg-[#141414] border border-[#222] rounded-lg text-sm text-white focus:outline-none focus:border-[#c9a84c] transition-all"
+              className="px-3 py-2 rounded-lg text-sm focus:outline-none transition-all"
+              style={{
+                backgroundColor: "var(--color-input-bg)",
+                border: "1px solid var(--color-input-border)",
+                color: "var(--color-text-primary)",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor =
+                  "var(--color-input-border-focus)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-input-border)";
+              }}
             >
               <option value="all">Toutes</option>
               <option value="sponsors">Sponsors</option>
@@ -540,12 +573,11 @@ export default function UniversitiesAdminPage() {
                     : "Aucune université."
                 }
                 action={
-                  !searchTerm &&
-                  filterSponsor === "all" && (
+                  !searchTerm && filterSponsor === "all" ? (
                     <Btn variant="secondary" size="sm" onClick={openCreate}>
                       Créer la première université
                     </Btn>
-                  )
+                  ) : undefined
                 }
               />
             ) : (
@@ -555,13 +587,21 @@ export default function UniversitiesAdminPage() {
                 return (
                   <Tr key={university.id}>
                     <Td>
-                      <span className="font-medium text-white">
+                      <span
+                        className="font-medium"
+                        style={{ color: "var(--color-text-primary)" }}
+                      >
                         {university.name}
                       </span>
                     </Td>
                     <Td>
                       {(university.degrees?.length ?? 0) === 0 ? (
-                        <span className="text-[#444] text-sm">—</span>
+                        <span
+                          className="text-sm"
+                          style={{ color: "var(--color-text-disabled)" }}
+                        >
+                          —
+                        </span>
                       ) : (
                         <AdminBadge color="gray">
                           {university.degrees?.length} formation
@@ -575,13 +615,19 @@ export default function UniversitiesAdminPage() {
                           href={site}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-sm text-[#c9a84c] hover:underline"
+                          className="inline-flex items-center gap-1 text-sm transition-colors"
+                          style={{ color: "var(--color-brand-accent)" }}
                           onClick={(e) => e.stopPropagation()}
                         >
                           Site web <IconExternal />
                         </a>
                       ) : (
-                        <span className="text-[#444] text-sm">—</span>
+                        <span
+                          className="text-sm"
+                          style={{ color: "var(--color-text-disabled)" }}
+                        >
+                          —
+                        </span>
                       )}
                     </Td>
                     <Td>
@@ -612,7 +658,7 @@ export default function UniversitiesAdminPage() {
                           size="sm"
                           onClick={() => openDelete(university)}
                         >
-                          Supprimer
+                          Suppr.
                         </Btn>
                       </div>
                     </Td>
@@ -678,32 +724,51 @@ export default function UniversitiesAdminPage() {
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-5 bg-[#1a1a1a] rounded animate-pulse" />
+              <div
+                key={i}
+                className="h-5 rounded animate-pulse"
+                style={{ backgroundColor: "var(--color-bg-elevated)" }}
+              />
             ))}
           </div>
         ) : (
           <div className="space-y-5">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
+              <p
+                className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-1"
+                style={{ color: "var(--color-text-disabled)" }}
+              >
                 Nom
               </p>
-              <p className="font-semibold text-lg text-white">
+              <p
+                className="font-semibold text-lg"
+                style={{ color: "var(--color-text-primary)" }}
+              >
                 {activeUniversity?.name}
               </p>
             </div>
             {activeUniversity?.description && (
               <div>
-                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
+                <p
+                  className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-1"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
                   Description
                 </p>
-                <p className="text-sm text-[#aaa]">
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{ color: "var(--color-text-secondary)" }}
+                >
                   {activeUniversity.description}
                 </p>
               </div>
             )}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6 flex-wrap">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
+                <p
+                  className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-1"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
                   Statut
                 </p>
                 {activeUniversity?.isSponsor ? (
@@ -715,7 +780,10 @@ export default function UniversitiesAdminPage() {
               {((activeUniversity as any)?.webSite ||
                 (activeUniversity as any)?.website) && (
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
+                  <p
+                    className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-1"
+                    style={{ color: "var(--color-text-disabled)" }}
+                  >
                     Site web
                   </p>
                   <a
@@ -725,7 +793,8 @@ export default function UniversitiesAdminPage() {
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm text-[#c9a84c] hover:underline"
+                    className="inline-flex items-center gap-1 text-sm transition-colors"
+                    style={{ color: "var(--color-brand-accent)" }}
                   >
                     Visiter <IconExternal />
                   </a>
@@ -733,27 +802,41 @@ export default function UniversitiesAdminPage() {
               )}
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-2">
+              <p
+                className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-2"
+                style={{ color: "var(--color-text-disabled)" }}
+              >
                 Formations ({activeUniversity?.degrees?.length ?? 0})
               </p>
               {(activeUniversity?.degrees?.length ?? 0) === 0 ? (
-                <p className="text-sm text-[#444] italic">Aucune formation.</p>
+                <p
+                  className="text-sm italic"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
+                  Aucune formation.
+                </p>
               ) : (
                 <div className="space-y-1.5 max-h-52 overflow-y-auto">
                   {activeUniversity?.degrees?.map((d: any) => (
                     <div
                       key={d.id}
-                      className="flex items-center gap-2 px-3 py-2 bg-[#141414] border border-[#1e1e1e] rounded-lg text-sm text-white"
+                      className="flex items-center gap-2 px-3 py-2 border rounded-lg text-sm"
+                      style={{
+                        backgroundColor: "var(--color-bg-surface)",
+                        borderColor: "var(--color-border-default)",
+                        color: "var(--color-text-secondary)",
+                      }}
                     >
                       <svg
-                        className="w-3.5 h-3.5 text-[#444] shrink-0"
-                        viewBox="0 0 16 16"
+                        className="w-3.5 h-3.5 shrink-0"
+                        viewBox="0 0 24 24"
                         fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        style={{ color: "var(--color-text-disabled)" }}
                       >
                         <path
                           d="M4 10.5v9.75a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V15a.75.75 0 01.75-.75h3a.75.75 0 01.75.75v5.25a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V10.5M12 3L2.25 10.5M21.75 10.5L12 3"
-                          stroke="currentColor"
-                          strokeWidth="1.2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
@@ -787,10 +870,26 @@ export default function UniversitiesAdminPage() {
         description="Cette action est irréversible. L'université et toutes ses associations seront supprimées."
         size="sm"
       >
-        <div className="p-4 bg-[#141414] border border-[#1e1e1e] rounded-xl mb-2 space-y-1">
-          <p className="text-xs text-[#555]">Université concernée</p>
-          <p className="font-semibold text-white">{selectedUniversity?.name}</p>
-          <p className="text-xs text-[#444]">
+        <div
+          className="p-4 border rounded-xl mb-2 space-y-1"
+          style={{
+            backgroundColor: "var(--color-bg-surface)",
+            borderColor: "var(--color-border-default)",
+          }}
+        >
+          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+            Université concernée
+          </p>
+          <p
+            className="font-semibold"
+            style={{ color: "var(--color-text-primary)" }}
+          >
+            {selectedUniversity?.name}
+          </p>
+          <p
+            className="text-xs"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
             {selectedUniversity?.degrees?.length ?? 0} formation(s) ·{" "}
             {selectedUniversity?.isSponsor ? "Sponsor" : "Standard"}
           </p>
@@ -826,7 +925,14 @@ export default function UniversitiesAdminPage() {
               ]}
             />
           </FormField>
-          <p className="text-xs text-[#444] bg-[#141414] border border-[#1e1e1e] rounded-lg px-4 py-3">
+          <p
+            className="text-xs px-4 py-3 border rounded-lg"
+            style={{
+              color: "var(--color-text-disabled)",
+              backgroundColor: "var(--color-bg-surface)",
+              borderColor: "var(--color-border-default)",
+            }}
+          >
             Toutes les universités ({filtered.length}) avec leurs formations
             seront incluses.
           </p>

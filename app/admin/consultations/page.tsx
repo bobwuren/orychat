@@ -35,7 +35,7 @@ import type {
 } from "@/lib/types";
 
 const ITEMS_PER_PAGE = 10;
-type DialogMode = "view" | "assign" | "status" | null;
+type CDialogMode = "view" | "assign" | "status" | null;
 
 const STATUS_LABELS: Record<ConsultationStatus, string> = {
   pending: "En attente",
@@ -59,6 +59,14 @@ const VALID_STATUSES: ConsultationStatus[] = [
   "cancelled",
 ];
 
+function StatusBadge({ status }: { status: ConsultationStatus }) {
+  return (
+    <AdminBadge color={STATUS_COLORS[status]}>
+      {STATUS_LABELS[status]}
+    </AdminBadge>
+  );
+}
+
 function IconRefresh() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
@@ -69,31 +77,6 @@ function IconRefresh() {
         strokeLinecap="round"
       />
     </svg>
-  );
-}
-function IconUserCheck() {
-  return (
-    <svg
-      className="w-3.5 h-3.5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    >
-      <path
-        d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function StatusBadge({ status }: { status: ConsultationStatus }) {
-  return (
-    <AdminBadge color={STATUS_COLORS[status]}>
-      {STATUS_LABELS[status]}
-    </AdminBadge>
   );
 }
 
@@ -110,7 +93,6 @@ export default function ConsultationsAdminPage() {
     assignCounselor,
     updateStatus,
   } = useConsultations();
-
   const [activeCounselors, setActiveCounselors] = useState<Counselor[]>([]);
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -118,7 +100,7 @@ export default function ConsultationsAdminPage() {
     "all",
   );
   const [currentPage, setCurrentPage] = useState(1);
-  const [dialogMode, setDialogMode] = useState<DialogMode>(null);
+  const [dialogMode, setDialogMode] = useState<CDialogMode>(null);
   const [selected, setSelected] = useState<Consultation | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -140,19 +122,18 @@ export default function ConsultationsAdminPage() {
       .then((res) => setActiveCounselors(res.counselors ?? []))
       .catch(() => {});
   }, [load]);
-
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterStatus]);
 
   const filtered = (consultations ?? []).filter((c) => {
-    const matchSearch =
+    return (
       !searchTerm ||
       c.id?.toString().includes(searchTerm) ||
       c.studentId?.toString().includes(searchTerm) ||
       c.studentPhone?.includes(searchTerm) ||
-      (c.studentEmail ?? "").toLowerCase().includes(searchTerm.toLowerCase());
-    return matchSearch;
+      (c.studentEmail ?? "").toLowerCase().includes(searchTerm.toLowerCase())
+    );
   });
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const paginated = filtered.slice(
@@ -247,7 +228,7 @@ export default function ConsultationsAdminPage() {
       />
 
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {(
             [
               "pending",
@@ -261,18 +242,32 @@ export default function ConsultationsAdminPage() {
               <button
                 key={s}
                 onClick={() => setFilterStatus(filterStatus === s ? "all" : s)}
-                className={[
-                  "flex flex-col gap-3 p-4 rounded-xl border text-left transition-all duration-200",
+                className="flex flex-col gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border text-left transition-all duration-200"
+                style={
                   isActive
-                    ? "bg-[#c9a84c]/5 border-[#c9a84c]/25"
-                    : "bg-[#0e0e0e] border-[#1a1a1a] hover:border-[#252525] hover:bg-[#141414]",
-                ].join(" ")}
+                    ? {
+                        backgroundColor: "var(--color-accent-bg)",
+                        borderColor: "var(--color-accent-border-md)",
+                      }
+                    : {
+                        backgroundColor: "var(--color-bg-base)",
+                        borderColor: "var(--color-border-default)",
+                      }
+                }
               >
-                <span className="text-[10px] uppercase tracking-[0.1em] text-[#444] font-semibold">
+                <span
+                  className="text-[10px] uppercase tracking-[0.1em] font-semibold"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
                   {STATUS_LABELS[s]}
                 </span>
                 <p
-                  className={`text-2xl font-bold ${isActive ? "text-[#c9a84c]" : "text-white"}`}
+                  className="text-xl sm:text-2xl font-bold"
+                  style={{
+                    color: isActive
+                      ? "var(--color-brand-accent)"
+                      : "var(--color-text-primary)",
+                  }}
                 >
                   {stats[s] ?? 0}
                 </p>
@@ -286,13 +281,25 @@ export default function ConsultationsAdminPage() {
         title="Liste des consultations"
         description="Assignez des conseillers et suivez les statuts."
         toolbar={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <select
               value={filterStatus}
               onChange={(e) =>
                 setFilterStatus(e.target.value as ConsultationStatus | "all")
               }
-              className="px-3 py-2 bg-[#141414] border border-[#222] rounded-lg text-sm text-white focus:outline-none focus:border-[#c9a84c] transition-all"
+              className="px-3 py-2 rounded-lg text-sm focus:outline-none transition-all"
+              style={{
+                backgroundColor: "var(--color-input-bg)",
+                border: "1px solid var(--color-input-border)",
+                color: "var(--color-text-primary)",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor =
+                  "var(--color-input-border-focus)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-input-border)";
+              }}
             >
               <option value="all">Tous les statuts</option>
               {VALID_STATUSES.map((s) => (
@@ -339,13 +346,26 @@ export default function ConsultationsAdminPage() {
                 <Tr key={c.id} onClick={() => openView(c)}>
                   <Td>
                     <div className="space-y-0.5">
-                      <code className="text-xs text-[#666] font-mono">
-                        {String(c.studentId).slice(0, 10)}…
+                      <code
+                        className="text-xs font-mono"
+                        style={{ color: "var(--color-text-muted)" }}
+                      >
+                        {String(c.studentId).slice(0, 8)}…
                       </code>
                       {c.studentEmail && (
-                        <p className="text-xs text-[#444]">{c.studentEmail}</p>
+                        <p
+                          className="text-xs"
+                          style={{ color: "var(--color-text-disabled)" }}
+                        >
+                          {c.studentEmail}
+                        </p>
                       )}
-                      <p className="text-xs text-[#444]">{c.studentPhone}</p>
+                      <p
+                        className="text-xs"
+                        style={{ color: "var(--color-text-disabled)" }}
+                      >
+                        {c.studentPhone}
+                      </p>
                     </div>
                   </Td>
                   <Td>
@@ -353,28 +373,38 @@ export default function ConsultationsAdminPage() {
                   </Td>
                   <Td>
                     {c.counselorId ? (
-                      <code className="text-xs text-[#555] font-mono">
+                      <code
+                        className="text-xs font-mono"
+                        style={{ color: "var(--color-text-muted)" }}
+                      >
                         {String(c.counselorId).slice(0, 8)}…
                       </code>
                     ) : (
-                      <span className="text-xs text-[#333]">Non assigné</span>
+                      <span
+                        className="text-xs"
+                        style={{ color: "var(--color-text-disabled)" }}
+                      >
+                        Non assigné
+                      </span>
                     )}
                   </Td>
                   <Td>
-                    <div className="flex items-center gap-3 text-[10px] font-medium">
+                    <div className="flex items-center gap-2 text-[10px] font-medium">
                       <span
-                        className={
-                          c.whatsappSent ? "text-green-400" : "text-[#333]"
-                        }
+                        style={{
+                          color: c.whatsappSent
+                            ? "var(--color-state-success)"
+                            : "var(--color-text-disabled)",
+                        }}
                       >
                         WA {c.whatsappSent ? "✓" : "✗"}
                       </span>
                       <span
-                        className={
-                          c.emailSentToCounselor
-                            ? "text-green-400"
-                            : "text-[#333]"
-                        }
+                        style={{
+                          color: c.emailSentToCounselor
+                            ? "var(--color-state-success)"
+                            : "var(--color-text-disabled)",
+                        }}
                       >
                         Mail {c.emailSentToCounselor ? "✓" : "✗"}
                       </span>
@@ -443,32 +473,37 @@ export default function ConsultationsAdminPage() {
         {viewLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-5 bg-[#1a1a1a] rounded animate-pulse" />
+              <div
+                key={i}
+                className="h-5 rounded animate-pulse"
+                style={{ backgroundColor: "var(--color-bg-elevated)" }}
+              />
             ))}
           </div>
         ) : (
           <div className="space-y-5">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-3">
               <StatusBadge
                 status={(detailedConsultation ?? selected)?.status ?? "pending"}
               />
-              <div className="flex items-center gap-4 text-xs">
+              <div className="flex items-center gap-4 text-xs flex-wrap">
                 <span
-                  className={
-                    (detailedConsultation ?? selected)?.whatsappSent
-                      ? "text-green-400"
-                      : "text-[#333]"
-                  }
+                  style={{
+                    color: (detailedConsultation ?? selected)?.whatsappSent
+                      ? "var(--color-state-success)"
+                      : "var(--color-text-disabled)",
+                  }}
                 >
                   WhatsApp{" "}
                   {(detailedConsultation ?? selected)?.whatsappSent ? "✓" : "✗"}
                 </span>
                 <span
-                  className={
-                    (detailedConsultation ?? selected)?.emailSentToCounselor
-                      ? "text-green-400"
-                      : "text-[#333]"
-                  }
+                  style={{
+                    color: (detailedConsultation ?? selected)
+                      ?.emailSentToCounselor
+                      ? "var(--color-state-success)"
+                      : "var(--color-text-disabled)",
+                  }}
                 >
                   Email conseiller{" "}
                   {(detailedConsultation ?? selected)?.emailSentToCounselor
@@ -478,24 +513,49 @@ export default function ConsultationsAdminPage() {
               </div>
             </div>
 
-            <div className="p-4 bg-[#0a0a0a] border border-[#141414] rounded-xl space-y-3">
-              <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold">
+            <div
+              className="p-4 rounded-xl border space-y-3"
+              style={{
+                backgroundColor: "var(--color-bg-page)",
+                borderColor: "var(--color-border-default)",
+              }}
+            >
+              <p
+                className="text-[10px] uppercase tracking-[0.12em] font-semibold"
+                style={{ color: "var(--color-text-disabled)" }}
+              >
                 Étudiant
               </p>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {(detailedConsultation?.student?.email ??
                   selected?.studentEmail) && (
                   <div>
-                    <p className="text-[10px] text-[#444] mb-0.5">Email</p>
-                    <p className="text-sm text-white">
+                    <p
+                      className="text-[10px] mb-0.5"
+                      style={{ color: "var(--color-text-disabled)" }}
+                    >
+                      Email
+                    </p>
+                    <p
+                      className="text-sm"
+                      style={{ color: "var(--color-text-primary)" }}
+                    >
                       {detailedConsultation?.student?.email ??
                         selected?.studentEmail}
                     </p>
                   </div>
                 )}
                 <div>
-                  <p className="text-[10px] text-[#444] mb-0.5">Téléphone</p>
-                  <p className="text-sm text-white">
+                  <p
+                    className="text-[10px] mb-0.5"
+                    style={{ color: "var(--color-text-disabled)" }}
+                  >
+                    Téléphone
+                  </p>
+                  <p
+                    className="text-sm"
+                    style={{ color: "var(--color-text-primary)" }}
+                  >
                     {selected?.studentPhone ?? "—"}
                   </p>
                 </div>
@@ -503,15 +563,27 @@ export default function ConsultationsAdminPage() {
             </div>
 
             {detailedConsultation?.serie && (
-              <div className="p-4 bg-[#0a0a0a] border border-[#141414] rounded-xl space-y-2">
-                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold">
+              <div
+                className="p-4 rounded-xl border space-y-2"
+                style={{
+                  backgroundColor: "var(--color-bg-page)",
+                  borderColor: "var(--color-border-default)",
+                }}
+              >
+                <p
+                  className="text-[10px] uppercase tracking-[0.12em] font-semibold"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
                   Série
                 </p>
                 <div className="flex items-center gap-2">
                   <AdminBadge color="gold">
                     {detailedConsultation.serie.code}
                   </AdminBadge>
-                  <span className="text-sm text-[#888]">
+                  <span
+                    className="text-sm"
+                    style={{ color: "var(--color-text-secondary)" }}
+                  >
                     {detailedConsultation.serie.description}
                   </span>
                 </div>
@@ -519,21 +591,43 @@ export default function ConsultationsAdminPage() {
             )}
 
             {(detailedConsultation?.notes ?? []).length > 0 && (
-              <div className="p-4 bg-[#0a0a0a] border border-[#141414] rounded-xl space-y-3">
-                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold">
+              <div
+                className="p-4 rounded-xl border space-y-3"
+                style={{
+                  backgroundColor: "var(--color-bg-page)",
+                  borderColor: "var(--color-border-default)",
+                }}
+              >
+                <p
+                  className="text-[10px] uppercase tracking-[0.12em] font-semibold"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
                   Notes ({detailedConsultation!.notes!.length})
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   {detailedConsultation!.notes!.map((n, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between px-3 py-2 bg-[#141414] border border-[#1a1a1a] rounded-lg"
+                      className="flex items-center justify-between px-3 py-2 border rounded-lg"
+                      style={{
+                        backgroundColor: "var(--color-bg-surface)",
+                        borderColor: "var(--color-border-default)",
+                      }}
                     >
-                      <span className="text-xs text-[#888]">
+                      <span
+                        className="text-xs"
+                        style={{ color: "var(--color-text-secondary)" }}
+                      >
                         {n.subjectName}
                       </span>
                       <span
-                        className={`text-xs font-bold ${n.value >= 10 ? "text-green-400" : "text-red-400"}`}
+                        className="text-xs font-bold"
+                        style={{
+                          color:
+                            n.value >= 10
+                              ? "var(--color-state-success)"
+                              : "var(--color-state-error)",
+                        }}
                       >
                         {n.value}/20
                       </span>
@@ -544,52 +638,75 @@ export default function ConsultationsAdminPage() {
             )}
 
             {detailedConsultation?.counselor && (
-              <div className="p-4 bg-[#0a0a0a] border border-[#141414] rounded-xl space-y-3">
-                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold">
+              <div
+                className="p-4 rounded-xl border space-y-3"
+                style={{
+                  backgroundColor: "var(--color-bg-page)",
+                  borderColor: "var(--color-border-default)",
+                }}
+              >
+                <p
+                  className="text-[10px] uppercase tracking-[0.12em] font-semibold"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
                   Conseiller assigné
                 </p>
                 <div className="flex items-center gap-3">
-                  {detailedConsultation.counselor.photo ? (
-                    <img
-                      src={detailedConsultation.counselor.photo}
-                      alt=""
-                      className="w-10 h-10 rounded-full object-cover border border-[#1a1a1a]"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-[#141414] border border-[#1a1a1a] flex items-center justify-center text-sm font-bold text-[#555]">
-                      {detailedConsultation.counselor.name[0].toUpperCase()}
-                    </div>
-                  )}
+                  <div
+                    className="w-10 h-10 rounded-full border flex items-center justify-center text-sm font-bold shrink-0"
+                    style={{
+                      backgroundColor: "var(--color-bg-surface)",
+                      borderColor: "var(--color-border-default)",
+                      color: "var(--color-text-muted)",
+                    }}
+                  >
+                    {detailedConsultation.counselor.name[0].toUpperCase()}
+                  </div>
                   <div>
-                    <p className="font-semibold text-white text-sm">
+                    <p
+                      className="font-semibold text-sm"
+                      style={{ color: "var(--color-text-primary)" }}
+                    >
                       {detailedConsultation.counselor.name}
                     </p>
-                    <p className="text-xs text-[#555]">
+                    <p
+                      className="text-xs"
+                      style={{ color: "var(--color-text-muted)" }}
+                    >
                       {detailedConsultation.counselor.email}
                     </p>
                   </div>
                 </div>
-                {selected?.assignedAt && (
-                  <p className="text-xs text-[#444]">
-                    Assigné le{" "}
-                    {new Date(selected.assignedAt).toLocaleDateString("fr-FR")}
-                  </p>
-                )}
               </div>
             )}
 
             {selected?.additionalComment && (
-              <div className="p-4 bg-[#0a0a0a] border border-[#141414] rounded-xl">
-                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-2">
+              <div
+                className="p-4 rounded-xl border"
+                style={{
+                  backgroundColor: "var(--color-bg-page)",
+                  borderColor: "var(--color-border-default)",
+                }}
+              >
+                <p
+                  className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-2"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
                   Commentaire
                 </p>
-                <p className="text-sm text-[#888] leading-relaxed">
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{ color: "var(--color-text-secondary)" }}
+                >
                   {selected.additionalComment}
                 </p>
               </div>
             )}
 
-            <p className="text-xs text-[#333]">
+            <p
+              className="text-xs"
+              style={{ color: "var(--color-text-disabled)" }}
+            >
               Créé le{" "}
               {selected?.createdAt
                 ? new Date(selected.createdAt).toLocaleDateString("fr-FR", {
@@ -616,7 +733,6 @@ export default function ConsultationsAdminPage() {
                   closeDialog();
                   setTimeout(() => selected && openAssign(selected), 100);
                 }}
-                icon={<IconUserCheck />}
               >
                 Assigner
               </Btn>
@@ -628,7 +744,6 @@ export default function ConsultationsAdminPage() {
                 closeDialog();
                 setTimeout(() => selected && openStatus(selected), 100);
               }}
-              icon={<IconRefresh />}
             >
               Changer le statut
             </Btn>
@@ -641,7 +756,7 @@ export default function ConsultationsAdminPage() {
         open={dialogMode === "assign"}
         onClose={closeDialog}
         title="Assigner un conseiller"
-        description="Seuls les conseillers actifs sont disponibles. Un email leur sera envoyé automatiquement."
+        description="Un email sera envoyé automatiquement."
         size="sm"
       >
         <div className="space-y-4">
@@ -649,7 +764,12 @@ export default function ConsultationsAdminPage() {
             <select
               value={selectedCounselorId}
               onChange={(e) => setSelectedCounselorId(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#222] rounded-lg text-sm text-white focus:outline-none focus:border-[#c9a84c] transition-all"
+              className="w-full px-3.5 py-2.5 rounded-lg text-sm focus:outline-none transition-all"
+              style={{
+                backgroundColor: "var(--color-input-bg)",
+                border: "1px solid var(--color-input-border)",
+                color: "var(--color-text-primary)",
+              }}
             >
               <option value="">Sélectionner un conseiller…</option>
               {activeCounselors.length === 0 ? (
@@ -673,22 +793,36 @@ export default function ConsultationsAdminPage() {
               );
               if (!c) return null;
               return (
-                <div className="flex items-center gap-3 p-3 bg-[#0a0a0a] border border-[#141414] rounded-xl">
-                  <div className="w-9 h-9 rounded-full bg-[#141414] border border-[#1a1a1a] flex items-center justify-center text-sm font-bold text-[#555] shrink-0">
+                <div
+                  className="flex items-center gap-3 p-3 rounded-xl border"
+                  style={{
+                    backgroundColor: "var(--color-bg-page)",
+                    borderColor: "var(--color-border-default)",
+                  }}
+                >
+                  <div
+                    className="w-9 h-9 rounded-full border flex items-center justify-center text-sm font-bold shrink-0"
+                    style={{
+                      backgroundColor: "var(--color-bg-surface)",
+                      borderColor: "var(--color-border-default)",
+                      color: "var(--color-text-muted)",
+                    }}
+                  >
                     {c.name[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white">{c.name}</p>
-                    <p className="text-xs text-[#555]">{c.email}</p>
-                    {(c.specialties ?? []).length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {(c.specialties ?? []).map((s) => (
-                          <AdminBadge key={s} color="gray">
-                            {s}
-                          </AdminBadge>
-                        ))}
-                      </div>
-                    )}
+                    <p
+                      className="text-sm font-medium"
+                      style={{ color: "var(--color-text-primary)" }}
+                    >
+                      {c.name}
+                    </p>
+                    <p
+                      className="text-xs"
+                      style={{ color: "var(--color-text-muted)" }}
+                    >
+                      {c.email}
+                    </p>
                   </div>
                 </div>
               );
@@ -704,7 +838,6 @@ export default function ConsultationsAdminPage() {
             onClick={handleAssign}
             loading={actionLoading}
             disabled={!selectedCounselorId || selectedCounselorId === "_none"}
-            icon={<IconUserCheck />}
           >
             Assigner
           </Btn>
@@ -725,16 +858,25 @@ export default function ConsultationsAdminPage() {
               key={s}
               type="button"
               onClick={() => setNewStatus(s)}
-              className={[
-                "w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm text-left transition-all",
+              className="w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm text-left transition-all"
+              style={
                 newStatus === s
-                  ? "bg-[#c9a84c]/5 border-[#c9a84c]/25"
-                  : "bg-[#0e0e0e] border-[#1a1a1a] hover:border-[#252525]",
-              ].join(" ")}
+                  ? {
+                      backgroundColor: "var(--color-accent-bg)",
+                      borderColor: "var(--color-accent-border-md)",
+                    }
+                  : {
+                      backgroundColor: "var(--color-bg-base)",
+                      borderColor: "var(--color-border-default)",
+                    }
+              }
             >
               <StatusBadge status={s} />
               {s === selected?.status && (
-                <span className="text-[10px] text-[#444] font-medium">
+                <span
+                  className="text-[10px] font-medium"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
                   Actuel
                 </span>
               )}

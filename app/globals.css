@@ -2,130 +2,377 @@
 @tailwind components;
 @tailwind utilities;
 
+/**
+ * Orientys Design System — CSS Variables
+ *
+ * Palette de marque extraite du logo :
+ *   --color-brand-primary : #1e1b6e  (bleu indigo profond — corps du bonnet)
+ *   --color-brand-accent  : #6b5dd3  (violet-bleu — plans/chevrons du logo)
+ *   --color-brand-light   : #8b7fe8  (violet clair — reflets/hover)
+ *
+ * Thèmes :
+ *   :root / [data-theme="dark"]  → fond charbon, accents indigo/violet
+ *   [data-theme="light"]         → fond blanc/lavande, accents indigo/violet
+ */
+
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 226.5517 50% 22.7451%;
-    --card: 210 16.6667% 97.6471%;
-    --card-foreground: 226.5517 50% 22.7451%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 226.5517 50% 22.7451%;
-    --primary: 250.3636 57.8947% 37.2549%;
+  /* =========================================================================
+   * THEME SOMBRE (défaut)
+   * ========================================================================= */
+  :root,
+  [data-theme="dark"] {
+    /* Fonds */
+    --color-bg-page: #0a0a0a;
+    --color-bg-base: #0e0e0e;
+    --color-bg-surface: #141414;
+    --color-bg-overlay: #080808;
+    --color-bg-elevated: #1a1a1a;
+
+    /* Bordures */
+    --color-border-subtle: #111111;
+    --color-border-default: #1a1a1a;
+    --color-border-strong: #2a2a2a;
+    --color-border-focus: #6b5dd3;
+
+    /* Typographie */
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #a0a0b4;
+    --color-text-muted: #666680;
+    --color-text-disabled: #444458;
+    --color-text-placeholder: #444458;
+
+    /* Marque */
+    --color-brand-primary: #1e1b6e;
+    --color-brand-accent: #6b5dd3;
+    --color-brand-light: #8b7fe8;
+    --color-brand-pale: #b4adee;
+
+    /* Gradients */
+    --gradient-brand: linear-gradient(135deg, #1e1b6e, #6b5dd3);
+    --gradient-brand-soft: linear-gradient(135deg, #6b5dd3, #8b7fe8);
+    --gradient-hero-radial: radial-gradient(
+      ellipse 80% 50% at 50% -10%,
+      rgba(107, 93, 211, 0.18),
+      transparent
+    );
+    --gradient-glow: radial-gradient(
+      ellipse at center,
+      rgba(107, 93, 211, 0.12),
+      transparent 70%
+    );
+
+    /* Accent opacités */
+    --color-accent-bg: rgba(107, 93, 211, 0.06);
+    --color-accent-bg-hover: rgba(107, 93, 211, 0.12);
+    --color-accent-bg-active: rgba(107, 93, 211, 0.18);
+    --color-accent-border: rgba(107, 93, 211, 0.2);
+    --color-accent-border-md: rgba(107, 93, 211, 0.32);
+    --color-accent-border-lg: rgba(107, 93, 211, 0.5);
+
+    /* Inputs */
+    --color-input-bg: #141414;
+    --color-input-border: #222222;
+    --color-input-border-focus: #6b5dd3;
+    --color-input-ring: rgba(107, 93, 211, 0.22);
+
+    /* États */
+    --color-state-success: #22c55e;
+    --color-state-success-bg: rgba(34, 197, 94, 0.05);
+    --color-state-success-border: rgba(34, 197, 94, 0.2);
+    --color-state-error: #f87171;
+    --color-state-error-bg: rgba(239, 68, 68, 0.05);
+    --color-state-error-border: rgba(239, 68, 68, 0.2);
+
+    /* Shadows */
+    --shadow-sm:
+      0 0.5rem 1.5rem 0 hsl(0 0% 0% / 0.4), 0 1px 2px -1px hsl(0 0% 0% / 0.4);
+    --shadow-md:
+      0 0.5rem 1.5rem 0 hsl(0 0% 0% / 0.4), 0 2px 4px -1px hsl(0 0% 0% / 0.4);
+    --shadow-2xl: 0 0.5rem 1.5rem 0 hsl(0 0% 0% / 1);
+
+    /* shadcn/ui compat */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 88%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 88%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 88%;
+    --primary: 244 57% 27%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 16.6667% 95.2941%;
-    --secondary-foreground: 226.5517 50% 22.7451%;
-    --muted: 210 16.6667% 95.2941%;
-    --muted-foreground: 208.2353 7.2961% 45.6863%;
-    --accent: 210 16.6667% 95.2941%;
-    --accent-foreground: 226.5517 50% 22.7451%;
-    --destructive: 354.2515 70.4641% 53.5294%;
+    --secondary: 0 0% 17%;
+    --secondary-foreground: 0 0% 88%;
+    --muted: 0 0% 17%;
+    --muted-foreground: 0 0% 63%;
+    --accent: 247 60% 57%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 354 70% 54%;
     --destructive-foreground: 0 0% 100%;
-    --border: 210 13.7931% 88.6275%;
-    --input: 210 13.7931% 88.6275%;
-    --ring: 250.3636 57.8947% 37.2549%;
-    --chart-1: 250.3636 57.8947% 37.2549%;
-    --chart-2: 246.8456 84.1808% 65.2941%;
-    --chart-3: 250.3636 57.8947% 37.2549%;
-    --chart-4: 246.8456 84.1808% 65.2941%;
-    --chart-5: 250.3636 57.8947% 37.2549%;
-    --sidebar: 210 16.6667% 97.6471%;
-    --sidebar-foreground: 226.5517 50% 22.7451%;
-    --sidebar-primary: 250.3636 57.8947% 37.2549%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 15.7895% 92.549%;
-    --sidebar-accent-foreground: 226.5517 50% 22.7451%;
-    --sidebar-border: 210 13.7931% 88.6275%;
-    --sidebar-ring: 250.3636 57.8947% 37.2549%;
-    --font-sans: sans-serif;
-    --font-serif: serif;
-    --font-mono: monospace;
+    --border: 0 0% 24%;
+    --input: 0 0% 24%;
+    --ring: 247 60% 57%;
     --radius: 0.5rem;
-    --shadow-x: 0rem;
-    --shadow-y: 0.25rem;
-    --shadow-blur: 1rem;
-    --shadow-spread: 0rem;
-    --shadow-opacity: 0.1;
-    --shadow-color: #000000;
-    --shadow-2xs: 0rem 0.25rem 1rem 0rem hsl(0 0% 0% / 0.05);
-    --shadow-xs: 0rem 0.25rem 1rem 0rem hsl(0 0% 0% / 0.05);
-    --shadow-sm: 0rem 0.25rem 1rem 0rem hsl(0 0% 0% / 0.1),
-      0rem 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow: 0rem 0.25rem 1rem 0rem hsl(0 0% 0% / 0.1),
-      0rem 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow-md: 0rem 0.25rem 1rem 0rem hsl(0 0% 0% / 0.1),
-      0rem 2px 4px -1px hsl(0 0% 0% / 0.1);
-    --shadow-lg: 0rem 0.25rem 1rem 0rem hsl(0 0% 0% / 0.1),
-      0rem 4px 6px -1px hsl(0 0% 0% / 0.1);
-    --shadow-xl: 0rem 0.25rem 1rem 0rem hsl(0 0% 0% / 0.1),
-      0rem 8px 10px -1px hsl(0 0% 0% / 0.1);
-    --shadow-2xl: 0rem 0.25rem 1rem 0rem hsl(0 0% 0% / 0.25);
-    --tracking-normal: 0em;
-    --spacing: 0.25rem;
+  }
+
+  /* =========================================================================
+   * THEME CLAIR
+   * ========================================================================= */
+  [data-theme="light"] {
+    --color-bg-page: #f5f5fb;
+    --color-bg-base: #ffffff;
+    --color-bg-surface: #f8f8fd;
+    --color-bg-overlay: #eeeef8;
+    --color-bg-elevated: #e4e4f2;
+
+    --color-border-subtle: #e8e8f4;
+    --color-border-default: #d8d8ee;
+    --color-border-strong: #b8b8d8;
+    --color-border-focus: #1e1b6e;
+
+    --color-text-primary: #0f0d3a;
+    --color-text-secondary: #2d2a6e;
+    --color-text-muted: #5a5888;
+    --color-text-disabled: #9896bb;
+    --color-text-placeholder: #9896bb;
+
+    --color-brand-primary: #1e1b6e;
+    --color-brand-accent: #6b5dd3;
+    --color-brand-light: #8b7fe8;
+    --color-brand-pale: #b4adee;
+
+    --gradient-brand: linear-gradient(135deg, #1e1b6e, #6b5dd3);
+    --gradient-brand-soft: linear-gradient(135deg, #6b5dd3, #8b7fe8);
+    --gradient-hero-radial: radial-gradient(
+      ellipse 80% 50% at 50% -10%,
+      rgba(30, 27, 110, 0.08),
+      transparent
+    );
+    --gradient-glow: radial-gradient(
+      ellipse at center,
+      rgba(107, 93, 211, 0.08),
+      transparent 70%
+    );
+
+    --color-accent-bg: rgba(107, 93, 211, 0.07);
+    --color-accent-bg-hover: rgba(107, 93, 211, 0.13);
+    --color-accent-bg-active: rgba(107, 93, 211, 0.2);
+    --color-accent-border: rgba(107, 93, 211, 0.22);
+    --color-accent-border-md: rgba(107, 93, 211, 0.35);
+    --color-accent-border-lg: rgba(107, 93, 211, 0.52);
+
+    --color-input-bg: #ffffff;
+    --color-input-border: #d8d8ee;
+    --color-input-border-focus: #1e1b6e;
+    --color-input-ring: rgba(30, 27, 110, 0.12);
+
+    --color-state-success: #16a34a;
+    --color-state-success-bg: rgba(22, 163, 74, 0.06);
+    --color-state-success-border: rgba(22, 163, 74, 0.2);
+    --color-state-error: #dc2626;
+    --color-state-error-bg: rgba(220, 38, 38, 0.06);
+    --color-state-error-border: rgba(220, 38, 38, 0.2);
+
+    --shadow-sm:
+      0 0.25rem 1rem 0 hsl(244 57% 10% / 0.08),
+      0 1px 2px -1px hsl(244 57% 10% / 0.06);
+    --shadow-md:
+      0 0.25rem 1rem 0 hsl(244 57% 10% / 0.1),
+      0 2px 4px -1px hsl(244 57% 10% / 0.08);
+    --shadow-2xl: 0 0.5rem 2rem 0 hsl(244 57% 10% / 0.18);
+
+    --background: 240 20% 97%;
+    --foreground: 244 57% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 244 57% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 244 57% 15%;
+    --primary: 244 57% 27%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 20% 92%;
+    --secondary-foreground: 244 57% 22%;
+    --muted: 240 20% 92%;
+    --muted-foreground: 244 20% 46%;
+    --accent: 247 60% 57%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 354 70% 54%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 20% 88%;
+    --input: 240 20% 88%;
+    --ring: 244 57% 27%;
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 87.8431%;
-    --card: 0 0% 7.0588%;
-    --card-foreground: 0 0% 87.8431%;
-    --popover: 0 0% 7.0588%;
-    --popover-foreground: 0 0% 87.8431%;
-    --primary: 250.3636 57.8947% 37.2549%;
+    --background: 0 0% 4%;
+    --foreground: 0 0% 88%;
+    --border: 0 0% 24%;
+    --input: 0 0% 24%;
+    --ring: 247 60% 57%;
+    --primary: 244 57% 27%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 17.2549%;
-    --secondary-foreground: 0 0% 87.8431%;
-    --muted: 0 0% 17.2549%;
-    --muted-foreground: 0 0% 62.7451%;
-    --accent: 0 0% 17.2549%;
-    --accent-foreground: 0 0% 87.8431%;
-    --destructive: 354.2515 70.4641% 53.5294%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 23.9216%;
-    --input: 0 0% 23.9216%;
-    --ring: 246.8456 84.1808% 65.2941%;
-    --chart-1: 250.3636 57.8947% 37.2549%;
-    --chart-2: 246.8456 84.1808% 65.2941%;
-    --chart-3: 250.3636 57.8947% 37.2549%;
-    --chart-4: 246.8456 84.1808% 65.2941%;
-    --chart-5: 250.3636 57.8947% 37.2549%;
-    --sidebar: 0 0% 7.0588%;
-    --sidebar-foreground: 0 0% 87.8431%;
-    --sidebar-primary: 250.3636 57.8947% 37.2549%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 17.2549%;
-    --sidebar-accent-foreground: 0 0% 87.8431%;
-    --sidebar-border: 0 0% 23.9216%;
-    --sidebar-ring: 246.8456 84.1808% 65.2941%;
-    --font-sans: sans-serif;
-    --font-serif: serif;
-    --font-mono: monospace;
-    --radius: 0.5rem;
-    --shadow-x: 0rem;
-    --shadow-y: 0.5rem;
-    --shadow-blur: 1.5rem;
-    --shadow-spread: 0rem;
-    --shadow-opacity: 0.4;
-    --shadow-color: #000000;
-    --shadow-2xs: 0rem 0.5rem 1.5rem 0rem hsl(0 0% 0% / 0.2);
-    --shadow-xs: 0rem 0.5rem 1.5rem 0rem hsl(0 0% 0% / 0.2);
-    --shadow-sm: 0rem 0.5rem 1.5rem 0rem hsl(0 0% 0% / 0.4),
-      0rem 1px 2px -1px hsl(0 0% 0% / 0.4);
-    --shadow: 0rem 0.5rem 1.5rem 0rem hsl(0 0% 0% / 0.4),
-      0rem 1px 2px -1px hsl(0 0% 0% / 0.4);
-    --shadow-md: 0rem 0.5rem 1.5rem 0rem hsl(0 0% 0% / 0.4),
-      0rem 2px 4px -1px hsl(0 0% 0% / 0.4);
-    --shadow-lg: 0rem 0.5rem 1.5rem 0rem hsl(0 0% 0% / 0.4),
-      0rem 4px 6px -1px hsl(0 0% 0% / 0.4);
-    --shadow-xl: 0rem 0.5rem 1.5rem 0rem hsl(0 0% 0% / 0.4),
-      0rem 8px 10px -1px hsl(0 0% 0% / 0.4);
-    --shadow-2xl: 0rem 0.5rem 1.5rem 0rem hsl(0 0% 0% / 1);
-  }
-
-  body {
-    letter-spacing: var(--tracking-normal);
   }
 }
 
+/* ---------------------------------------------------------------------------
+ * Hover utilities CSS-only — utilisables dans les Server Components
+ *
+ * Principe : on évite tout onMouseEnter/onMouseLeave dans les Server
+ * Components. Les transitions de couleur au survol sont gérées ici via CSS
+ * natif, en exploitant les variables CSS et la pseudo-classe :hover.
+ * --------------------------------------------------------------------------- */
+
+@layer components {
+  /* Carte de surface — fond + bordure au hover */
+  .card-hover {
+    background-color: var(--color-bg-base);
+    border-color: var(--color-border-default);
+    transition:
+      background-color 300ms,
+      border-color 300ms;
+  }
+  .card-hover:hover {
+    background-color: var(--color-bg-surface);
+    border-color: var(--color-border-strong);
+  }
+
+  /* Carte feature — fond seul */
+  .feature-card {
+    background-color: var(--color-bg-base);
+    transition: background-color 300ms;
+  }
+  .feature-card:hover {
+    background-color: var(--color-bg-surface);
+  }
+
+  /* Carte université placeholder */
+  .uni-card {
+    background-color: var(--color-bg-base);
+    transition: background-color 300ms;
+  }
+  .uni-card:hover {
+    background-color: var(--color-bg-surface);
+  }
+
+  /* Lien de navigation texte */
+  .nav-link {
+    color: var(--color-text-muted);
+    transition: color 200ms;
+  }
+  .nav-link:hover {
+    color: var(--color-text-primary);
+  }
+
+  /* Lien accent (footer, nav secondaire) */
+  .nav-link-accent {
+    color: var(--color-text-muted);
+    transition: color 200ms;
+  }
+  .nav-link-accent:hover {
+    color: var(--color-brand-accent);
+  }
+
+  /* Icône réseau social */
+  .social-icon {
+    border-color: var(--color-border-strong);
+    color: var(--color-text-muted);
+    transition:
+      color 300ms,
+      border-color 300ms;
+  }
+  .social-icon:hover {
+    color: var(--color-brand-accent);
+    border-color: var(--color-brand-accent);
+  }
+
+  /* Bouton CTA principal avec gradient brand */
+  .btn-brand {
+    background: var(--gradient-brand);
+    color: var(--color-bg-base);
+    transition: filter 200ms;
+  }
+  .btn-brand:hover {
+    filter: brightness(1.1);
+  }
+
+  /* Lien secondaire (texte muted → primary) */
+  .link-muted {
+    color: var(--color-text-muted);
+    transition: color 200ms;
+  }
+  .link-muted:hover {
+    color: var(--color-text-primary);
+  }
+
+  /* Lien accent pur (brand-accent → brand-light) */
+  .link-accent {
+    color: var(--color-brand-accent);
+    transition: color 200ms;
+  }
+  .link-accent:hover {
+    color: var(--color-brand-light);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Utilitaires Tailwind custom
+ * --------------------------------------------------------------------------- */
+@layer utilities {
+  .bg-page {
+    background-color: var(--color-bg-page);
+  }
+  .bg-base {
+    background-color: var(--color-bg-base);
+  }
+  .bg-surface {
+    background-color: var(--color-bg-surface);
+  }
+  .bg-overlay {
+    background-color: var(--color-bg-overlay);
+  }
+  .bg-elevated {
+    background-color: var(--color-bg-elevated);
+  }
+
+  .text-primary {
+    color: var(--color-text-primary);
+  }
+  .text-secondary {
+    color: var(--color-text-secondary);
+  }
+  .text-muted {
+    color: var(--color-text-muted);
+  }
+  .text-disabled {
+    color: var(--color-text-disabled);
+  }
+
+  .border-subtle {
+    border-color: var(--color-border-subtle);
+  }
+  .border-default {
+    border-color: var(--color-border-default);
+  }
+  .border-strong {
+    border-color: var(--color-border-strong);
+  }
+
+  .text-brand-accent {
+    color: var(--color-brand-accent);
+  }
+  .text-brand-primary {
+    color: var(--color-brand-primary);
+  }
+  .text-brand-light {
+    color: var(--color-brand-light);
+  }
+
+  .bg-accent-subtle {
+    background-color: var(--color-accent-bg);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Base styles
+ * --------------------------------------------------------------------------- */
 @layer base {
   * {
     @apply border-border;
@@ -133,5 +380,6 @@
 
   body {
     @apply bg-background text-foreground;
+    letter-spacing: 0em;
   }
 }

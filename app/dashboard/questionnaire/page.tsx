@@ -10,16 +10,12 @@ import type {
   PrioriteFormation,
   ModeTravail,
 } from "@/lib/types";
-
-// ---------------------------------------------------------------------------
-// Types locaux
-// ---------------------------------------------------------------------------
+import { StepIndicator } from "@/app/dashboard/page";
 
 interface QcmOption {
   value: string;
   label: string;
 }
-
 interface QcmQuestion {
   key: keyof QcmState;
   title: string;
@@ -39,10 +35,6 @@ interface OpenState {
   passionsExtraScolaires: string;
   messageLibre: string;
 }
-
-// ---------------------------------------------------------------------------
-// Données statiques des questions
-// ---------------------------------------------------------------------------
 
 const QCM_QUESTIONS: QcmQuestion[] = [
   {
@@ -145,25 +137,14 @@ const QCM_QUESTIONS: QcmQuestion[] = [
         value: "En équipe / collaboration",
         label: "En équipe / collaboration",
       },
-      {
-        value: "Ça dépend du contexte",
-        label: "Ça dépend du contexte",
-      },
+      { value: "Ça dépend du contexte", label: "Ça dépend du contexte" },
     ],
   },
 ];
 
 const OPEN_QUESTION_MAX = 2000;
 
-// ---------------------------------------------------------------------------
-// Page principale
-// ---------------------------------------------------------------------------
-
-/**
- * Page questionnaire d'orientation.
- * Étape 3 du parcours étudiant.
- * Lit serieId depuis sessionStorage (mis en place à l'étape 1).
- */
+/** Page questionnaire d'orientation — étape 3 */
 export default function QuestionnairePage() {
   const router = useRouter();
 
@@ -184,13 +165,8 @@ export default function QuestionnairePage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Nombre de QCM répondus
   const answeredCount = Object.values(qcm).filter(Boolean).length;
   const totalQcm = QCM_QUESTIONS.length;
-
-  // ---------------------------------------------------------------------------
-  // Handlers
-  // ---------------------------------------------------------------------------
 
   const handleQcmChange = (key: keyof QcmState, value: string) => {
     setQcm((prev) => ({ ...prev, [key]: value }));
@@ -204,7 +180,6 @@ export default function QuestionnairePage() {
   };
 
   const handleSkip = () => {
-    // L'utilisateur passe le questionnaire — on garde questionnaireId à null
     sessionStorage.removeItem("questionnaireId");
     router.push("/dashboard/recommendation");
   };
@@ -217,7 +192,6 @@ export default function QuestionnairePage() {
     }
 
     const { id: serieId } = JSON.parse(serieRaw);
-
     setSubmitting(true);
     setError(null);
 
@@ -230,9 +204,7 @@ export default function QuestionnairePage() {
         ...(qcm.styleApprentissage && {
           styleApprentissage: qcm.styleApprentissage,
         }),
-        ...(qcm.domaineNumerique && {
-          domaineNumerique: qcm.domaineNumerique,
-        }),
+        ...(qcm.domaineNumerique && { domaineNumerique: qcm.domaineNumerique }),
         ...(qcm.prioriteFormation && {
           prioriteFormation: qcm.prioriteFormation,
         }),
@@ -247,8 +219,6 @@ export default function QuestionnairePage() {
       };
 
       const response = await questionnaireApi.submit(payload);
-
-      // Stocker l'ID pour la génération enrichie
       sessionStorage.setItem(
         "questionnaireId",
         String(response.questionnaireId),
@@ -263,16 +233,38 @@ export default function QuestionnairePage() {
     }
   };
 
-  // ---------------------------------------------------------------------------
-  // Rendu
-  // ---------------------------------------------------------------------------
+  /* Styles partagés pour les textareas */
+  const textareaClass =
+    "w-full px-4 py-3 border rounded-xl text-sm resize-none focus:outline-none focus:ring-1 transition-all duration-200";
+  const textareaStyle = {
+    backgroundColor: "var(--color-input-bg)",
+    borderColor: "var(--color-input-border)",
+    color: "var(--color-text-primary)",
+  };
+
+  const onTextareaFocus = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    e.currentTarget.style.borderColor = "var(--color-input-border-focus)";
+    e.currentTarget.style.boxShadow = "0 0 0 3px var(--color-input-ring)";
+  };
+
+  const onTextareaBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    e.currentTarget.style.borderColor = "var(--color-input-border)";
+    e.currentTarget.style.boxShadow = "none";
+  };
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-12">
       {/* Retour */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-sm text-[#555] hover:text-white transition-colors mb-10 group"
+        className="flex items-center gap-2 text-sm mb-10 group transition-colors duration-200"
+        style={{ color: "var(--color-text-muted)" }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = "var(--color-text-primary)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = "var(--color-text-muted)";
+        }}
       >
         <svg
           className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-0.5"
@@ -292,75 +284,58 @@ export default function QuestionnairePage() {
 
       {/* En-tête */}
       <div className="mb-10">
-        <p className="text-xs uppercase tracking-[0.15em] text-[#c9a84c] font-semibold mb-3">
+        <p
+          className="text-xs uppercase tracking-[0.15em] font-semibold mb-3"
+          style={{ color: "var(--color-brand-accent)" }}
+        >
           Étape 3 sur 4
         </p>
-        <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-2">
+        <h1
+          className="font-display text-3xl lg:text-4xl font-bold mb-2"
+          style={{ color: "var(--color-text-primary)" }}
+        >
           Votre profil
         </h1>
-        <p className="text-[#666]">
+        <p style={{ color: "var(--color-text-muted)" }}>
           Ces informations personnalisent vos recommandations IA.{" "}
-          <span className="text-[#555]">
+          <span style={{ color: "var(--color-text-disabled)" }}>
             Toutes les questions sont optionnelles.
           </span>
         </p>
       </div>
 
-      {/* Indicateur de progression */}
-      <div className="flex items-center gap-2 mb-10">
-        {["Série", "Notes", "Profil", "Résultat"].map((step, i) => (
-          <div key={step} className="flex items-center gap-2">
-            <div
-              className={[
-                "flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-bold border transition-all",
-                i < 2
-                  ? "bg-[#c9a84c]/20 border-[#c9a84c]/40 text-[#c9a84c]"
-                  : i === 2
-                    ? "bg-[#c9a84c] border-[#c9a84c] text-[#0e0e0e]"
-                    : "border-[#2a2a2a] text-[#444]",
-              ].join(" ")}
-            >
-              {i < 2 ? (
-                <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
-                  <path
-                    d="M2 6l3 3 5-5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ) : (
-                i + 1
-              )}
-            </div>
-            <span
-              className={[
-                "text-xs font-medium",
-                i === 2 ? "text-white" : "text-[#444]",
-              ].join(" ")}
-            >
-              {step}
-            </span>
-            {i < 3 && <div className="w-8 h-[1px] bg-[#1e1e1e] mx-1" />}
-          </div>
-        ))}
-      </div>
+      <StepIndicator
+        current={2}
+        steps={["Série", "Notes", "Profil", "Résultat"]}
+        done={2}
+      />
 
       {/* Barre progression QCM */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-[#555]">
+          <span
+            className="text-xs"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
             {answeredCount} / {totalQcm} questions répondues
           </span>
-          <span className="text-xs text-[#c9a84c] font-semibold">
+          <span
+            className="text-xs font-semibold"
+            style={{ color: "var(--color-brand-accent)" }}
+          >
             {Math.round((answeredCount / totalQcm) * 100)}%
           </span>
         </div>
-        <div className="h-1 bg-[#1a1a1a] rounded-full overflow-hidden">
+        <div
+          className="h-1 rounded-full overflow-hidden"
+          style={{ backgroundColor: "var(--color-bg-elevated)" }}
+        >
           <div
-            className="h-full bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] rounded-full transition-all duration-500"
-            style={{ width: `${(answeredCount / totalQcm) * 100}%` }}
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${(answeredCount / totalQcm) * 100}%`,
+              background: "var(--gradient-brand)",
+            }}
           />
         </div>
       </div>
@@ -370,21 +345,35 @@ export default function QuestionnairePage() {
         {QCM_QUESTIONS.map((question, qIdx) => (
           <div
             key={question.key}
-            className="bg-[#0e0e0e] border border-[#1a1a1a] rounded-2xl p-6"
+            className="border rounded-2xl p-6"
+            style={{
+              backgroundColor: "var(--color-bg-base)",
+              borderColor: "var(--color-border-default)",
+            }}
           >
-            {/* Numéro + titre */}
             <div className="flex items-start gap-3 mb-5">
-              <div className="w-6 h-6 rounded-md bg-[#141414] border border-[#1e1e1e] flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-[10px] font-bold text-[#555]">
+              <div
+                className="w-6 h-6 rounded-md border flex items-center justify-center shrink-0 mt-0.5"
+                style={{
+                  backgroundColor: "var(--color-bg-surface)",
+                  borderColor: "var(--color-border-default)",
+                }}
+              >
+                <span
+                  className="text-[10px] font-bold"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
                   {qIdx + 1}
                 </span>
               </div>
-              <p className="text-sm font-semibold text-white leading-snug">
+              <p
+                className="text-sm font-semibold leading-snug"
+                style={{ color: "var(--color-text-primary)" }}
+              >
                 {question.title}
               </p>
             </div>
 
-            {/* Options */}
             <div className="flex flex-col gap-2 ml-9">
               {question.options.map((option) => {
                 const isSelected = qcm[question.key] === option.value;
@@ -392,24 +381,38 @@ export default function QuestionnairePage() {
                   <button
                     key={option.value}
                     onClick={() => handleQcmChange(question.key, option.value)}
-                    className={[
-                      "flex items-center gap-3 px-4 py-3 rounded-xl border text-left text-sm transition-all duration-200",
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl border text-left text-sm transition-all duration-200"
+                    style={
                       isSelected
-                        ? "border-[#c9a84c]/60 bg-[#c9a84c]/8 text-white"
-                        : "border-[#1e1e1e] bg-[#141414] text-[#888] hover:border-[#2a2a2a] hover:text-[#aaa]",
-                    ].join(" ")}
+                        ? {
+                            borderColor: "var(--color-accent-border-md)",
+                            backgroundColor: "var(--color-accent-bg)",
+                            color: "var(--color-text-primary)",
+                          }
+                        : {
+                            borderColor: "var(--color-border-default)",
+                            backgroundColor: "var(--color-bg-surface)",
+                            color: "var(--color-text-muted)",
+                          }
+                    }
                   >
                     {/* Indicateur radio */}
                     <div
-                      className={[
-                        "w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200",
+                      className="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
+                      style={
                         isSelected
-                          ? "border-[#c9a84c] bg-[#c9a84c]"
-                          : "border-[#333]",
-                      ].join(" ")}
+                          ? {
+                              borderColor: "var(--color-brand-accent)",
+                              backgroundColor: "var(--color-brand-accent)",
+                            }
+                          : { borderColor: "var(--color-border-strong)" }
+                      }
                     >
                       {isSelected && (
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#0e0e0e]" />
+                        <div
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{ backgroundColor: "var(--color-bg-base)" }}
+                        />
                       )}
                     </div>
                     {option.label}
@@ -423,115 +426,132 @@ export default function QuestionnairePage() {
 
       {/* Séparateur */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="flex-1 h-[1px] bg-[#1a1a1a]" />
-        <span className="text-xs text-[#444] uppercase tracking-widest">
+        <div
+          className="flex-1 h-[1px]"
+          style={{ backgroundColor: "var(--color-border-default)" }}
+        />
+        <span
+          className="text-xs uppercase tracking-widest"
+          style={{ color: "var(--color-text-disabled)" }}
+        >
           Questions ouvertes
         </span>
-        <div className="flex-1 h-[1px] bg-[#1a1a1a]" />
+        <div
+          className="flex-1 h-[1px]"
+          style={{ backgroundColor: "var(--color-border-default)" }}
+        />
       </div>
 
       {/* Questions ouvertes */}
       <div className="flex flex-col gap-5 mb-8">
-        {/* Matières préférées */}
-        <div className="bg-[#0e0e0e] border border-[#1a1a1a] rounded-2xl p-6">
-          <div className="flex items-start gap-3 mb-4">
-            <div className="w-6 h-6 rounded-md bg-[#141414] border border-[#1e1e1e] flex items-center justify-center shrink-0 mt-0.5">
-              <span className="text-[10px] font-bold text-[#555]">6</span>
+        {[
+          {
+            num: "6",
+            key: "matieresPreferees" as keyof OpenState,
+            title: "Matières préférées et forces",
+            hint: "Quelles matières vous réussissent le mieux et pourquoi ?",
+            placeholder:
+              "Ex : J'aime les mathématiques car j'ai un esprit logique...",
+          },
+          {
+            num: "7",
+            key: "passionsExtraScolaires" as keyof OpenState,
+            title: "Passions et activités extra-scolaires",
+            hint: "Hobbies, sports, bénévolat, tech, arts...",
+            placeholder:
+              "Ex : Je fais de la programmation dans mon temps libre...",
+          },
+          {
+            num: "8",
+            key: "messageLibre" as keyof OpenState,
+            title: "Message libre",
+            hint: "Un projet, une ambition, quelque chose à ajouter ?",
+            placeholder: "Ex : Je veux créer ma startup dans 5 ans...",
+            optional: true,
+          },
+        ].map(({ num, key, title, hint, placeholder, optional }) => (
+          <div
+            key={key}
+            className="border rounded-2xl p-6"
+            style={{
+              backgroundColor: "var(--color-bg-base)",
+              borderColor: "var(--color-border-default)",
+            }}
+          >
+            <div className="flex items-start gap-3 mb-4">
+              <div
+                className="w-6 h-6 rounded-md border flex items-center justify-center shrink-0 mt-0.5"
+                style={{
+                  backgroundColor: "var(--color-bg-surface)",
+                  borderColor: "var(--color-border-default)",
+                }}
+              >
+                <span
+                  className="text-[10px] font-bold"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
+                  {num}
+                </span>
+              </div>
+              <div className="flex-1">
+                <p
+                  className="text-sm font-semibold mb-1"
+                  style={{ color: "var(--color-text-primary)" }}
+                >
+                  {title}{" "}
+                  {optional && (
+                    <span
+                      className="font-normal"
+                      style={{ color: "var(--color-text-disabled)" }}
+                    >
+                      (optionnel)
+                    </span>
+                  )}
+                </p>
+                <p
+                  className="text-xs"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
+                  {hint}
+                </p>
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-white mb-1">
-                Matières préférées et forces
-              </p>
-              <p className="text-xs text-[#555]">
-                Quelles matières vous réussissent le mieux et pourquoi ?
-              </p>
+            <div className="relative">
+              <textarea
+                value={open[key]}
+                onChange={(e) => handleOpenChange(key, e.target.value)}
+                placeholder={placeholder}
+                rows={3}
+                className={textareaClass}
+                style={{ ...textareaStyle, placeholder: undefined } as any}
+                onFocus={onTextareaFocus}
+                onBlur={onTextareaBlur}
+              />
+              <span
+                className="absolute bottom-3 right-3 text-[10px]"
+                style={{ color: "var(--color-text-disabled)" }}
+              >
+                {open[key].length}/{OPEN_QUESTION_MAX}
+              </span>
             </div>
           </div>
-          <div className="relative">
-            <textarea
-              value={open.matieresPreferees}
-              onChange={(e) =>
-                handleOpenChange("matieresPreferees", e.target.value)
-              }
-              placeholder="Ex : J'aime les mathématiques car j'ai un esprit logique..."
-              rows={3}
-              className="w-full px-4 py-3 bg-[#141414] border border-[#1e1e1e] rounded-xl text-sm text-white placeholder:text-[#333] resize-none focus:outline-none focus:border-[#c9a84c]/50 focus:ring-1 focus:ring-[#c9a84c]/20 transition-all duration-200"
-            />
-            <span className="absolute bottom-3 right-3 text-[10px] text-[#333]">
-              {open.matieresPreferees.length}/{OPEN_QUESTION_MAX}
-            </span>
-          </div>
-        </div>
-
-        {/* Passions */}
-        <div className="bg-[#0e0e0e] border border-[#1a1a1a] rounded-2xl p-6">
-          <div className="flex items-start gap-3 mb-4">
-            <div className="w-6 h-6 rounded-md bg-[#141414] border border-[#1e1e1e] flex items-center justify-center shrink-0 mt-0.5">
-              <span className="text-[10px] font-bold text-[#555]">7</span>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-white mb-1">
-                Passions et activités extra-scolaires
-              </p>
-              <p className="text-xs text-[#555]">
-                Hobbies, sports, bénévolat, tech, arts...
-              </p>
-            </div>
-          </div>
-          <div className="relative">
-            <textarea
-              value={open.passionsExtraScolaires}
-              onChange={(e) =>
-                handleOpenChange("passionsExtraScolaires", e.target.value)
-              }
-              placeholder="Ex : Je fais de la programmation dans mon temps libre..."
-              rows={3}
-              className="w-full px-4 py-3 bg-[#141414] border border-[#1e1e1e] rounded-xl text-sm text-white placeholder:text-[#333] resize-none focus:outline-none focus:border-[#c9a84c]/50 focus:ring-1 focus:ring-[#c9a84c]/20 transition-all duration-200"
-            />
-            <span className="absolute bottom-3 right-3 text-[10px] text-[#333]">
-              {open.passionsExtraScolaires.length}/{OPEN_QUESTION_MAX}
-            </span>
-          </div>
-        </div>
-
-        {/* Message libre */}
-        <div className="bg-[#0e0e0e] border border-[#1a1a1a] rounded-2xl p-6">
-          <div className="flex items-start gap-3 mb-4">
-            <div className="w-6 h-6 rounded-md bg-[#141414] border border-[#1e1e1e] flex items-center justify-center shrink-0 mt-0.5">
-              <span className="text-[10px] font-bold text-[#555]">8</span>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-white mb-1">
-                Message libre{" "}
-                <span className="text-[#444] font-normal">(optionnel)</span>
-              </p>
-              <p className="text-xs text-[#555]">
-                Un projet, une ambition, quelque chose à ajouter ?
-              </p>
-            </div>
-          </div>
-          <div className="relative">
-            <textarea
-              value={open.messageLibre}
-              onChange={(e) => handleOpenChange("messageLibre", e.target.value)}
-              placeholder="Ex : Je veux créer ma startup dans 5 ans..."
-              rows={3}
-              className="w-full px-4 py-3 bg-[#141414] border border-[#1e1e1e] rounded-xl text-sm text-white placeholder:text-[#333] resize-none focus:outline-none focus:border-[#c9a84c]/50 focus:ring-1 focus:ring-[#c9a84c]/20 transition-all duration-200"
-            />
-            <span className="absolute bottom-3 right-3 text-[10px] text-[#333]">
-              {open.messageLibre.length}/{OPEN_QUESTION_MAX}
-            </span>
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Erreur */}
       {error && (
-        <div className="mb-5 flex items-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+        <div
+          className="mb-5 flex items-center gap-2 px-4 py-3 border rounded-lg"
+          style={{
+            backgroundColor: "var(--color-state-error-bg)",
+            borderColor: "var(--color-state-error-border)",
+          }}
+        >
           <svg
-            className="w-4 h-4 text-red-400 shrink-0"
+            className="w-4 h-4 shrink-0"
             viewBox="0 0 16 16"
             fill="none"
+            style={{ color: "var(--color-state-error)" }}
           >
             <path
               d="M8 5v3M8 11h.01M14.5 8a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z"
@@ -540,23 +560,37 @@ export default function QuestionnairePage() {
               strokeLinecap="round"
             />
           </svg>
-          <span className="text-sm text-red-400">{error}</span>
+          <span
+            className="text-sm"
+            style={{ color: "var(--color-state-error)" }}
+          >
+            {error}
+          </span>
         </div>
       )}
 
       {/* Actions */}
       <div className="flex flex-col gap-3">
-        {/* Soumettre */}
         <button
           onClick={handleSubmit}
           disabled={submitting}
-          className="group relative w-full py-4 font-semibold text-sm text-[#0e0e0e] rounded-xl overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
+          className="group relative w-full py-4 font-semibold text-sm rounded-xl overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
+          style={{ color: "var(--color-bg-base)" }}
         >
-          <span className="absolute inset-0 bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] transition-transform duration-300 group-hover:scale-105 group-disabled:scale-100" />
+          <span
+            className="absolute inset-0 transition-transform duration-300 group-hover:scale-105 group-disabled:scale-100"
+            style={{ background: "var(--gradient-brand)" }}
+          />
           <span className="relative flex items-center justify-center gap-2">
             {submitting ? (
               <>
-                <div className="w-4 h-4 border-2 border-[#0e0e0e]/30 border-t-[#0e0e0e] rounded-full animate-spin" />
+                <div
+                  className="w-4 h-4 border-2 rounded-full animate-spin"
+                  style={{
+                    borderColor: "rgba(255,255,255,0.3)",
+                    borderTopColor: "white",
+                  }}
+                />
                 Enregistrement...
               </>
             ) : (
@@ -580,11 +614,17 @@ export default function QuestionnairePage() {
           </span>
         </button>
 
-        {/* Passer */}
         <button
           onClick={handleSkip}
           disabled={submitting}
-          className="w-full py-3 text-sm text-[#555] hover:text-[#888] transition-colors disabled:opacity-40"
+          className="w-full py-3 text-sm transition-colors disabled:opacity-40"
+          style={{ color: "var(--color-text-muted)" }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = "var(--color-text-secondary)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = "var(--color-text-muted)";
+          }}
         >
           Passer cette étape et continuer sans questionnaire
         </button>

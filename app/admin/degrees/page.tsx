@@ -32,22 +32,24 @@ import type {
   UpdateDegreeRequest,
 } from "@/lib/types";
 
-// ---------------------------------------------------------------------------
-// Types locaux
-// ---------------------------------------------------------------------------
-
-type DialogMode = "create" | "edit" | "view" | "delete" | "export" | null;
-const ITEMS_PER_PAGE = 10;
-
-// ---------------------------------------------------------------------------
-// Icônes SVG inline
-// ---------------------------------------------------------------------------
-
+// Icônes communes
 function IconRefresh() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
       <path
         d="M2 8a6 6 0 0110.472-4M14 8a6 6 0 01-10.472 4M2 8h2m10 0h-2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+function IconPlus() {
+  return (
+    <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
+      <path
+        d="M6 2v8M2 6h8"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
@@ -68,30 +70,8 @@ function IconDownload() {
     </svg>
   );
 }
-function IconPlus() {
-  return (
-    <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
-      <path
-        d="M6 2v8M2 6h8"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
 
-// ---------------------------------------------------------------------------
-// Formulaire diplôme
-// ---------------------------------------------------------------------------
-
-interface DegreeFormProps {
-  initial?: Partial<Degree>;
-  onSubmit: (data: CreateDegreeRequest | UpdateDegreeRequest) => Promise<void>;
-  onCancel: () => void;
-  isLoading: boolean;
-  mode: "create" | "edit";
-}
+type DegreeDialogMode = "create" | "edit" | "view" | "delete" | "export" | null;
 
 function DegreeForm({
   initial,
@@ -99,7 +79,13 @@ function DegreeForm({
   onCancel,
   isLoading,
   mode,
-}: DegreeFormProps) {
+}: {
+  initial?: Partial<Degree>;
+  onSubmit: (data: CreateDegreeRequest | UpdateDegreeRequest) => Promise<void>;
+  onCancel: () => void;
+  isLoading: boolean;
+  mode: "create" | "edit";
+}) {
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [formError, setFormError] = useState<string | null>(null);
@@ -158,10 +144,6 @@ function DegreeForm({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Page principale
-// ---------------------------------------------------------------------------
-
 export default function DegreesAdminPage() {
   const {
     degrees,
@@ -175,16 +157,16 @@ export default function DegreesAdminPage() {
     deleteDegree,
     exportDegrees,
   } = useDegrees();
-
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [dialogMode, setDialogMode] = useState<DialogMode>(null);
+  const [dialogMode, setDialogMode] = useState<DegreeDialogMode>(null);
   const [selectedDegree, setSelectedDegree] = useState<Degree | null>(null);
   const [exportFormat, setExportFormat] = useState<"csv" | "json">("csv");
   const [isExporting, setIsExporting] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const ITEMS_PER_PAGE = 10;
 
   const load = useCallback(() => {
     fetchDegrees();
@@ -209,28 +191,6 @@ export default function DegreesAdminPage() {
     setDialogMode(null);
     setSelectedDegree(null);
     setActionError(null);
-  };
-  const openCreate = () => {
-    setSelectedDegree(null);
-    setActionError(null);
-    setDialogMode("create");
-  };
-  const openEdit = async (d: Degree) => {
-    setActionError(null);
-    setSelectedDegree(d);
-    setDialogMode("edit");
-    await fetchDegreeById(d.id);
-  };
-  const openView = async (d: Degree) => {
-    setActionError(null);
-    setSelectedDegree(d);
-    setDialogMode("view");
-    await fetchDegreeById(d.id);
-  };
-  const openDelete = (d: Degree) => {
-    setActionError(null);
-    setSelectedDegree(d);
-    setDialogMode("delete");
   };
 
   const handleCreate = async (
@@ -297,7 +257,6 @@ export default function DegreesAdminPage() {
     currentDegree?.id === selectedDegree?.id
       ? (currentDegree ?? selectedDegree)
       : selectedDegree;
-
   if (error) return <PageError message={error.message} onRetry={load} />;
 
   return (
@@ -327,7 +286,11 @@ export default function DegreesAdminPage() {
             <Btn
               variant="primary"
               size="sm"
-              onClick={openCreate}
+              onClick={() => {
+                setSelectedDegree(null);
+                setActionError(null);
+                setDialogMode("create");
+              }}
               icon={<IconPlus />}
             >
               Nouveau diplôme
@@ -335,10 +298,8 @@ export default function DegreesAdminPage() {
           </>
         }
       />
-
       <AdminCard
         title="Liste des diplômes"
-        description="Créez, modifiez ou supprimez des diplômes."
         toolbar={
           <SearchBar
             value={searchInput}
@@ -363,24 +324,16 @@ export default function DegreesAdminPage() {
             ) : paginated.length === 0 ? (
               <EmptyRow
                 colSpan={3}
-                label={
-                  searchTerm
-                    ? "Aucun résultat pour cette recherche."
-                    : "Aucun diplôme."
-                }
-                action={
-                  !searchTerm && (
-                    <Btn variant="secondary" size="sm" onClick={openCreate}>
-                      Créer le premier diplôme
-                    </Btn>
-                  )
-                }
+                label={searchTerm ? "Aucun résultat." : "Aucun diplôme."}
               />
             ) : (
               paginated.map((degree) => (
                 <Tr key={degree.id}>
                   <Td>
-                    <span className="font-medium text-white">
+                    <span
+                      className="font-medium"
+                      style={{ color: "var(--color-text-primary)" }}
+                    >
                       {degree.name}
                     </span>
                   </Td>
@@ -394,23 +347,35 @@ export default function DegreesAdminPage() {
                       <Btn
                         variant="ghost"
                         size="sm"
-                        onClick={() => openView(degree)}
+                        onClick={() => {
+                          setSelectedDegree(degree);
+                          setDialogMode("view");
+                          fetchDegreeById(degree.id);
+                        }}
                       >
                         Voir
                       </Btn>
                       <Btn
                         variant="ghost"
                         size="sm"
-                        onClick={() => openEdit(degree)}
+                        onClick={() => {
+                          setSelectedDegree(degree);
+                          setDialogMode("edit");
+                          fetchDegreeById(degree.id);
+                        }}
                       >
                         Modifier
                       </Btn>
                       <Btn
                         variant="danger"
                         size="sm"
-                        onClick={() => openDelete(degree)}
+                        onClick={() => {
+                          setSelectedDegree(degree);
+                          setActionError(null);
+                          setDialogMode("delete");
+                        }}
                       >
-                        Supprimer
+                        Suppr.
                       </Btn>
                     </div>
                   </Td>
@@ -428,12 +393,10 @@ export default function DegreesAdminPage() {
         />
       </AdminCard>
 
-      {/* ── Dialog Création ── */}
       <AdminDialog
         open={dialogMode === "create"}
         onClose={closeDialog}
         title="Nouveau diplôme"
-        description="Remplissez les informations du diplôme."
       >
         <DegreeForm
           mode="create"
@@ -443,8 +406,6 @@ export default function DegreesAdminPage() {
         />
         <InlineError message={actionError} />
       </AdminDialog>
-
-      {/* ── Dialog Édition ── */}
       <AdminDialog
         open={dialogMode === "edit"}
         onClose={closeDialog}
@@ -460,80 +421,52 @@ export default function DegreesAdminPage() {
         />
         <InlineError message={actionError} />
       </AdminDialog>
-
-      {/* ── Dialog Vue ── */}
       <AdminDialog
         open={dialogMode === "view"}
         onClose={closeDialog}
         title="Détails du diplôme"
       >
-        {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-5 bg-[#1a1a1a] rounded animate-pulse" />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {[
-              { label: "Nom", value: activeDegree?.name },
-              { label: "Description", value: activeDegree?.description },
-              {
-                label: "Créé le",
-                value: activeDegree?.createdAt
-                  ? new Date(activeDegree.createdAt).toLocaleDateString(
-                      "fr-FR",
-                      {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      },
-                    )
-                  : undefined,
-              },
-              {
-                label: "Mis à jour le",
-                value: activeDegree?.updatedAt
-                  ? new Date(activeDegree.updatedAt).toLocaleDateString(
-                      "fr-FR",
-                      {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      },
-                    )
-                  : undefined,
-              },
-            ].map(({ label, value }) => (
-              <div key={label}>
-                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
-                  {label}
-                </p>
-                <p className="text-sm text-white">
-                  {value ?? <span className="text-[#444] italic">—</span>}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="space-y-4">
+          {[
+            { label: "Nom", value: activeDegree?.name },
+            { label: "Description", value: activeDegree?.description },
+            {
+              label: "Créé le",
+              value: activeDegree?.createdAt
+                ? new Date(activeDegree.createdAt).toLocaleDateString("fr-FR")
+                : undefined,
+            },
+          ].map(({ label, value }) => (
+            <div key={label}>
+              <p
+                className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-1"
+                style={{ color: "var(--color-text-disabled)" }}
+              >
+                {label}
+              </p>
+              <p
+                className="text-sm"
+                style={{ color: "var(--color-text-primary)" }}
+              >
+                {value ?? (
+                  <span style={{ color: "var(--color-text-disabled)" }}>—</span>
+                )}
+              </p>
+            </div>
+          ))}
+        </div>
         <DialogActions>
           <Btn variant="ghost" onClick={closeDialog}>
             Fermer
           </Btn>
           <Btn
             variant="secondary"
-            onClick={() => selectedDegree && openEdit(selectedDegree)}
+            onClick={() => selectedDegree && setDialogMode("edit")}
           >
             Modifier
           </Btn>
         </DialogActions>
       </AdminDialog>
-
-      {/* ── Dialog Suppression ── */}
       <AdminDialog
         open={dialogMode === "delete"}
         onClose={closeDialog}
@@ -541,9 +474,25 @@ export default function DegreesAdminPage() {
         description="Cette action est irréversible."
         size="sm"
       >
-        <div className="p-4 bg-[#141414] border border-[#1e1e1e] rounded-xl mb-2">
-          <p className="text-xs text-[#555] mb-1">Diplôme concerné</p>
-          <p className="font-semibold text-white">{selectedDegree?.name}</p>
+        <div
+          className="p-4 border rounded-xl mb-2"
+          style={{
+            backgroundColor: "var(--color-bg-surface)",
+            borderColor: "var(--color-border-default)",
+          }}
+        >
+          <p
+            className="text-xs mb-1"
+            style={{ color: "var(--color-text-muted)" }}
+          >
+            Diplôme concerné
+          </p>
+          <p
+            className="font-semibold"
+            style={{ color: "var(--color-text-primary)" }}
+          >
+            {selectedDegree?.name}
+          </p>
         </div>
         <InlineError message={actionError} />
         <DialogActions>
@@ -555,8 +504,6 @@ export default function DegreesAdminPage() {
           </Btn>
         </DialogActions>
       </AdminDialog>
-
-      {/* ── Dialog Export ── */}
       <AdminDialog
         open={dialogMode === "export"}
         onClose={closeDialog}
@@ -576,9 +523,16 @@ export default function DegreesAdminPage() {
               ]}
             />
           </FormField>
-          <p className="text-xs text-[#444] bg-[#141414] border border-[#1e1e1e] rounded-lg px-4 py-3">
+          <p
+            className="text-xs px-4 py-3 border rounded-lg"
+            style={{
+              color: "var(--color-text-disabled)",
+              backgroundColor: "var(--color-bg-surface)",
+              borderColor: "var(--color-border-default)",
+            }}
+          >
             {filtered.length} diplôme{filtered.length !== 1 ? "s" : ""} seront
-            inclus dans l'export.
+            inclus.
           </p>
         </div>
         <InlineError message={actionError} />

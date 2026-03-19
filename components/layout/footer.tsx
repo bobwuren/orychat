@@ -1,14 +1,6 @@
 import Link from "next/link";
+import OrientysLogo from "@/components/OrientysLogo";
 
-/**
- * Footer de l'application Orientys.
- *
- * Structure :
- * - Colonne logo + tagline + réseaux sociaux
- * - Colonne liens produit
- * - Colonne liens légaux
- * - Bande de copyright en bas
- */
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -58,44 +50,69 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-[#080808] border-t border-[#1a1a1a] relative overflow-hidden">
-      {/* Gradient décoratif */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[1px] bg-gradient-to-r from-transparent via-[#c9a84c]/40 to-transparent" />
+    <footer
+      className="relative overflow-hidden border-t"
+      style={{
+        backgroundColor: "var(--color-bg-overlay)",
+        borderColor: "var(--color-border-default)",
+      }}
+    >
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[1px]"
+        style={{
+          background:
+            "linear-gradient(to right, transparent, var(--color-brand-accent), transparent)",
+          opacity: 0.3,
+        }}
+      />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        {/* Contenu principal */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 py-16">
-          {/* Colonne marque */}
           <div className="md:col-span-5">
-            {/* Logo */}
             <Link
               href="/"
               className="inline-flex items-center gap-3 group mb-6"
             >
-              <div className="relative w-8 h-8">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#c9a84c] to-[#e8c97a] rounded-sm rotate-45 group-hover:rotate-[60deg] transition-transform duration-500" />
-                <div className="absolute inset-[3px] bg-[#080808] rounded-sm rotate-45" />
-                <div className="absolute inset-[6px] bg-gradient-to-br from-[#c9a84c] to-[#e8c97a] rounded-sm rotate-45" />
-              </div>
-              <span className="font-display text-xl font-bold tracking-tight text-white">
+              <OrientysLogo
+                size={36}
+                className="transition-transform duration-500 group-hover:scale-105"
+              />
+              <span
+                className="font-display text-xl font-bold tracking-tight"
+                style={{ color: "var(--color-text-primary)" }}
+              >
                 Orientys
               </span>
             </Link>
-
-            <p className="text-[#666] text-sm leading-relaxed max-w-xs mb-8">
+            <p
+              className="text-sm leading-relaxed max-w-xs mb-8"
+              style={{ color: "var(--color-text-muted)" }}
+            >
               La plateforme d&apos;orientation numérique qui guide les lycéens
               africains vers les formations qui leur correspondent — grâce à
               l&apos;intelligence artificielle.
             </p>
-
-            {/* Réseaux sociaux */}
             <div className="flex items-center gap-3">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
-                  className="w-9 h-9 flex items-center justify-center border border-[#2a2a2a] text-[#666] hover:text-[#c9a84c] hover:border-[#c9a84c] rounded transition-all duration-300"
+                  className="w-9 h-9 flex items-center justify-center border rounded transition-all duration-300"
+                  style={{
+                    borderColor: "var(--color-border-strong)",
+                    color: "var(--color-text-muted)",
+                  }}
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget;
+                    el.style.color = "var(--color-brand-accent)";
+                    el.style.borderColor = "var(--color-brand-accent)";
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget;
+                    el.style.color = "var(--color-text-muted)";
+                    el.style.borderColor = "var(--color-border-strong)";
+                  }}
                 >
                   {social.icon}
                 </a>
@@ -103,9 +120,11 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Colonne produit */}
           <div className="md:col-span-3 md:col-start-7">
-            <h4 className="text-xs font-semibold uppercase tracking-[0.15em] text-[#c9a84c] mb-5">
+            <h4
+              className="text-xs font-semibold uppercase tracking-[0.15em] mb-5"
+              style={{ color: "var(--color-brand-accent)" }}
+            >
               Produit
             </h4>
             <ul className="flex flex-col gap-3">
@@ -113,7 +132,14 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-[#666] hover:text-white transition-colors duration-200"
+                    className="text-sm transition-colors duration-200"
+                    style={{ color: "var(--color-text-muted)" }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "var(--color-text-primary)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "var(--color-text-muted)";
+                    }}
                   >
                     {link.label}
                   </Link>
@@ -122,9 +148,11 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Colonne légal */}
           <div className="md:col-span-2">
-            <h4 className="text-xs font-semibold uppercase tracking-[0.15em] text-[#c9a84c] mb-5">
+            <h4
+              className="text-xs font-semibold uppercase tracking-[0.15em] mb-5"
+              style={{ color: "var(--color-brand-accent)" }}
+            >
               Légal
             </h4>
             <ul className="flex flex-col gap-3">
@@ -132,7 +160,14 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-[#666] hover:text-white transition-colors duration-200"
+                    className="text-sm transition-colors duration-200"
+                    style={{ color: "var(--color-text-muted)" }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "var(--color-text-primary)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "var(--color-text-muted)";
+                    }}
                   >
                     {link.label}
                   </Link>
@@ -142,12 +177,20 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Séparateur + copyright */}
-        <div className="border-t border-[#1a1a1a] py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-[#444]">
+        <div
+          className="border-t py-6 flex flex-col sm:flex-row items-center justify-between gap-3"
+          style={{ borderColor: "var(--color-border-default)" }}
+        >
+          <p
+            className="text-xs"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
             &copy; {currentYear} Orientys. Tous droits réservés.
           </p>
-          <p className="text-xs text-[#444]">
+          <p
+            className="text-xs"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
             Conçu pour les lycéens d&apos;Afrique francophone
           </p>
         </div>

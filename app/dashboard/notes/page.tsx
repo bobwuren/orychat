@@ -5,124 +5,9 @@ import { useRouter } from "next/navigation";
 import type { Serie, SubjectWithCoefficients } from "@/lib/types";
 import { subjectsApi } from "@/lib/api";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { StepIndicator } from "@/app/dashboard/page";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Calcule la moyenne pondérée à partir des notes saisies et des coefficients.
- * Retourne null si au moins une note est manquante.
- */
-function computeWeightedAverage(
-  subjects: SubjectWithCoefficients[],
-  notes: Record<string, string>,
-  serieId: string,
-): number | null {
-  let totalPoints = 0;
-  let totalCoefficients = 0;
-
-  for (const subject of subjects) {
-    const raw = notes[subject.id];
-    if (raw === "" || raw === undefined) return null;
-
-    const value = parseFloat(raw);
-    const coeff =
-      subject.seriesCoefficients?.find((sc) => sc.serieId === serieId)
-        ?.coefficient ??
-      subject.coefficient ??
-      1;
-
-    totalPoints += value * coeff;
-    totalCoefficients += coeff;
-  }
-
-  if (totalCoefficients === 0) return null;
-
-  return totalPoints / totalCoefficients;
-}
-
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
-
-/**
- * Écran affiché quand la moyenne calculée est inférieure à 10.
- * Le bac n'est pas validé : on bloque la progression.
- * Deux actions disponibles : retourner au choix de série ou corriger les notes.
- */
-function BelowAverageScreen({
-  average,
-  onRetry,
-  onGoHome,
-}: {
-  average: number;
-  onRetry: () => void;
-  onGoHome: () => void;
-}) {
-  return (
-    <div className="max-w-2xl mx-auto px-6 py-16 flex flex-col items-center text-center">
-      {/* Icone résultat */}
-      <div className="w-20 h-20 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-8">
-        <svg className="w-9 h-9 text-red-400" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M12 8v4M12 16h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
-
-      {/* Moyenne affichée */}
-      <p className="text-xs uppercase tracking-[0.15em] text-red-400 font-semibold mb-3">
-        Résultat insuffisant
-      </p>
-      <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-4">
-        Moyenne :{" "}
-        <span className="text-red-400">{average.toFixed(2)} / 20</span>
-      </h1>
-      <p className="text-[#666] max-w-md leading-relaxed mb-10">
-        Avec cette moyenne, l'obtention du baccalauréat n'est pas validée. Il
-        n'est pas possible de passer à l'orientation pour le moment.
-      </p>
-
-      {/* Actions */}
-      <div className="flex flex-col sm:flex-row gap-3 w-full">
-        <button
-          onClick={onGoHome}
-          className="group relative flex-1 py-4 font-semibold text-sm text-[#0e0e0e] rounded-xl overflow-hidden"
-        >
-          <span className="absolute inset-0 bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] transition-transform duration-300 group-hover:scale-105" />
-          <span className="relative flex items-center justify-center gap-2">
-            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Choisir une autre série
-          </span>
-        </button>
-        <button
-          onClick={onRetry}
-          className="flex-1 py-4 font-semibold text-sm text-[#666] bg-[#0e0e0e] border border-[#1e1e1e] rounded-xl hover:text-white hover:border-[#2a2a2a] transition-all"
-        >
-          Corriger mes notes
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Main component
-// ---------------------------------------------------------------------------
-
-/** Page de saisie des notes par matière */
+/** Page de saisie des notes par matière — étape 2 */
 export default function NotesPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -132,18 +17,6 @@ export default function NotesPage() {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  /**
-   * Moyenne calculée en temps réel dès que toutes les notes sont saisies.
-   * Null si au moins une note est manquante.
-   */
-  const [computedAverage, setComputedAverage] = useState<number | null>(null);
-
-  /**
-   * true = soumission effectuée et moyenne < 10.
-   * Déclenche l'affichage de BelowAverageScreen.
-   */
-  const [showFailureScreen, setShowFailureScreen] = useState(false);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("selectedSerie");
@@ -172,13 +45,6 @@ export default function NotesPage() {
       .finally(() => setLoading(false));
   }, [router]);
 
-  // Recalcul en temps réel dès que toutes les notes sont saisies
-  useEffect(() => {
-    if (!serie || subjects.length === 0) return;
-    const avg = computeWeightedAverage(subjects, notes, serie.id);
-    setComputedAverage(avg);
-  }, [notes, subjects, serie]);
-
   const handleChange = (id: string, value: string) => {
     if (value === "" || (parseFloat(value) >= 0 && parseFloat(value) <= 20)) {
       setNotes((prev) => ({ ...prev, [id]: value }));
@@ -197,15 +63,6 @@ export default function NotesPage() {
       return;
     }
 
-    const average = computeWeightedAverage(subjects, notes, serie!.id);
-
-    // Gate : bac non validé, bloquer la progression
-    if (average !== null && average < 10) {
-      setShowFailureScreen(true);
-      return;
-    }
-
-    // Moyenne >= 10 : continuer le flow
     const notesPayload = subjects.map((s) => ({
       subjectId: s.id,
       value: parseFloat(notes[s.id]),
@@ -228,22 +85,6 @@ export default function NotesPage() {
   const progress =
     subjects.length > 0 ? (filledCount / subjects.length) * 100 : 0;
 
-  // ------------------------------------------------------------------
-  // Écran d'échec (moyenne < 10 après soumission)
-  // ------------------------------------------------------------------
-  if (showFailureScreen && computedAverage !== null) {
-    return (
-      <BelowAverageScreen
-        average={computedAverage}
-        onRetry={() => setShowFailureScreen(false)}
-        onGoHome={() => router.push("/dashboard")}
-      />
-    );
-  }
-
-  // ------------------------------------------------------------------
-  // Skeleton loader
-  // ------------------------------------------------------------------
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto px-6 py-12">
@@ -251,8 +92,11 @@ export default function NotesPage() {
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className="h-16 rounded-xl bg-[#141414] animate-pulse"
-              style={{ animationDelay: `${i * 80}ms` }}
+              className="h-16 rounded-xl animate-pulse"
+              style={{
+                backgroundColor: "var(--color-bg-surface)",
+                animationDelay: `${i * 80}ms`,
+              }}
             />
           ))}
         </div>
@@ -260,15 +104,19 @@ export default function NotesPage() {
     );
   }
 
-  // ------------------------------------------------------------------
-  // Formulaire de saisie
-  // ------------------------------------------------------------------
   return (
     <div className="max-w-2xl mx-auto px-6 py-12">
       {/* Retour */}
       <button
         onClick={() => router.push("/dashboard")}
-        className="flex items-center gap-2 text-sm text-[#555] hover:text-white transition-colors mb-10 group"
+        className="flex items-center gap-2 text-sm mb-10 group transition-colors duration-200"
+        style={{ color: "var(--color-text-muted)" }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = "var(--color-text-primary)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = "var(--color-text-muted)";
+        }}
       >
         <svg
           className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-0.5"
@@ -288,88 +136,67 @@ export default function NotesPage() {
 
       {/* En-tête */}
       <div className="mb-10">
-        <p className="text-xs uppercase tracking-[0.15em] text-[#c9a84c] font-semibold mb-3">
+        <p
+          className="text-xs uppercase tracking-[0.15em] font-semibold mb-3"
+          style={{ color: "var(--color-brand-accent)" }}
+        >
           Étape 2 sur 4
         </p>
-        <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-2">
+        <h1
+          className="font-display text-3xl lg:text-4xl font-bold mb-2"
+          style={{ color: "var(--color-text-primary)" }}
+        >
           Vos notes
         </h1>
-        <p className="text-[#666]">
-          Série <span className="text-white font-semibold">{serie?.code}</span>
+        <p style={{ color: "var(--color-text-muted)" }}>
+          Série{" "}
+          <span
+            className="font-semibold"
+            style={{ color: "var(--color-text-primary)" }}
+          >
+            {serie?.code}
+          </span>
           {serie?.description && (
-            <span className="text-[#555]"> — {serie.description}</span>
+            <span style={{ color: "var(--color-text-disabled)" }}>
+              {" "}
+              — {serie.description}
+            </span>
           )}
         </p>
       </div>
 
-      {/* Indicateur d'étapes */}
-      <div className="flex items-center gap-2 mb-10">
-        {["Série", "Notes", "Profil", "Résultat"].map((step, i) => (
-          <div key={step} className="flex items-center gap-2">
-            <div
-              className={[
-                "flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-bold border transition-all",
-                i === 0
-                  ? "bg-[#c9a84c]/20 border-[#c9a84c]/40 text-[#c9a84c]"
-                  : i === 1
-                    ? "bg-[#c9a84c] border-[#c9a84c] text-[#0e0e0e]"
-                    : "border-[#2a2a2a] text-[#444]",
-              ].join(" ")}
-            >
-              {i === 0 ? (
-                <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
-                  <path
-                    d="M2 6l3 3 5-5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ) : (
-                i + 1
-              )}
-            </div>
-            <span
-              className={[
-                "text-xs font-medium",
-                i === 1 ? "text-white" : "text-[#444]",
-              ].join(" ")}
-            >
-              {step}
-            </span>
-            {i < 3 && <div className="w-8 h-[1px] bg-[#1e1e1e] mx-1" />}
-          </div>
-        ))}
-      </div>
+      <StepIndicator
+        current={1}
+        steps={["Série", "Notes", "Profil", "Résultat"]}
+        done={1}
+      />
 
       {/* Barre de progression saisie */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-[#555]">
+          <span
+            className="text-xs"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
             {filledCount} / {subjects.length} matières renseignées
           </span>
-          <div className="flex items-center gap-3">
-            {/* Aperçu moyenne en temps réel (visible seulement quand tout est rempli) */}
-            {computedAverage !== null && (
-              <span
-                className={[
-                  "text-xs font-semibold",
-                  computedAverage >= 10 ? "text-emerald-400" : "text-red-400",
-                ].join(" ")}
-              >
-                Moy. {computedAverage.toFixed(2)}
-              </span>
-            )}
-            <span className="text-xs text-[#c9a84c] font-semibold">
-              {Math.round(progress)}%
-            </span>
-          </div>
+          <span
+            className="text-xs font-semibold"
+            style={{ color: "var(--color-brand-accent)" }}
+          >
+            {Math.round(progress)}%
+          </span>
         </div>
-        <div className="h-1 bg-[#1a1a1a] rounded-full overflow-hidden">
+        <div
+          className="h-1 rounded-full overflow-hidden"
+          style={{ backgroundColor: "var(--color-bg-elevated)" }}
+        >
           <div
-            className="h-full bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] rounded-full transition-all duration-500"
-            style={{ width: `${progress}%` }}
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${progress}%`,
+              background: "var(--gradient-brand)",
+            }}
           />
         </div>
       </div>
@@ -389,53 +216,75 @@ export default function NotesPage() {
           return (
             <div
               key={subject.id}
-              className={[
-                "group flex items-center gap-4 px-5 py-4 bg-[#0e0e0e] border rounded-xl transition-all duration-200",
-                isFilled
-                  ? "border-[#2a2a2a]"
-                  : "border-[#141414] hover:border-[#1e1e1e]",
-              ].join(" ")}
+              className="group flex items-center gap-4 px-5 py-4 border rounded-xl transition-all duration-200"
+              style={{
+                backgroundColor: "var(--color-bg-base)",
+                borderColor: isFilled
+                  ? "var(--color-border-strong)"
+                  : "var(--color-border-subtle)",
+              }}
             >
-              {/* Indicateur rempli */}
+              {/* Indicateur */}
               <div
-                className={[
-                  "w-1.5 h-1.5 rounded-full shrink-0 transition-all duration-300",
-                  isFilled ? "bg-[#c9a84c]" : "bg-[#2a2a2a]",
-                ].join(" ")}
+                className="w-1.5 h-1.5 rounded-full shrink-0 transition-all duration-300"
+                style={{
+                  backgroundColor: isFilled
+                    ? "var(--color-brand-accent)"
+                    : "var(--color-border-strong)",
+                }}
               />
 
-              {/* Nom matière */}
+              {/* Nom */}
               <div className="flex-1 min-w-0">
-                <span className="text-sm font-medium text-white truncate block">
+                <span
+                  className="text-sm font-medium truncate block"
+                  style={{ color: "var(--color-text-primary)" }}
+                >
                   {subject.name}
                 </span>
               </div>
 
               {/* Coefficient */}
-              <span className="shrink-0 text-[11px] font-semibold text-[#444] bg-[#141414] px-2 py-0.5 rounded">
+              <span
+                className="shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded"
+                style={{
+                  color: "var(--color-text-disabled)",
+                  backgroundColor: "var(--color-bg-surface)",
+                }}
+              >
                 coef. {coeff}
               </span>
 
               {/* Input note */}
-              <div className="relative shrink-0">
-                <input
-                  type="number"
-                  min={0}
-                  max={20}
-                  step={0.5}
-                  placeholder="—"
-                  value={value}
-                  onChange={(e) => handleChange(subject.id, e.target.value)}
-                  className={[
-                    "w-20 px-3 py-2 text-center text-sm font-semibold rounded-lg bg-[#141414] border transition-all duration-200 focus:outline-none focus:ring-1",
-                    isFilled && numValue >= 10
-                      ? "border-[#2a2a2a] text-white focus:border-[#c9a84c] focus:ring-[#c9a84c]/20"
-                      : isFilled && numValue < 10
-                        ? "border-[#2a2a2a] text-[#f87171] focus:border-[#f87171] focus:ring-red-500/20"
-                        : "border-[#1e1e1e] text-white placeholder:text-[#333] focus:border-[#c9a84c] focus:ring-[#c9a84c]/20",
-                  ].join(" ")}
-                />
-              </div>
+              <input
+                type="number"
+                min={0}
+                max={20}
+                step={0.5}
+                placeholder="—"
+                value={value}
+                onChange={(e) => handleChange(subject.id, e.target.value)}
+                className="w-20 px-3 py-2 text-center text-sm font-semibold rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 shrink-0"
+                style={{
+                  backgroundColor: "var(--color-bg-surface)",
+                  borderColor: "var(--color-border-default)",
+                  color:
+                    isFilled && numValue < 10
+                      ? "var(--color-state-error)"
+                      : "var(--color-text-primary)",
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor =
+                    "var(--color-input-border-focus)";
+                  e.currentTarget.style.boxShadow =
+                    "0 0 0 3px var(--color-input-ring)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor =
+                    "var(--color-border-default)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              />
             </div>
           );
         })}
@@ -443,11 +292,18 @@ export default function NotesPage() {
 
       {/* Erreur */}
       {error && (
-        <div className="mt-5 flex items-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+        <div
+          className="mt-5 flex items-center gap-2 px-4 py-3 border rounded-lg"
+          style={{
+            backgroundColor: "var(--color-state-error-bg)",
+            borderColor: "var(--color-state-error-border)",
+          }}
+        >
           <svg
-            className="w-4 h-4 text-red-400 shrink-0"
+            className="w-4 h-4 shrink-0"
             viewBox="0 0 16 16"
             fill="none"
+            style={{ color: "var(--color-state-error)" }}
           >
             <path
               d="M8 5v3M8 11h.01M14.5 8a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z"
@@ -456,17 +312,26 @@ export default function NotesPage() {
               strokeLinecap="round"
             />
           </svg>
-          <span className="text-sm text-red-400">{error}</span>
+          <span
+            className="text-sm"
+            style={{ color: "var(--color-state-error)" }}
+          >
+            {error}
+          </span>
         </div>
       )}
 
-      {/* Bouton soumettre */}
+      {/* Bouton */}
       <button
         onClick={handleSubmit}
         disabled={filledCount < subjects.length}
-        className="group relative w-full mt-8 py-4 font-semibold text-sm text-[#0e0e0e] rounded-xl overflow-hidden disabled:opacity-40 disabled:cursor-not-allowed"
+        className="group relative w-full mt-8 py-4 font-semibold text-sm rounded-xl overflow-hidden disabled:opacity-40 disabled:cursor-not-allowed"
+        style={{ color: "var(--color-bg-base)" }}
       >
-        <span className="absolute inset-0 bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] transition-transform duration-300 group-hover:scale-105 group-disabled:scale-100" />
+        <span
+          className="absolute inset-0 transition-transform duration-300 group-hover:scale-105 group-disabled:scale-100"
+          style={{ background: "var(--gradient-brand)" }}
+        />
         <span className="relative flex items-center justify-center gap-2">
           Continuer
           <svg

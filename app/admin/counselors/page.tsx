@@ -33,18 +33,7 @@ import type {
   UpdateCounselorRequest,
 } from "@/lib/types";
 
-// ---------------------------------------------------------------------------
-// Constantes
-// ---------------------------------------------------------------------------
-
-const ITEMS_PER_PAGE = 10;
-type DialogMode = "create" | "edit" | "view" | "delete" | null;
-type FilterActive = "all" | "active" | "inactive";
-
-// ---------------------------------------------------------------------------
-// Icônes SVG inline
-// ---------------------------------------------------------------------------
-
+// Icônes communes
 function IconRefresh() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
@@ -57,7 +46,6 @@ function IconRefresh() {
     </svg>
   );
 }
-
 function IconPlus() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
@@ -83,35 +71,6 @@ function IconX() {
     </svg>
   );
 }
-
-function IconMail() {
-  return (
-    <svg className="w-3 h-3" viewBox="0 0 16 16" fill="none">
-      <path
-        d="M2 4h12v9a1 1 0 01-1 1H3a1 1 0 01-1-1V4zM2 4l6 5 6-5"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function IconPhone() {
-  return (
-    <svg className="w-3 h-3" viewBox="0 0 16 16" fill="none">
-      <path
-        d="M3 3l2 2-1.5 2.5S4.5 10 7 12.5l2.5-1.5 2 2-2 2C4 17 -1 9.5 1 3l2-1z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function IconExternal() {
   return (
     <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
@@ -126,18 +85,38 @@ function IconExternal() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Formulaire conseiller
-// ---------------------------------------------------------------------------
+type CounselorDialogMode = "create" | "edit" | "view" | "delete" | null;
 
-interface CounselorFormProps {
-  initial?: Partial<Counselor>;
-  onSubmit: (
-    data: CreateCounselorRequest | UpdateCounselorRequest,
-  ) => Promise<void>;
-  onCancel: () => void;
-  isLoading: boolean;
-  mode: "create" | "edit";
+function CounselorAvatar({
+  counselor,
+  size = "sm",
+}: {
+  counselor: Counselor;
+  size?: "sm" | "lg";
+}) {
+  const dim = size === "lg" ? "w-16 h-16 text-xl" : "w-8 h-8 text-sm";
+  if (counselor.photo) {
+    return (
+      <img
+        src={counselor.photo}
+        alt={counselor.name}
+        className={`${dim} rounded-full object-cover border shrink-0`}
+        style={{ borderColor: "var(--color-border-default)" }}
+      />
+    );
+  }
+  return (
+    <div
+      className={`${dim} rounded-full border flex items-center justify-center font-bold shrink-0`}
+      style={{
+        backgroundColor: "var(--color-bg-surface)",
+        borderColor: "var(--color-border-default)",
+        color: "var(--color-text-muted)",
+      }}
+    >
+      {counselor.name[0].toUpperCase()}
+    </div>
+  );
 }
 
 function CounselorForm({
@@ -146,7 +125,15 @@ function CounselorForm({
   onCancel,
   isLoading,
   mode,
-}: CounselorFormProps) {
+}: {
+  initial?: Partial<Counselor>;
+  onSubmit: (
+    data: CreateCounselorRequest | UpdateCounselorRequest,
+  ) => Promise<void>;
+  onCancel: () => void;
+  isLoading: boolean;
+  mode: "create" | "edit";
+}) {
   const [name, setName] = useState(initial?.name ?? "");
   const [email, setEmail] = useState(initial?.email ?? "");
   const [phone, setPhone] = useState(initial?.phone ?? "");
@@ -165,13 +152,9 @@ function CounselorForm({
     setSpecialtyInput("");
   };
 
-  const removeSpecialty = (s: string) =>
-    setSpecialties((prev) => prev.filter((x) => x !== s));
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
-
     if (!name.trim()) {
       setFormError("Le nom est obligatoire.");
       return;
@@ -188,7 +171,6 @@ function CounselorForm({
       setFormError("L'URL de la photo doit commencer par http(s)://");
       return;
     }
-
     try {
       await onSubmit({
         name: name.trim(),
@@ -206,8 +188,8 @@ function CounselorForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="sm:col-span-2">
           <FormField label="Nom complet" required>
             <AdminInput
               value={name}
@@ -234,7 +216,7 @@ function CounselorForm({
             disabled={isLoading}
           />
         </FormField>
-        <div className="col-span-2">
+        <div className="sm:col-span-2">
           <FormField label="URL Photo">
             <AdminInput
               value={photo}
@@ -244,7 +226,7 @@ function CounselorForm({
             />
           </FormField>
         </div>
-        <div className="col-span-2">
+        <div className="sm:col-span-2">
           <FormField label="Biographie">
             <AdminTextarea
               value={bio}
@@ -256,9 +238,11 @@ function CounselorForm({
           </FormField>
         </div>
       </div>
-
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#666]">
+        <p
+          className="text-xs font-semibold uppercase tracking-[0.1em]"
+          style={{ color: "var(--color-text-muted)" }}
+        >
           Spécialités
         </p>
         <div className="flex gap-2">
@@ -290,13 +274,21 @@ function CounselorForm({
             {specialties.map((s) => (
               <span
                 key={s}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-[#141414] border border-[#222] text-[#888] rounded-lg"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium border rounded-lg"
+                style={{
+                  backgroundColor: "var(--color-bg-surface)",
+                  borderColor: "var(--color-border-default)",
+                  color: "var(--color-text-secondary)",
+                }}
               >
                 {s}
                 <button
                   type="button"
-                  onClick={() => removeSpecialty(s)}
-                  className="text-[#444] hover:text-red-400 transition-colors"
+                  onClick={() =>
+                    setSpecialties((prev) => prev.filter((x) => x !== s))
+                  }
+                  className="transition-colors"
+                  style={{ color: "var(--color-text-disabled)" }}
                 >
                   <IconX />
                 </button>
@@ -305,7 +297,6 @@ function CounselorForm({
           </div>
         )}
       </div>
-
       <Toggle
         checked={isActive}
         onChange={setIsActive}
@@ -330,59 +321,22 @@ function CounselorForm({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Avatar conseiller
-// ---------------------------------------------------------------------------
-
-function CounselorAvatar({
-  counselor,
-  size = "sm",
-}: {
-  counselor: Counselor;
-  size?: "sm" | "lg";
-}) {
-  const dim = size === "lg" ? "w-16 h-16" : "w-8 h-8";
-  const textSize = size === "lg" ? "text-xl" : "text-sm";
-
-  if (counselor.photo) {
-    return (
-      <img
-        src={counselor.photo}
-        alt={counselor.name}
-        className={`${dim} rounded-full object-cover border border-[#1a1a1a] shrink-0`}
-      />
-    );
-  }
-
-  return (
-    <div
-      className={`${dim} rounded-full bg-[#141414] border border-[#1a1a1a] flex items-center justify-center ${textSize} font-bold text-[#555] shrink-0`}
-    >
-      {counselor.name[0].toUpperCase()}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Page principale
-// ---------------------------------------------------------------------------
-
 export default function CounselorsAdminPage() {
   const [counselors, setCounselors] = useState<Counselor[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterActive, setFilterActive] = useState<FilterActive>("all");
+  const [filterActive, setFilterActive] = useState<
+    "all" | "active" | "inactive"
+  >("all");
   const [currentPage, setCurrentPage] = useState(1);
-
-  const [dialogMode, setDialogMode] = useState<DialogMode>(null);
+  const [dialogMode, setDialogMode] = useState<CounselorDialogMode>(null);
   const [selected, setSelected] = useState<Counselor | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  // ── Chargement ─────────────────────────────────────────────────────────────
+  const ITEMS_PER_PAGE = 10;
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -400,12 +354,9 @@ export default function CounselorsAdminPage() {
   useEffect(() => {
     load();
   }, [load]);
-
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterActive]);
-
-  // ── Filtrage ───────────────────────────────────────────────────────────────
 
   const filtered = counselors.filter((c) => {
     const matchSearch =
@@ -415,22 +366,18 @@ export default function CounselorsAdminPage() {
       (c.specialties ?? []).some((s) =>
         s.toLowerCase().includes(searchTerm.toLowerCase()),
       );
-
     const matchActive =
       filterActive === "all" ||
       (filterActive === "active" && c.isActive) ||
       (filterActive === "inactive" && !c.isActive);
-
     return matchSearch && matchActive;
   });
-
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const paginated = filtered.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
-
-  // ── Dialogs ────────────────────────────────────────────────────────────────
+  const activeCount = counselors.filter((c) => c.isActive).length;
 
   const closeDialog = () => {
     setDialogMode(null);
@@ -456,8 +403,6 @@ export default function CounselorsAdminPage() {
     setActionError(null);
     setDialogMode("delete");
   };
-
-  // ── Actions ────────────────────────────────────────────────────────────────
 
   const handleCreate = async (
     data: CreateCounselorRequest | UpdateCounselorRequest,
@@ -516,10 +461,6 @@ export default function CounselorsAdminPage() {
     }
   };
 
-  /**
-   * Bascule le statut actif/inactif d'un conseiller directement depuis le tableau,
-   * sans ouvrir de dialog.
-   */
   const handleToggleActive = async (c: Counselor) => {
     try {
       if (c.isActive) {
@@ -535,11 +476,8 @@ export default function CounselorsAdminPage() {
     }
   };
 
-  const activeCount = counselors.filter((c) => c.isActive).length;
-
-  if (loadError && counselors.length === 0) {
+  if (loadError && counselors.length === 0)
     return <PageError message={loadError} onRetry={load} />;
-  }
 
   return (
     <AdminPage>
@@ -563,28 +501,35 @@ export default function CounselorsAdminPage() {
               onClick={openCreate}
               icon={<IconPlus />}
             >
-              Nouveau conseiller
+              Nouveau
             </Btn>
           </>
         }
       />
-
       <AdminCard
         title="Liste des conseillers"
-        description="Créez, modifiez, activez ou supprimez des conseillers d'orientation."
         toolbar={
-          <div className="flex items-center gap-2">
-            <div className="flex rounded-lg border border-[#1a1a1a] overflow-hidden text-xs">
-              {(["all", "active", "inactive"] as FilterActive[]).map((f) => (
+          <div className="flex items-center gap-2 flex-wrap">
+            <div
+              className="flex rounded-lg border overflow-hidden text-xs"
+              style={{ borderColor: "var(--color-border-default)" }}
+            >
+              {(["all", "active", "inactive"] as const).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilterActive(f)}
-                  className={[
-                    "px-3 py-2 font-medium transition-all",
+                  className="px-3 py-2 font-medium transition-all"
+                  style={
                     filterActive === f
-                      ? "bg-[#c9a84c]/10 text-[#c9a84c]"
-                      : "bg-[#0e0e0e] text-[#444] hover:text-[#888]",
-                  ].join(" ")}
+                      ? {
+                          backgroundColor: "var(--color-accent-bg)",
+                          color: "var(--color-brand-accent)",
+                        }
+                      : {
+                          backgroundColor: "var(--color-bg-base)",
+                          color: "var(--color-text-disabled)",
+                        }
+                  }
                 >
                   {f === "all"
                     ? "Tous"
@@ -609,7 +554,7 @@ export default function CounselorsAdminPage() {
         <AdminTable>
           <THead>
             <Th>Conseiller</Th>
-            <Th>Contact</Th>
+            <Th>Email</Th>
             <Th>Spécialités</Th>
             <Th>Statut</Th>
             <Th right>Actions</Th>
@@ -622,8 +567,8 @@ export default function CounselorsAdminPage() {
                 colSpan={5}
                 label={
                   searchTerm || filterActive !== "all"
-                    ? "Aucun résultat pour ces filtres."
-                    : "Aucun conseiller enregistré."
+                    ? "Aucun résultat."
+                    : "Aucun conseiller."
                 }
                 action={
                   !searchTerm && filterActive === "all" ? (
@@ -640,18 +585,22 @@ export default function CounselorsAdminPage() {
               />
             ) : (
               paginated.map((c) => (
-                // Correction : <Tr> est directement enfant de <TBody> (<tbody>).
-                // L'opacité est portée par className sur <Tr>, qui la transfère au <tr>.
                 <Tr key={c.id} className={!c.isActive ? "opacity-50" : ""}>
                   <Td>
                     <div className="flex items-center gap-2.5">
                       <CounselorAvatar counselor={c} />
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-white truncate">
+                        <p
+                          className="text-sm font-medium truncate"
+                          style={{ color: "var(--color-text-primary)" }}
+                        >
                           {c.name}
                         </p>
                         {c.bio && (
-                          <p className="text-xs text-[#444] truncate max-w-[180px]">
+                          <p
+                            className="text-xs truncate max-w-[140px]"
+                            style={{ color: "var(--color-text-disabled)" }}
+                          >
                             {c.bio}
                           </p>
                         )}
@@ -659,28 +608,31 @@ export default function CounselorsAdminPage() {
                     </div>
                   </Td>
                   <Td>
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-1.5 text-xs text-[#666]">
-                        <IconMail />
-                        <a
-                          href={`mailto:${c.email}`}
-                          className="hover:text-white transition-colors"
-                        >
-                          {c.email}
-                        </a>
-                      </div>
-                      {c.phone && (
-                        <div className="flex items-center gap-1.5 text-xs text-[#555]">
-                          <IconPhone />
-                          {c.phone}
-                        </div>
-                      )}
-                    </div>
+                    <a
+                      href={`mailto:${c.email}`}
+                      className="text-xs transition-colors"
+                      style={{ color: "var(--color-text-secondary)" }}
+                    >
+                      {c.email}
+                    </a>
+                    {c.phone && (
+                      <p
+                        className="text-xs mt-0.5"
+                        style={{ color: "var(--color-text-disabled)" }}
+                      >
+                        {c.phone}
+                      </p>
+                    )}
                   </Td>
                   <Td>
                     <div className="flex flex-wrap gap-1">
                       {(c.specialties ?? []).length === 0 ? (
-                        <span className="text-[#333] text-xs">—</span>
+                        <span
+                          className="text-xs"
+                          style={{ color: "var(--color-text-disabled)" }}
+                        >
+                          —
+                        </span>
                       ) : (
                         <>
                           {(c.specialties ?? []).slice(0, 2).map((s) => (
@@ -705,7 +657,7 @@ export default function CounselorsAdminPage() {
                     )}
                   </Td>
                   <Td right>
-                    <div className="flex items-center justify-end gap-1">
+                    <div className="flex items-center justify-end gap-1 flex-wrap">
                       <Btn
                         variant="ghost"
                         size="sm"
@@ -724,11 +676,6 @@ export default function CounselorsAdminPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleToggleActive(c)}
-                        className={
-                          c.isActive
-                            ? "text-yellow-500/70 hover:text-yellow-400"
-                            : "text-green-500/70 hover:text-green-400"
-                        }
                       >
                         {c.isActive ? "Désactiver" : "Activer"}
                       </Btn>
@@ -737,7 +684,7 @@ export default function CounselorsAdminPage() {
                         size="sm"
                         onClick={() => openDelete(c)}
                       >
-                        Supprimer
+                        Suppr.
                       </Btn>
                     </div>
                   </Td>
@@ -755,7 +702,6 @@ export default function CounselorsAdminPage() {
         />
       </AdminCard>
 
-      {/* Dialog Création */}
       <AdminDialog
         open={dialogMode === "create"}
         onClose={closeDialog}
@@ -772,7 +718,6 @@ export default function CounselorsAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
-      {/* Dialog Édition */}
       <AdminDialog
         open={dialogMode === "edit"}
         onClose={closeDialog}
@@ -790,7 +735,6 @@ export default function CounselorsAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
-      {/* Dialog Vue */}
       <AdminDialog
         open={dialogMode === "view"}
         onClose={closeDialog}
@@ -799,11 +743,20 @@ export default function CounselorsAdminPage() {
       >
         {selected && (
           <div className="space-y-5">
-            <div className="flex items-center gap-4 p-4 bg-[#0a0a0a] border border-[#141414] rounded-xl">
+            <div
+              className="flex items-center gap-4 p-4 rounded-xl border"
+              style={{
+                backgroundColor: "var(--color-bg-page)",
+                borderColor: "var(--color-border-default)",
+              }}
+            >
               <CounselorAvatar counselor={selected} size="lg" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-semibold text-white text-lg">
+                  <p
+                    className="font-semibold text-lg"
+                    style={{ color: "var(--color-text-primary)" }}
+                  >
                     {selected.name}
                   </p>
                   {selected.isActive ? (
@@ -812,38 +765,44 @@ export default function CounselorsAdminPage() {
                     <AdminBadge color="gray">Inactif</AdminBadge>
                   )}
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-[#555] mt-1">
-                  <IconMail />
-                  <a
-                    href={`mailto:${selected.email}`}
-                    className="hover:text-[#888] transition-colors"
-                  >
-                    {selected.email}
-                  </a>
-                </div>
+                <p
+                  className="text-xs mt-1"
+                  style={{ color: "var(--color-text-muted)" }}
+                >
+                  {selected.email}
+                </p>
                 {selected.phone && (
-                  <div className="flex items-center gap-1.5 text-xs text-[#555] mt-0.5">
-                    <IconPhone />
+                  <p
+                    className="text-xs"
+                    style={{ color: "var(--color-text-disabled)" }}
+                  >
                     {selected.phone}
-                  </div>
+                  </p>
                 )}
               </div>
             </div>
-
             {selected.bio && (
               <div>
-                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1.5">
+                <p
+                  className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-1"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
                   Biographie
                 </p>
-                <p className="text-sm text-[#888] leading-relaxed">
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{ color: "var(--color-text-secondary)" }}
+                >
                   {selected.bio}
                 </p>
               </div>
             )}
-
             {(selected.specialties ?? []).length > 0 && (
               <div>
-                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-2">
+                <p
+                  className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-2"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
                   Spécialités
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -855,54 +814,6 @@ export default function CounselorsAdminPage() {
                 </div>
               </div>
             )}
-
-            {selected.photo && (
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
-                  Photo
-                </p>
-                <a
-                  href={selected.photo}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-[#c9a84c] hover:underline"
-                >
-                  Voir la photo <IconExternal />
-                </a>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-[#111]">
-              {[
-                {
-                  label: "Créé le",
-                  value: selected.createdAt
-                    ? new Date(selected.createdAt).toLocaleDateString("fr-FR", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })
-                    : undefined,
-                },
-                {
-                  label: "Modifié le",
-                  value: selected.updatedAt
-                    ? new Date(selected.updatedAt).toLocaleDateString("fr-FR", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })
-                    : undefined,
-                },
-              ].map(({ label, value }) => (
-                <div key={label}>
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
-                    {label}
-                  </p>
-                  <p className="text-xs text-[#666]">{value ?? "—"}</p>
-                </div>
-              ))}
-            </div>
           </div>
         )}
         <DialogActions>
@@ -918,7 +829,6 @@ export default function CounselorsAdminPage() {
         </DialogActions>
       </AdminDialog>
 
-      {/* Dialog Suppression */}
       <AdminDialog
         open={dialogMode === "delete"}
         onClose={closeDialog}
@@ -927,11 +837,27 @@ export default function CounselorsAdminPage() {
         size="sm"
       >
         {selected && (
-          <div className="flex items-center gap-3 p-4 bg-[#141414] border border-[#1e1e1e] rounded-xl mb-2">
+          <div
+            className="flex items-center gap-3 p-4 rounded-xl border"
+            style={{
+              backgroundColor: "var(--color-bg-surface)",
+              borderColor: "var(--color-border-default)",
+            }}
+          >
             <CounselorAvatar counselor={selected} />
             <div>
-              <p className="font-semibold text-white">{selected.name}</p>
-              <p className="text-xs text-[#555]">{selected.email}</p>
+              <p
+                className="font-semibold"
+                style={{ color: "var(--color-text-primary)" }}
+              >
+                {selected.name}
+              </p>
+              <p
+                className="text-xs"
+                style={{ color: "var(--color-text-muted)" }}
+              >
+                {selected.email}
+              </p>
             </div>
           </div>
         )}

@@ -8,10 +8,9 @@ export const metadata: Metadata = {
 };
 
 /**
- * Page Contact
- *
- * Structure serveur + composant client ContactForm (interaction formulaire).
- * Header + Footer injectés par ConditionalShell.
+ * Page Contact — Server Component.
+ * Aucun event handler. Les hovers sont gérés via les classes CSS
+ * (card-hover, link-muted, etc.) définies dans globals.css.
  */
 
 const FAQ_ITEMS = [
@@ -35,26 +34,56 @@ const FAQ_ITEMS = [
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: "var(--color-bg-page)" }}
+    >
       {/* Hero */}
       <section className="relative pt-28 pb-16 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-[#c9a84c]/6 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] rounded-full blur-3xl pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse, var(--color-accent-bg-hover), transparent)",
+          }}
+        />
 
         <div className="relative max-w-4xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/20 bg-[#c9a84c]/5 mb-6">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#c9a84c]" />
-            <span className="text-xs font-semibold text-[#c9a84c] tracking-[0.1em] uppercase">
+          <div
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border mb-6"
+            style={{
+              borderColor: "var(--color-accent-border)",
+              backgroundColor: "var(--color-accent-bg)",
+            }}
+          >
+            <div
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: "var(--color-brand-accent)" }}
+            />
+            <span
+              className="text-xs font-semibold tracking-[0.1em] uppercase"
+              style={{ color: "var(--color-brand-accent)" }}
+            >
               Nous contacter
             </span>
           </div>
 
-          <h1 className="font-display text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
+          <h1
+            className="font-display text-4xl md:text-5xl font-bold leading-tight mb-4"
+            style={{ color: "var(--color-text-primary)" }}
+          >
             Une question ?{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#c9a84c] to-[#e8c97a]">
+            <span
+              className="text-transparent bg-clip-text"
+              style={{ backgroundImage: "var(--gradient-brand)" }}
+            >
               Parlons-en.
             </span>
           </h1>
-          <p className="text-[#666] text-base max-w-xl mx-auto leading-relaxed">
+          <p
+            className="text-base max-w-xl mx-auto leading-relaxed"
+            style={{ color: "var(--color-text-muted)" }}
+          >
             Notre équipe répond généralement sous 24 à 48 heures ouvrées. Pour
             les demandes urgentes, préférez WhatsApp.
           </p>
@@ -64,10 +93,19 @@ export default function ContactPage() {
       {/* Corps */}
       <section className="max-w-5xl mx-auto px-6 pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
-          {/* Colonne gauche — infos de contact */}
+          {/* Colonne gauche */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="p-6 bg-[#0e0e0e] border border-[#1a1a1a] rounded-2xl space-y-5">
-              <h2 className="font-display text-lg font-bold text-white">
+            <div
+              className="p-6 border rounded-2xl space-y-5"
+              style={{
+                backgroundColor: "var(--color-bg-base)",
+                borderColor: "var(--color-border-default)",
+              }}
+            >
+              <h2
+                className="font-display text-lg font-bold"
+                style={{ color: "var(--color-text-primary)" }}
+              >
                 Coordonnées
               </h2>
 
@@ -108,18 +146,29 @@ export default function ContactPage() {
                 },
               ].map(({ icon, label, value, href }) => (
                 <div key={label} className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#c9a84c]/10 border border-[#c9a84c]/15 flex items-center justify-center text-[#c9a84c] shrink-0">
+                  <div
+                    className="w-9 h-9 rounded-xl border flex items-center justify-center shrink-0"
+                    style={{
+                      backgroundColor: "var(--color-accent-bg)",
+                      borderColor: "var(--color-accent-border)",
+                      color: "var(--color-brand-accent)",
+                    }}
+                  >
                     {icon}
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.1em] text-[#444] font-semibold">
+                    <p
+                      className="text-[10px] uppercase tracking-[0.1em] font-semibold"
+                      style={{ color: "var(--color-text-disabled)" }}
+                    >
                       {label}
                     </p>
+                    {/* nav-link gère le hover couleur via CSS */}
                     <a
                       href={href}
                       target={href.startsWith("http") ? "_blank" : undefined}
                       rel="noopener noreferrer"
-                      className="text-sm text-[#888] hover:text-white transition-colors"
+                      className="nav-link text-sm"
                     >
                       {value}
                     </a>
@@ -129,8 +178,17 @@ export default function ContactPage() {
             </div>
 
             {/* Horaires */}
-            <div className="p-6 bg-[#0e0e0e] border border-[#1a1a1a] rounded-2xl space-y-4">
-              <h2 className="font-display text-lg font-bold text-white">
+            <div
+              className="p-6 border rounded-2xl space-y-4"
+              style={{
+                backgroundColor: "var(--color-bg-base)",
+                borderColor: "var(--color-border-default)",
+              }}
+            >
+              <h2
+                className="font-display text-lg font-bold"
+                style={{ color: "var(--color-text-primary)" }}
+              >
                 Horaires de réponse
               </h2>
               <div className="space-y-2">
@@ -143,26 +201,36 @@ export default function ContactPage() {
                     key={day}
                     className="flex items-center justify-between text-sm"
                   >
-                    <span className="text-[#666]">{day}</span>
+                    <span style={{ color: "var(--color-text-muted)" }}>
+                      {day}
+                    </span>
                     <span
-                      className={
-                        hours === "Fermé"
-                          ? "text-[#444]"
-                          : "text-white font-medium"
-                      }
+                      className={hours !== "Fermé" ? "font-medium" : ""}
+                      style={{
+                        color:
+                          hours === "Fermé"
+                            ? "var(--color-text-disabled)"
+                            : "var(--color-text-primary)",
+                      }}
                     >
                       {hours}
                     </span>
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-[#444] border-t border-[#111] pt-3">
+              <p
+                className="text-xs border-t pt-3"
+                style={{
+                  color: "var(--color-text-disabled)",
+                  borderColor: "var(--color-border-subtle)",
+                }}
+              >
                 Temps de réponse moyen : 24h ouvrées
               </p>
             </div>
           </div>
 
-          {/* Colonne droite — formulaire */}
+          {/* Colonne droite — formulaire (Client Component) */}
           <div className="lg:col-span-3">
             <ContactForm />
           </div>
@@ -171,23 +239,35 @@ export default function ContactPage() {
         {/* FAQ */}
         <div className="mt-20">
           <div className="text-center mb-10">
-            <h2 className="font-display text-3xl font-bold text-white mb-2">
+            <h2
+              className="font-display text-3xl font-bold mb-2"
+              style={{ color: "var(--color-text-primary)" }}
+            >
               Questions fréquentes
             </h2>
-            <p className="text-[#555] text-sm">
+            <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
               Trouvez rapidement une réponse à vos interrogations.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {FAQ_ITEMS.map(({ q, a }) => (
+              /* card-hover gère fond + bordure au survol via CSS */
               <div
                 key={q}
-                className="p-5 bg-[#0e0e0e] border border-[#1a1a1a] rounded-2xl space-y-2 hover:border-[#252525] transition-all"
+                className="card-hover p-5 border rounded-2xl space-y-2"
               >
-                <p className="text-sm font-semibold text-white leading-snug">
+                <p
+                  className="text-sm font-semibold leading-snug"
+                  style={{ color: "var(--color-text-primary)" }}
+                >
                   {q}
                 </p>
-                <p className="text-sm text-[#666] leading-relaxed">{a}</p>
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{ color: "var(--color-text-muted)" }}
+                >
+                  {a}
+                </p>
               </div>
             ))}
           </div>

@@ -57,6 +57,7 @@ function IconRefresh() {
     </svg>
   );
 }
+
 function IconDownload() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
@@ -70,6 +71,7 @@ function IconDownload() {
     </svg>
   );
 }
+
 function IconPlus() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
@@ -82,6 +84,7 @@ function IconPlus() {
     </svg>
   );
 }
+
 function IconX() {
   return (
     <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
@@ -94,6 +97,30 @@ function IconX() {
     </svg>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Styles partagés pour les inputs inline dans les formulaires
+// ---------------------------------------------------------------------------
+
+const inlineSelectStyle: React.CSSProperties = {
+  backgroundColor: "var(--color-input-bg)",
+  border: "1px solid var(--color-input-border)",
+  color: "var(--color-text-primary)",
+};
+
+const inlineInputFocus = (
+  e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>,
+) => {
+  e.currentTarget.style.borderColor = "var(--color-input-border-focus)";
+  e.currentTarget.style.boxShadow = "0 0 0 3px var(--color-input-ring)";
+};
+
+const inlineInputBlur = (
+  e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>,
+) => {
+  e.currentTarget.style.borderColor = "var(--color-input-border)";
+  e.currentTarget.style.boxShadow = "none";
+};
 
 // ---------------------------------------------------------------------------
 // Formulaire série
@@ -181,7 +208,7 @@ function SerieForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField label="Code" required>
           <AdminInput
             value={code}
@@ -190,7 +217,7 @@ function SerieForm({
             disabled={isLoading}
           />
         </FormField>
-        <div className="col-span-2">
+        <div className="sm:col-span-2">
           <FormField label="Description" required>
             <AdminTextarea
               value={description}
@@ -206,7 +233,10 @@ function SerieForm({
       {/* Matières */}
       <div className="space-y-2">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#666]">
+          <p
+            className="text-xs font-semibold uppercase tracking-[0.1em]"
+            style={{ color: "var(--color-text-muted)" }}
+          >
             Matières
           </p>
           <Btn
@@ -221,22 +251,28 @@ function SerieForm({
           </Btn>
         </div>
         {rows.length === 0 ? (
-          <p className="text-sm text-[#444] italic py-2">
+          <p
+            className="text-sm italic py-2"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
             Aucune matière associée.
           </p>
         ) : (
-          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
             {rows.map((row, i) => (
               <div key={i} className="flex items-center gap-2">
                 <select
                   value={row.subjectId}
                   onChange={(e) => updateRow(i, "subjectId", e.target.value)}
                   disabled={isLoading}
-                  className="flex-1 px-3 py-2 bg-[#141414] border border-[#222] rounded-lg text-sm text-white focus:outline-none focus:border-[#c9a84c] transition-all"
+                  className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none transition-all"
+                  style={inlineSelectStyle}
+                  onFocus={inlineInputFocus}
+                  onBlur={inlineInputBlur}
                 >
                   <option value="">Matière…</option>
                   {subjectOptions.map((s) => (
-                    <option key={s.id} value={s.id} className="bg-[#141414]">
+                    <option key={s.id} value={s.id}>
                       {s.name}
                     </option>
                   ))}
@@ -250,13 +286,26 @@ function SerieForm({
                     updateRow(i, "coefficient", parseFloat(e.target.value))
                   }
                   disabled={isLoading}
-                  className="w-20 px-3 py-2 bg-[#141414] border border-[#222] rounded-lg text-sm text-white text-center focus:outline-none focus:border-[#c9a84c] transition-all"
+                  className="w-20 px-3 py-2 rounded-lg text-sm text-center focus:outline-none transition-all"
+                  style={inlineSelectStyle}
+                  onFocus={inlineInputFocus}
+                  onBlur={inlineInputBlur}
                 />
                 <button
                   type="button"
                   onClick={() => removeRow(i)}
                   disabled={isLoading}
-                  className="w-7 h-7 flex items-center justify-center text-[#444] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg transition-all shrink-0"
+                  style={{ color: "var(--color-text-disabled)" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "var(--color-state-error)";
+                    e.currentTarget.style.backgroundColor =
+                      "var(--color-state-error-bg)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "var(--color-text-disabled)";
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                 >
                   <IconX />
                 </button>
@@ -301,7 +350,6 @@ export default function SeriesAdminPage() {
     deleteSerie,
     exportSeries,
   } = useSeries();
-
   const { subjects, fetchSubjects } = useSubjects();
 
   const [searchInput, setSearchInput] = useState("");
@@ -317,6 +365,7 @@ export default function SeriesAdminPage() {
   const load = useCallback(() => {
     fetchSeries();
   }, [fetchSeries]);
+
   useEffect(() => {
     load();
     fetchSubjects();
@@ -346,18 +395,21 @@ export default function SeriesAdminPage() {
     setActionError(null);
     setDialogMode("create");
   };
+
   const openEdit = async (s: Serie) => {
     setActionError(null);
     setSelectedSerie(s);
     setDialogMode("edit");
     await fetchSerieById(s.id);
   };
+
   const openView = async (s: Serie) => {
     setActionError(null);
     setSelectedSerie(s);
     setDialogMode("view");
     await fetchSerieById(s.id);
   };
+
   const openDelete = (s: Serie) => {
     setActionError(null);
     setSelectedSerie(s);
@@ -527,11 +579,11 @@ export default function SeriesAdminPage() {
                     : "Aucune série."
                 }
                 action={
-                  !searchTerm && (
+                  !searchTerm ? (
                     <Btn variant="secondary" size="sm" onClick={openCreate}>
                       Créer la première série
                     </Btn>
-                  )
+                  ) : undefined
                 }
               />
             ) : (
@@ -541,13 +593,21 @@ export default function SeriesAdminPage() {
                     <AdminBadge color="gold">{serie.code}</AdminBadge>
                   </Td>
                   <Td>
-                    <span className="block max-w-xs truncate text-[#aaa]">
+                    <span
+                      className="block max-w-xs truncate"
+                      style={{ color: "var(--color-text-secondary)" }}
+                    >
                       {serie.description}
                     </span>
                   </Td>
                   <Td>
                     {(serie.subjects?.length ?? 0) === 0 ? (
-                      <span className="text-[#444] text-sm">—</span>
+                      <span
+                        className="text-sm"
+                        style={{ color: "var(--color-text-disabled)" }}
+                      >
+                        —
+                      </span>
                     ) : (
                       <AdminBadge color="gray">
                         {serie.subjects?.length} matière
@@ -576,7 +636,7 @@ export default function SeriesAdminPage() {
                         size="sm"
                         onClick={() => openDelete(serie)}
                       >
-                        Supprimer
+                        Suppr.
                       </Btn>
                     </div>
                   </Td>
@@ -641,7 +701,11 @@ export default function SeriesAdminPage() {
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-5 bg-[#1a1a1a] rounded animate-pulse" />
+              <div
+                key={i}
+                className="h-5 rounded animate-pulse"
+                style={{ backgroundColor: "var(--color-bg-elevated)" }}
+              />
             ))}
           </div>
         ) : (
@@ -650,17 +714,31 @@ export default function SeriesAdminPage() {
               <AdminBadge color="gold">{activeSerie?.code}</AdminBadge>
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
+              <p
+                className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-1"
+                style={{ color: "var(--color-text-disabled)" }}
+              >
                 Description
               </p>
-              <p className="text-sm text-white">{activeSerie?.description}</p>
+              <p
+                className="text-sm"
+                style={{ color: "var(--color-text-primary)" }}
+              >
+                {activeSerie?.description}
+              </p>
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-2">
+              <p
+                className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-2"
+                style={{ color: "var(--color-text-disabled)" }}
+              >
                 Matières ({activeSerie?.subjects?.length ?? 0})
               </p>
               {(activeSerie?.subjects?.length ?? 0) === 0 ? (
-                <p className="text-sm text-[#444] italic">
+                <p
+                  className="text-sm italic"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
                   Aucune matière associée.
                 </p>
               ) : (
@@ -668,12 +746,22 @@ export default function SeriesAdminPage() {
                   {activeSerie?.subjects?.map((s: any) => (
                     <div
                       key={s.id ?? s.subjectId}
-                      className="flex items-center justify-between px-3 py-2 bg-[#141414] border border-[#1e1e1e] rounded-lg text-sm"
+                      className="flex items-center justify-between px-3 py-2 border rounded-lg text-sm"
+                      style={{
+                        backgroundColor: "var(--color-bg-surface)",
+                        borderColor: "var(--color-border-default)",
+                      }}
                     >
-                      <span className="text-white font-medium">
+                      <span
+                        className="font-medium"
+                        style={{ color: "var(--color-text-primary)" }}
+                      >
                         {s.name ?? resolveSubjectName(s.subjectId)}
                       </span>
-                      <span className="text-[#c9a84c] text-xs font-semibold">
+                      <span
+                        className="text-xs font-semibold"
+                        style={{ color: "var(--color-brand-accent)" }}
+                      >
                         coef. {s.coefficient}
                       </span>
                     </div>
@@ -704,13 +792,29 @@ export default function SeriesAdminPage() {
         description="Cette action est irréversible. Toutes les dépendances seront supprimées en cascade."
         size="sm"
       >
-        <div className="p-4 bg-[#141414] border border-[#1e1e1e] rounded-xl mb-2 space-y-1">
-          <p className="text-xs text-[#555]">Série concernée</p>
-          <p className="font-semibold text-white font-mono">
+        <div
+          className="p-4 border rounded-xl mb-2 space-y-1"
+          style={{
+            backgroundColor: "var(--color-bg-surface)",
+            borderColor: "var(--color-border-default)",
+          }}
+        >
+          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+            Série concernée
+          </p>
+          <p
+            className="font-semibold font-mono"
+            style={{ color: "var(--color-text-primary)" }}
+          >
             {selectedSerie?.code}
           </p>
-          <p className="text-xs text-[#555]">{selectedSerie?.description}</p>
-          <p className="text-xs text-[#444]">
+          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+            {selectedSerie?.description}
+          </p>
+          <p
+            className="text-xs"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
             {selectedSerie?.subjects?.length ?? 0} matière(s) associée(s)
           </p>
         </div>
@@ -745,7 +849,14 @@ export default function SeriesAdminPage() {
               ]}
             />
           </FormField>
-          <p className="text-xs text-[#444] bg-[#141414] border border-[#1e1e1e] rounded-lg px-4 py-3">
+          <p
+            className="text-xs px-4 py-3 border rounded-lg"
+            style={{
+              color: "var(--color-text-disabled)",
+              backgroundColor: "var(--color-bg-surface)",
+              borderColor: "var(--color-border-default)",
+            }}
+          >
             Toutes les séries ({filtered.length}) avec leurs matières seront
             incluses.
           </p>

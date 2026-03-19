@@ -4,22 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import Link from "next/link";
+import OrientysLogo from "@/components/OrientysLogo";
 
 /**
- * Layout admin — Topbar persistante + Sidebar collapsible
- *
- * Structure visuelle :
- *   ┌──────────────────────────────────────────────────┐
- *   │  [Logo] [Collapse] ···············  [Profil]     │  ← TOPBAR h-14 fixée
- *   ├─────────┬────────────────────────────────────────┤
- *   │ SIDEBAR │                                        │
- *   │ (icons  │            CONTENU                     │
- *   │ ou full)│                                        │
- *   └─────────┴────────────────────────────────────────┘
- *
- * États :
- * - Desktop : collapsed (w-16, icônes + tooltips) ↔ expanded (w-60, icônes + labels)
- * - Mobile  : sidebar cachée → overlay slide depuis la gauche via bouton hamburger
+ * Layout admin — Topbar persistante + Sidebar collapsible.
+ * Couleurs via variables CSS du design system.
+ * Responsif : sidebar cachée sur mobile, overlay slide depuis la gauche.
  */
 
 const NAV_ITEMS = [
@@ -195,15 +185,23 @@ export default function AdminLayout({
     else if (role !== "admin") router.replace("/");
   }, [loading, isAuthenticated, role, router]);
 
-  // Fermeture automatique du menu mobile lors d'un changement de route
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
   if (loading || !isAuthenticated || role !== "admin") {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-[#c9a84c]/30 border-t-[#c9a84c] rounded-full animate-spin" />
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "var(--color-bg-page)" }}
+      >
+        <div
+          className="w-6 h-6 border-2 rounded-full animate-spin"
+          style={{
+            borderColor: "var(--color-accent-border)",
+            borderTopColor: "var(--color-brand-accent)",
+          }}
+        />
       </div>
     );
   }
@@ -213,40 +211,62 @@ export default function AdminLayout({
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div
+      className="min-h-screen"
+      // data-theme="dark"
+      style={{ backgroundColor: "var(--color-bg-page)" }}
+    >
       {/* ══════════════════════════════════════════
-          TOPBAR — fixée, pleine largeur, z-50
+          TOPBAR
       ══════════════════════════════════════════ */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-[#0e0e0e]/98 backdrop-blur-md border-b border-[#1a1a1a] flex items-center">
-        {/* Bloc gauche : logo + bouton toggle */}
+      <header
+        className="fixed top-0 left-0 right-0 z-50 h-14 backdrop-blur-md border-b flex items-center"
+        style={{
+          backgroundColor:
+            "color-mix(in srgb, var(--color-bg-base) 97%, transparent)",
+          borderColor: "var(--color-border-default)",
+        }}
+      >
+        {/* Bloc logo + collapse */}
         <div
           className={[
-            "flex items-center h-full border-r border-[#1a1a1a] shrink-0 transition-all duration-300",
+            "flex items-center h-full border-r shrink-0 transition-all duration-300",
             collapsed ? "w-16 justify-center" : "w-60 px-4 gap-3",
           ].join(" ")}
+          style={{ borderColor: "var(--color-border-default)" }}
         >
-          {/* Diamond logo */}
-          <div className="relative w-6 h-6 shrink-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#c9a84c] to-[#e8c97a] rounded-sm rotate-45" />
-            <div className="absolute inset-[2px] bg-[#0e0e0e] rounded-sm rotate-45" />
-            <div className="absolute inset-[4px] bg-gradient-to-br from-[#c9a84c] to-[#e8c97a] rounded-sm rotate-45" />
-          </div>
+          <OrientysLogo size={26} />
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <span className="font-display text-sm font-bold text-white tracking-tight block leading-none">
+              <span
+                className="font-display text-sm font-bold tracking-tight block leading-none"
+                style={{ color: "var(--color-text-primary)" }}
+              >
                 Orientys
               </span>
-              <span className="text-[10px] text-[#c9a84c] font-semibold uppercase tracking-[0.12em]">
+              <span
+                className="text-[10px] font-semibold uppercase tracking-[0.12em]"
+                style={{ color: "var(--color-brand-accent)" }}
+              >
                 Admin
               </span>
             </div>
           )}
         </div>
 
-        {/* Bouton collapse desktop */}
+        {/* Bouton collapse — desktop */}
         <button
           onClick={() => setCollapsed((c) => !c)}
-          className="hidden lg:flex w-10 h-10 ml-2 items-center justify-center rounded-lg text-[#444] hover:text-white hover:bg-[#141414] transition-all shrink-0"
+          className="hidden lg:flex w-9 h-9 ml-2 items-center justify-center rounded-lg transition-all shrink-0"
+          style={{ color: "var(--color-text-disabled)" }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = "var(--color-text-primary)";
+            e.currentTarget.style.backgroundColor = "var(--color-bg-surface)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = "var(--color-text-disabled)";
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
           title={collapsed ? "Déplier la navigation" : "Réduire la navigation"}
         >
           {collapsed ? (
@@ -272,11 +292,19 @@ export default function AdminLayout({
           )}
         </button>
 
-        {/* Hamburger mobile */}
+        {/* Hamburger — mobile */}
         <button
           onClick={() => setMobileOpen((o) => !o)}
-          className="lg:hidden flex w-10 h-10 ml-2 items-center justify-center rounded-lg text-[#444] hover:text-white hover:bg-[#141414] transition-all shrink-0"
-          title="Menu"
+          className="lg:hidden flex w-9 h-9 ml-2 items-center justify-center rounded-lg transition-all shrink-0"
+          style={{ color: "var(--color-text-disabled)" }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = "var(--color-text-primary)";
+            e.currentTarget.style.backgroundColor = "var(--color-bg-surface)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = "var(--color-text-disabled)";
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
         >
           {mobileOpen ? (
             <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
@@ -299,11 +327,14 @@ export default function AdminLayout({
           )}
         </button>
 
-        {/* Breadcrumb / section active */}
+        {/* Breadcrumb */}
         <div className="flex-1 flex items-center gap-2 px-4 min-w-0">
           {currentSection && (
             <>
-              <span className="text-[#2a2a2a] hidden sm:block">
+              <span
+                style={{ color: "var(--color-border-strong)" }}
+                className="hidden sm:block"
+              >
                 <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
                   <path
                     d="M6 4l4 4-4 4"
@@ -314,50 +345,50 @@ export default function AdminLayout({
                   />
                 </svg>
               </span>
-              <span className="text-sm text-[#555] truncate hidden sm:block font-medium">
+              <span
+                className="text-sm font-medium truncate hidden sm:block"
+                style={{ color: "var(--color-text-muted)" }}
+              >
                 {currentSection.label}
               </span>
             </>
           )}
         </div>
 
-        {/* Profil + actions droite */}
+        {/* Profil + actions */}
         <div className="flex items-center gap-2 pr-4 shrink-0">
-          {/* Bouton notifications */}
-          <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#444] hover:text-white hover:bg-[#141414] transition-all">
-            <svg
-              className="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <path
-                d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+          <div
+            className="w-px h-6 mx-1"
+            style={{ backgroundColor: "var(--color-border-default)" }}
+          />
 
-          {/* Séparateur */}
-          <div className="w-px h-6 bg-[#1e1e1e] mx-1" />
-
-          {/* Avatar + nom + déconnexion */}
           <div className="flex items-center gap-2.5">
-            {/* Avatar initiale */}
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#c9a84c]/20 to-[#c9a84c]/5 border border-[#c9a84c]/25 flex items-center justify-center text-xs font-bold text-[#c9a84c] shrink-0 select-none">
+            {/* Avatar */}
+            <div
+              className="w-8 h-8 rounded-full border flex items-center justify-center text-xs font-bold shrink-0 select-none"
+              style={{
+                backgroundColor: "var(--color-accent-bg)",
+                borderColor: "var(--color-accent-border)",
+                color: "var(--color-brand-accent)",
+              }}
+            >
               {user?.name?.[0]?.toUpperCase() ??
                 user?.email?.[0]?.toUpperCase() ??
                 "A"}
             </div>
 
-            {/* Nom + rôle — caché sur mobile */}
+            {/* Nom — masqué sur mobile */}
             <div className="hidden md:block leading-none">
-              <p className="text-xs font-semibold text-white truncate max-w-[100px]">
+              <p
+                className="text-xs font-semibold truncate max-w-[100px]"
+                style={{ color: "var(--color-text-primary)" }}
+              >
                 {user?.name ?? user?.email?.split("@")[0] ?? "Admin"}
               </p>
-              <p className="text-[10px] text-[#c9a84c] mt-0.5">
+              <p
+                className="text-[10px]"
+                style={{ color: "var(--color-brand-accent)" }}
+              >
                 Administrateur
               </p>
             </div>
@@ -366,7 +397,16 @@ export default function AdminLayout({
             <button
               onClick={logout}
               title="Déconnexion"
-              className="w-7 h-7 flex items-center justify-center rounded-lg text-[#444] hover:text-red-400 hover:bg-red-500/10 transition-all"
+              className="w-7 h-7 flex items-center justify-center rounded-lg transition-all"
+              style={{ color: "var(--color-text-disabled)" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#f87171";
+                e.currentTarget.style.backgroundColor = "rgba(239,68,68,0.08)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "var(--color-text-disabled)";
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
                 <path
@@ -398,13 +438,14 @@ export default function AdminLayout({
         {/* ── SIDEBAR ── */}
         <aside
           className={[
-            // Base
-            "fixed top-14 left-0 bottom-0 z-40 flex flex-col bg-[#0e0e0e] border-r border-[#1a1a1a] transition-all duration-300 overflow-x-hidden",
-            // Desktop : toujours visible, largeur variable
+            "fixed top-14 left-0 bottom-0 z-40 flex flex-col border-r transition-all duration-300 overflow-x-hidden",
             collapsed ? "hidden lg:flex lg:w-16" : "hidden lg:flex lg:w-60",
-            // Mobile : visible si mobileOpen
             mobileOpen ? "!flex w-64" : "",
           ].join(" ")}
+          style={{
+            backgroundColor: "var(--color-bg-base)",
+            borderColor: "var(--color-border-default)",
+          }}
         >
           <nav className="flex-1 px-2 py-3 overflow-y-auto space-y-0.5">
             {NAV_ITEMS.map((item) => {
@@ -419,35 +460,52 @@ export default function AdminLayout({
                     collapsed && !mobileOpen
                       ? "justify-center px-0 py-3"
                       : "px-3 py-2.5",
-                    isActive
-                      ? "bg-[#c9a84c]/10 text-[#c9a84c] border border-[#c9a84c]/20"
-                      : "text-[#555] hover:text-white hover:bg-[#141414] border border-transparent",
                   ].join(" ")}
+                  style={
+                    isActive
+                      ? {
+                          backgroundColor: "var(--color-accent-bg)",
+                          color: "var(--color-brand-accent)",
+                          border: `1px solid var(--color-accent-border)`,
+                        }
+                      : {
+                          color: "var(--color-text-muted)",
+                          border: "1px solid transparent",
+                        }
+                  }
                 >
-                  {/* Icône */}
                   <span
-                    className={
-                      isActive
-                        ? "text-[#c9a84c]"
-                        : "text-[#444] group-hover:text-[#888] transition-colors"
-                    }
+                    style={{
+                      color: isActive
+                        ? "var(--color-brand-accent)"
+                        : "var(--color-text-disabled)",
+                    }}
                   >
                     {item.icon}
                   </span>
 
-                  {/* Label — masqué en mode collapsed sur desktop */}
                   {(!collapsed || mobileOpen) && (
                     <span className="truncate">{item.label}</span>
                   )}
 
                   {/* Indicateur actif (collapsed) */}
                   {isActive && collapsed && !mobileOpen && (
-                    <span className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#c9a84c] rounded-full" />
+                    <span
+                      className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full"
+                      style={{ backgroundColor: "var(--color-brand-accent)" }}
+                    />
                   )}
 
-                  {/* Tooltip (collapsed desktop uniquement) */}
+                  {/* Tooltip collapsed desktop */}
                   {collapsed && !mobileOpen && (
-                    <span className="absolute left-full ml-2.5 px-2.5 py-1.5 bg-[#1a1a1a] border border-[#252525] text-white text-xs font-medium rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-all whitespace-nowrap z-50 shadow-lg">
+                    <span
+                      className="absolute left-full ml-2.5 px-2.5 py-1.5 text-xs font-medium rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-all whitespace-nowrap z-50 shadow-lg"
+                      style={{
+                        backgroundColor: "var(--color-bg-elevated)",
+                        color: "var(--color-text-primary)",
+                        border: `1px solid var(--color-border-strong)`,
+                      }}
+                    >
                       {item.label}
                     </span>
                   )}
@@ -456,10 +514,17 @@ export default function AdminLayout({
             })}
           </nav>
 
-          {/* Version — visible uniquement en mode expanded */}
           {(!collapsed || mobileOpen) && (
-            <div className="px-5 py-4 border-t border-[#111] shrink-0">
-              <p className="text-[10px] text-[#2a2a2a] font-medium">v1.0.0</p>
+            <div
+              className="px-5 py-4 border-t shrink-0"
+              style={{ borderColor: "var(--color-border-subtle)" }}
+            >
+              <p
+                className="text-[10px] font-medium"
+                style={{ color: "var(--color-border-strong)" }}
+              >
+                v2.0.0
+              </p>
             </div>
           )}
         </aside>
@@ -471,7 +536,7 @@ export default function AdminLayout({
             collapsed ? "lg:pl-16" : "lg:pl-60",
           ].join(" ")}
         >
-          <div className="p-6 lg:p-8 max-w-7xl mx-auto">{children}</div>
+          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">{children}</div>
         </main>
       </div>
     </div>

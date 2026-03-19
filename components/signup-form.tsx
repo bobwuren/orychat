@@ -5,16 +5,8 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/hooks/useAuth";
 import Link from "next/link";
+import OrientysLogo from "@/components/OrientysLogo";
 
-/**
- * Formulaire d'inscription — Orientys
- *
- * Fonctionnalités inchangées :
- * - Soumission email + password + confirmPassword via useAuth.register
- * - Validation : mots de passe identiques (côté client)
- * - Redirection admin → /admin, client → /
- * - Affichage des erreurs
- */
 export function SignupForm({
   className,
   ...props
@@ -29,10 +21,6 @@ export function SignupForm({
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Calcule la force du mot de passe (0–4).
-   * Utilisé uniquement pour l'indicateur visuel.
-   */
   const getPasswordStrength = (pwd: string): number => {
     let score = 0;
     if (pwd.length >= 8) score++;
@@ -49,90 +37,126 @@ export function SignupForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    if (password !== confirmPassword) {
+    if (password !== confirmPassword)
       return setError("Les mots de passe ne correspondent pas");
-    }
-
     const res = await register({ name, email, password });
-
     if (res.success) {
-      if (res.data!.user.permissions === "admin") {
-        router.push("/admin");
-      } else {
-        router.push("/dashboard");
-      }
+      router.push(
+        res.data!.user.permissions === "admin" ? "/admin" : "/dashboard",
+      );
     } else {
-      // res.error est une instance d'Error ou ApiError — on extrait le message
       const err = res.error;
-      const message =
+      setError(
         err instanceof Error
           ? err.message
           : typeof err === "string"
             ? err
-            : "Erreur lors de l'inscription";
-      setError(message);
+            : "Erreur lors de l'inscription",
+      );
     }
   };
 
+  const inputStyle: React.CSSProperties = {
+    backgroundColor: "var(--color-input-bg)",
+    borderColor: "var(--color-input-border)",
+    color: "var(--color-text-primary)",
+  };
+
+  const onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.currentTarget.style.borderColor = "var(--color-input-border-focus)";
+    e.currentTarget.style.boxShadow = "0 0 0 3px var(--color-input-ring)";
+  };
+
+  const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.currentTarget.style.borderColor = "var(--color-input-border)";
+    e.currentTarget.style.boxShadow = "none";
+  };
+
+  const inputClass =
+    "w-full px-4 py-3 border rounded-lg text-sm placeholder:text-[var(--color-text-placeholder)] focus:outline-none transition-all duration-200";
+
   return (
     <div className={cn("w-full", className)} {...props}>
-      <div className="grid lg:grid-cols-2 min-h-[580px] bg-[#0e0e0e] border border-[#1a1a1a] rounded-2xl overflow-hidden shadow-2xl">
-        {/* Panneau gauche — visuel décoratif */}
-        <div className="hidden lg:flex order-last lg:order-first relative bg-[#080808] border-r border-[#1a1a1a] overflow-hidden">
-          {/* Fond grille */}
+      <div
+        className="grid lg:grid-cols-2 min-h-[580px] border rounded-2xl overflow-hidden"
+        style={{
+          backgroundColor: "var(--color-bg-base)",
+          borderColor: "var(--color-border-default)",
+          boxShadow: "var(--shadow-2xl)",
+        }}
+      >
+        {/* Panneau gauche — visuel */}
+        <div
+          className="hidden lg:flex order-last lg:order-first relative border-r overflow-hidden"
+          style={{
+            backgroundColor: "var(--color-bg-overlay)",
+            borderColor: "var(--color-border-default)",
+          }}
+        >
           <div
-            className="absolute inset-0 opacity-[0.05]"
+            className="absolute inset-0 opacity-[0.04]"
             style={{
-              backgroundImage: `linear-gradient(#c9a84c 1px, transparent 1px), linear-gradient(90deg, #c9a84c 1px, transparent 1px)`,
+              backgroundImage: `linear-gradient(var(--color-brand-primary) 1px, transparent 1px), linear-gradient(90deg, var(--color-brand-primary) 1px, transparent 1px)`,
               backgroundSize: "48px 48px",
             }}
           />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(201,168,76,0.1),transparent_60%)]" />
+          <div
+            className="absolute inset-0"
+            style={{ background: "var(--gradient-glow)" }}
+          />
 
           <div className="relative z-10 flex flex-col items-center justify-center p-12 text-center gap-8 w-full">
-            <div className="w-20 h-20 rounded-2xl bg-[#c9a84c]/10 border border-[#c9a84c]/20 flex items-center justify-center">
-              <svg
-                className="w-10 h-10 text-[#c9a84c]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.2"
-              >
-                <path
-                  d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
+            <OrientysLogo size={72} />
 
             <div>
-              <p className="font-display text-2xl font-bold text-white mb-3">
+              <p
+                className="font-display text-2xl font-bold mb-3"
+                style={{ color: "var(--color-text-primary)" }}
+              >
                 Commencez
                 <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#c9a84c] to-[#e8c97a]">
+                <span
+                  className="text-transparent bg-clip-text"
+                  style={{ backgroundImage: "var(--gradient-brand)" }}
+                >
                   votre parcours
                 </span>
               </p>
-              <p className="text-sm text-[#555] leading-relaxed max-w-xs">
+              <p
+                className="text-sm leading-relaxed max-w-xs"
+                style={{ color: "var(--color-text-muted)" }}
+              >
                 Créez votre compte gratuitement et obtenez votre première
                 recommandation en moins de 5 minutes.
               </p>
             </div>
 
-            {/* Étapes rapides */}
-            <div className="flex flex-col gap-3 w-full pt-4 border-t border-[#1a1a1a]">
+            <div
+              className="flex flex-col gap-3 w-full pt-4 border-t"
+              style={{ borderColor: "var(--color-border-default)" }}
+            >
               {[
                 "Créez votre compte",
                 "Sélectionnez votre série",
                 "Recevez votre orientation",
               ].map((step, i) => (
                 <div key={step} className="flex items-center gap-3 text-left">
-                  <div className="w-5 h-5 rounded-full bg-[#c9a84c]/15 border border-[#c9a84c]/30 flex items-center justify-center text-[10px] font-bold text-[#c9a84c] shrink-0">
+                  <div
+                    className="w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold shrink-0"
+                    style={{
+                      backgroundColor: "var(--color-accent-bg)",
+                      borderColor: "var(--color-accent-border-lg)",
+                      color: "var(--color-brand-accent)",
+                    }}
+                  >
                     {i + 1}
                   </div>
-                  <span className="text-xs text-[#555]">{step}</span>
+                  <span
+                    className="text-xs"
+                    style={{ color: "var(--color-text-muted)" }}
+                  >
+                    {step}
+                  </span>
                 </div>
               ))}
             </div>
@@ -141,36 +165,41 @@ export function SignupForm({
 
         {/* Panneau droit — formulaire */}
         <div className="flex flex-col justify-center px-8 py-12 lg:px-12">
-          {/* Logo */}
           <Link
             href="/"
             className="inline-flex items-center gap-2.5 mb-10 group w-fit"
           >
-            <div className="relative w-7 h-7">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#c9a84c] to-[#e8c97a] rounded-sm rotate-45 group-hover:rotate-[60deg] transition-transform duration-500" />
-              <div className="absolute inset-[3px] bg-[#0e0e0e] rounded-sm rotate-45" />
-              <div className="absolute inset-[5px] bg-gradient-to-br from-[#c9a84c] to-[#e8c97a] rounded-sm rotate-45" />
-            </div>
-            <span className="font-display text-base font-bold text-white tracking-tight">
+            <OrientysLogo
+              size={30}
+              className="transition-transform duration-500 group-hover:scale-105"
+            />
+            <span
+              className="font-display text-base font-bold tracking-tight"
+              style={{ color: "var(--color-text-primary)" }}
+            >
               Orientys
             </span>
           </Link>
 
-          {/* En-tête */}
           <div className="mb-8">
-            <h1 className="font-display text-3xl font-bold text-white mb-2">
+            <h1
+              className="font-display text-3xl font-bold mb-2"
+              style={{ color: "var(--color-text-primary)" }}
+            >
               Créer un compte
             </h1>
-            <p className="text-sm text-[#666]">
+            <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
               Gratuit — aucune carte bancaire requise
             </p>
           </div>
 
-          {/* Formulaire */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Nom complet */}
+            {/* Nom */}
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold uppercase tracking-[0.12em] text-[#888]">
+              <label
+                className="text-xs font-semibold uppercase tracking-[0.12em]"
+                style={{ color: "var(--color-text-secondary)" }}
+              >
                 Nom complet
               </label>
               <input
@@ -180,13 +209,19 @@ export function SignupForm({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Utilisateur"
-                className="w-full px-4 py-3 bg-[#141414] border border-[#222] rounded-lg text-sm text-white placeholder:text-[#444] focus:outline-none focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c]/30 transition-all duration-200"
+                className={inputClass}
+                style={inputStyle}
+                onFocus={onFocus}
+                onBlur={onBlur}
               />
             </div>
 
             {/* Email */}
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold uppercase tracking-[0.12em] text-[#888]">
+              <label
+                className="text-xs font-semibold uppercase tracking-[0.12em]"
+                style={{ color: "var(--color-text-secondary)" }}
+              >
                 Adresse email
               </label>
               <input
@@ -196,13 +231,19 @@ export function SignupForm({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="vous@exemple.com"
-                className="w-full px-4 py-3 bg-[#141414] border border-[#222] rounded-lg text-sm text-white placeholder:text-[#444] focus:outline-none focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c]/30 transition-all duration-200"
+                className={inputClass}
+                style={inputStyle}
+                onFocus={onFocus}
+                onBlur={onBlur}
               />
             </div>
 
             {/* Mot de passe */}
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold uppercase tracking-[0.12em] text-[#888]">
+              <label
+                className="text-xs font-semibold uppercase tracking-[0.12em]"
+                style={{ color: "var(--color-text-secondary)" }}
+              >
                 Mot de passe
               </label>
               <div className="relative">
@@ -213,12 +254,16 @@ export function SignupForm({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 pr-12 bg-[#141414] border border-[#222] rounded-lg text-sm text-white placeholder:text-[#444] focus:outline-none focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c]/30 transition-all duration-200"
+                  className={`${inputClass} pr-12`}
+                  style={inputStyle}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#888] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                  style={{ color: "var(--color-text-disabled)" }}
                   tabIndex={-1}
                 >
                   {showPassword ? (
@@ -257,8 +302,6 @@ export function SignupForm({
                   )}
                 </button>
               </div>
-
-              {/* Indicateur de force */}
               {password.length > 0 && (
                 <div className="flex gap-1 mt-1">
                   {[1, 2, 3, 4].map((level) => (
@@ -269,7 +312,7 @@ export function SignupForm({
                         backgroundColor:
                           passwordStrength >= level
                             ? strengthColors[passwordStrength]
-                            : "#1e1e1e",
+                            : "var(--color-bg-elevated)",
                       }}
                     />
                   ))}
@@ -285,7 +328,10 @@ export function SignupForm({
 
             {/* Confirmation */}
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold uppercase tracking-[0.12em] text-[#888]">
+              <label
+                className="text-xs font-semibold uppercase tracking-[0.12em]"
+                style={{ color: "var(--color-text-secondary)" }}
+              >
                 Confirmer le mot de passe
               </label>
               <input
@@ -295,24 +341,35 @@ export function SignupForm({
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                className={[
-                  "w-full px-4 py-3 bg-[#141414] border rounded-lg text-sm text-white placeholder:text-[#444] focus:outline-none transition-all duration-200",
-                  confirmPassword.length > 0 && confirmPassword !== password
-                    ? "border-red-500/50 focus:border-red-500 focus:ring-1 focus:ring-red-500/20"
-                    : confirmPassword.length > 0 && confirmPassword === password
-                      ? "border-green-500/50 focus:border-green-500 focus:ring-1 focus:ring-green-500/20"
-                      : "border-[#222] focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c]/30",
-                ].join(" ")}
+                className={inputClass}
+                style={{
+                  ...inputStyle,
+                  borderColor:
+                    confirmPassword.length > 0 && confirmPassword !== password
+                      ? "rgba(239,68,68,0.5)"
+                      : confirmPassword.length > 0 &&
+                          confirmPassword === password
+                        ? "rgba(34,197,94,0.5)"
+                        : "var(--color-input-border)",
+                }}
+                onFocus={onFocus}
+                onBlur={onBlur}
               />
             </div>
 
-            {/* Erreur */}
             {error && (
-              <div className="flex items-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <div
+                className="flex items-center gap-2 px-4 py-3 border rounded-lg"
+                style={{
+                  backgroundColor: "var(--color-state-error-bg)",
+                  borderColor: "var(--color-state-error-border)",
+                }}
+              >
                 <svg
-                  className="w-4 h-4 text-red-400 shrink-0"
+                  className="w-4 h-4 shrink-0"
                   viewBox="0 0 16 16"
                   fill="none"
+                  style={{ color: "var(--color-state-error)" }}
                 >
                   <path
                     d="M8 5v3M8 11h.01M14.5 8a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z"
@@ -321,17 +378,25 @@ export function SignupForm({
                     strokeLinecap="round"
                   />
                 </svg>
-                <span className="text-sm text-red-400">{error}</span>
+                <span
+                  className="text-sm"
+                  style={{ color: "var(--color-state-error)" }}
+                >
+                  {error}
+                </span>
               </div>
             )}
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full py-3.5 font-semibold text-sm text-[#0e0e0e] rounded-lg overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed mt-1"
+              className="group relative w-full py-3.5 font-semibold text-sm rounded-lg overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed mt-1"
+              style={{ color: "var(--color-bg-base)" }}
             >
-              <span className="absolute inset-0 bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] transition-transform duration-300 group-hover:scale-105 group-disabled:scale-100" />
+              <span
+                className="absolute inset-0 transition-transform duration-300 group-hover:scale-105 group-disabled:scale-100"
+                style={{ background: "var(--gradient-brand)" }}
+              />
               <span className="relative flex items-center justify-center gap-2">
                 {loading ? (
                   <>
@@ -363,12 +428,15 @@ export function SignupForm({
             </button>
           </form>
 
-          {/* Lien connexion */}
-          <p className="mt-6 text-center text-sm text-[#555]">
+          <p
+            className="mt-6 text-center text-sm"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
             Déjà un compte ?{" "}
             <Link
               href="/login"
-              className="text-[#c9a84c] hover:text-[#e8c97a] transition-colors font-medium"
+              className="font-medium transition-colors"
+              style={{ color: "var(--color-brand-accent)" }}
             >
               Se connecter
             </Link>

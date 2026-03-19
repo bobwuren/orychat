@@ -24,22 +24,12 @@ import {
   InlineError,
   PageError,
 } from "@/components/admin/ui";
-import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
 import { useRecommendations } from "@/lib/hooks";
 import type { Recommendation, Orientation } from "@/lib/types";
+import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
 
-// ---------------------------------------------------------------------------
-// Types locaux
-// ---------------------------------------------------------------------------
-
-type DialogMode = "view" | "export" | null;
-const ITEMS_PER_PAGE = 10;
-
-// ---------------------------------------------------------------------------
-// Icônes SVG inline
-// ---------------------------------------------------------------------------
-
+// Icônes communes
 function IconRefresh() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
@@ -52,6 +42,7 @@ function IconRefresh() {
     </svg>
   );
 }
+
 function IconDownload() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
@@ -65,23 +56,6 @@ function IconDownload() {
     </svg>
   );
 }
-function IconExternal() {
-  return (
-    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
-      <path
-        d="M7 1h4v4M11 1L6 6M5 2H2a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V8"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Page principale
-// ---------------------------------------------------------------------------
 
 export default function RecommendationsAdminPage() {
   const {
@@ -93,16 +67,16 @@ export default function RecommendationsAdminPage() {
     fetchRecommendationById,
     exportRecommendations,
   } = useRecommendations();
-
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [dialogMode, setDialogMode] = useState<DialogMode>(null);
+  const [dialogMode, setDialogMode] = useState<"view" | "export" | null>(null);
   const [selectedReco, setSelectedReco] = useState<Recommendation | null>(null);
   const [exportFormat, setExportFormat] = useState<"csv" | "json">("csv");
   const [isExporting, setIsExporting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [viewLoading, setViewLoading] = useState(false);
+  const ITEMS_PER_PAGE = 10;
 
   const load = useCallback(() => {
     fetchAllRecommendations();
@@ -140,7 +114,6 @@ export default function RecommendationsAdminPage() {
     try {
       await fetchRecommendationById(r.id);
     } catch {
-      /* affichage avec selectedReco en fallback */
     } finally {
       setViewLoading(false);
     }
@@ -163,7 +136,6 @@ export default function RecommendationsAdminPage() {
     currentRecommendation?.id === selectedReco?.id
       ? (currentRecommendation ?? selectedReco)
       : selectedReco;
-
   if (error) return <PageError message={error.message} onRetry={load} />;
 
   return (
@@ -193,10 +165,8 @@ export default function RecommendationsAdminPage() {
           </>
         }
       />
-
       <AdminCard
         title="Liste des recommandations"
-        description="Consultation des recommandations générées par l'IA."
         toolbar={
           <SearchBar
             value={searchInput}
@@ -225,9 +195,7 @@ export default function RecommendationsAdminPage() {
               <EmptyRow
                 colSpan={6}
                 label={
-                  searchTerm
-                    ? "Aucun résultat pour cette recherche."
-                    : "Aucune recommandation."
+                  searchTerm ? "Aucun résultat." : "Aucune recommandation."
                 }
               />
             ) : (
@@ -243,7 +211,9 @@ export default function RecommendationsAdminPage() {
                     {reco.serieCode ? (
                       <AdminBadge color="gold">{reco.serieCode}</AdminBadge>
                     ) : (
-                      <span className="text-[#444]">—</span>
+                      <span style={{ color: "var(--color-text-disabled)" }}>
+                        —
+                      </span>
                     )}
                   </Td>
                   <Td>
@@ -286,7 +256,6 @@ export default function RecommendationsAdminPage() {
         />
       </AdminCard>
 
-      {/* ── Dialog Vue ── */}
       <AdminDialog
         open={dialogMode === "view"}
         onClose={closeDialog}
@@ -296,12 +265,15 @@ export default function RecommendationsAdminPage() {
         {viewLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-5 bg-[#1a1a1a] rounded animate-pulse" />
+              <div
+                key={i}
+                className="h-5 rounded animate-pulse"
+                style={{ backgroundColor: "var(--color-bg-elevated)" }}
+              />
             ))}
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Infos générales */}
             <div className="grid grid-cols-2 gap-4">
               {[
                 { label: "ID", value: activeReco?.id, mono: true },
@@ -313,40 +285,42 @@ export default function RecommendationsAdminPage() {
                 {
                   label: "Créé le",
                   value: activeReco?.createdAt
-                    ? new Date(activeReco.createdAt).toLocaleDateString(
-                        "fr-FR",
-                        {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        },
-                      )
+                    ? new Date(activeReco.createdAt).toLocaleDateString("fr-FR")
                     : undefined,
                 },
               ].map(({ label, value, mono }) => (
                 <div key={label}>
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-1">
+                  <p
+                    className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-1"
+                    style={{ color: "var(--color-text-disabled)" }}
+                  >
                     {label}
                   </p>
                   <p
-                    className={`text-sm text-white ${mono ? "font-mono" : ""}`}
+                    className={`text-sm ${mono ? "font-mono" : ""}`}
+                    style={{ color: "var(--color-text-primary)" }}
                   >
-                    {value ?? <span className="text-[#444] italic">—</span>}
+                    {value ?? (
+                      <span style={{ color: "var(--color-text-disabled)" }}>
+                        —
+                      </span>
+                    )}
                   </p>
                 </div>
               ))}
             </div>
-
-            {/* Orientations */}
             <div>
-              <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-3">
-                Orientations recommandées (
-                {activeReco?.orientations?.length ?? 0})
+              <p
+                className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-3"
+                style={{ color: "var(--color-text-disabled)" }}
+              >
+                Orientations ({activeReco?.orientations?.length ?? 0})
               </p>
               {(activeReco?.orientations?.length ?? 0) === 0 ? (
-                <p className="text-sm text-[#444] italic">
+                <p
+                  className="text-sm italic"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
                   Aucune orientation.
                 </p>
               ) : (
@@ -355,75 +329,70 @@ export default function RecommendationsAdminPage() {
                     (o: Orientation, i: number) => (
                       <div
                         key={i}
-                        className="border border-[#1e1e1e] rounded-xl p-4 space-y-3 bg-[#0a0a0a]"
+                        className="border rounded-xl p-4 space-y-3"
+                        style={{
+                          backgroundColor: "var(--color-bg-page)",
+                          borderColor: "var(--color-border-default)",
+                        }}
                       >
                         <div className="flex items-start gap-3">
-                          <span className="w-6 h-6 rounded-full bg-[#c9a84c]/15 border border-[#c9a84c]/30 flex items-center justify-center text-[11px] font-bold text-[#c9a84c] shrink-0 mt-0.5">
+                          <span
+                            className="w-6 h-6 rounded-full border flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5"
+                            style={{
+                              backgroundColor: "var(--color-accent-bg)",
+                              borderColor: "var(--color-accent-border-md)",
+                              color: "var(--color-brand-accent)",
+                            }}
+                          >
                             {i + 1}
                           </span>
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-white">{o.name}</p>
+                            <p
+                              className="font-semibold"
+                              style={{ color: "var(--color-text-primary)" }}
+                            >
+                              {o.name}
+                            </p>
                             {o.why && (
-                              <p className="text-sm text-[#555] mt-1">
+                              <p
+                                className="text-sm mt-1"
+                                style={{ color: "var(--color-text-muted)" }}
+                              >
                                 {o.why}
                               </p>
                             )}
                           </div>
                         </div>
-
-                        {/* Diplômes */}
                         {o.degrees?.length > 0 && (
                           <div className="pl-9">
-                            <p className="text-[10px] uppercase tracking-[0.1em] text-[#444] font-semibold mb-1.5">
+                            <p
+                              className="text-[10px] uppercase tracking-[0.1em] font-semibold mb-1.5"
+                              style={{ color: "var(--color-text-disabled)" }}
+                            >
                               Diplômes
                             </p>
                             <div className="flex flex-wrap gap-1.5">
                               {o.degrees.map((d: any, j: number) => (
-                                <span key={j}>
-                                  {d.articleLink ? (
-                                    <a
-                                      href={d.articleLink}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium bg-[#141414] border border-[#222] text-[#aaa] rounded hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-all"
-                                    >
-                                      {d.name} <IconExternal />
-                                    </a>
-                                  ) : (
-                                    <AdminBadge color="gray">
-                                      {d.name}
-                                    </AdminBadge>
-                                  )}
-                                </span>
+                                <AdminBadge key={j} color="gray">
+                                  {d.name}
+                                </AdminBadge>
                               ))}
                             </div>
                           </div>
                         )}
-
-                        {/* Universités */}
                         {o.universities?.length > 0 && (
                           <div className="pl-9">
-                            <p className="text-[10px] uppercase tracking-[0.1em] text-[#444] font-semibold mb-1.5">
+                            <p
+                              className="text-[10px] uppercase tracking-[0.1em] font-semibold mb-1.5"
+                              style={{ color: "var(--color-text-disabled)" }}
+                            >
                               Universités
                             </p>
                             <div className="flex flex-wrap gap-1.5">
                               {o.universities.map((u: any, j: number) => (
-                                <span key={j}>
-                                  {u.site || u.website ? (
-                                    <a
-                                      href={u.site ?? u.website}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium bg-[#141414] border border-[#222] text-[#aaa] rounded hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-all"
-                                    >
-                                      {u.name} <IconExternal />
-                                    </a>
-                                  ) : (
-                                    <AdminBadge color="gray">
-                                      {u.name}
-                                    </AdminBadge>
-                                  )}
-                                </span>
+                                <AdminBadge key={j} color="gray">
+                                  {u.name}
+                                </AdminBadge>
                               ))}
                             </div>
                           </div>
@@ -443,7 +412,6 @@ export default function RecommendationsAdminPage() {
         </DialogActions>
       </AdminDialog>
 
-      {/* ── Dialog Export ── */}
       <AdminDialog
         open={dialogMode === "export"}
         onClose={closeDialog}
@@ -463,9 +431,15 @@ export default function RecommendationsAdminPage() {
               ]}
             />
           </FormField>
-          <p className="text-xs text-[#444] bg-[#141414] border border-[#1e1e1e] rounded-lg px-4 py-3">
-            Toutes les recommandations ({filtered.length}) seront incluses avec
-            leurs orientations.
+          <p
+            className="text-xs px-4 py-3 border rounded-lg"
+            style={{
+              color: "var(--color-text-disabled)",
+              backgroundColor: "var(--color-bg-surface)",
+              borderColor: "var(--color-border-default)",
+            }}
+          >
+            Toutes les recommandations ({filtered.length}) seront incluses.
           </p>
         </div>
         <InlineError message={actionError} />

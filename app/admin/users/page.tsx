@@ -28,18 +28,9 @@ import { getUsers, updateUser, deleteUser } from "@/lib/api/auth.api";
 import { useAuth } from "@/lib/hooks";
 import type { AuthUser, UserRole } from "@/lib/types/auth.types";
 
-// ---------------------------------------------------------------------------
-// Constantes
-// ---------------------------------------------------------------------------
-
 const ITEMS_PER_PAGE = 10;
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api";
-
 type DialogMode = "view" | "edit" | "delete" | "create-admin" | null;
-
-// ---------------------------------------------------------------------------
-// Icônes SVG inline
-// ---------------------------------------------------------------------------
 
 function IconRefresh() {
   return (
@@ -53,121 +44,13 @@ function IconRefresh() {
     </svg>
   );
 }
-function IconShield() {
-  return (
-    <svg
-      className="w-3.5 h-3.5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    >
-      <path
-        d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-function IconEye({ off }: { off?: boolean }) {
-  if (off)
-    return (
-      <svg
-        className="w-4 h-4"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      >
-        <path
-          d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  return (
-    <svg
-      className="w-4 h-4"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    >
-      <path
-        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-function IconCopy({ checked }: { checked?: boolean }) {
-  if (checked)
-    return (
-      <svg
-        className="w-3.5 h-3.5 text-green-400"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      >
-        <path
-          d="M4.5 12.75l6 6 9-13.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  return (
-    <svg
-      className="w-3.5 h-3.5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    >
-      <path
-        d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Helpers d'affichage
-// ---------------------------------------------------------------------------
 
 function RoleBadge({ role }: { role: UserRole }) {
-  if (role === "admin") {
-    return (
-      <AdminBadge color="gold">
-        <svg
-          className="w-2.5 h-2.5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <path
-            d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        Admin
-      </AdminBadge>
-    );
-  }
-  return <AdminBadge color="gray">Client</AdminBadge>;
+  return role === "admin" ? (
+    <AdminBadge color="gold">Admin</AdminBadge>
+  ) : (
+    <AdminBadge color="gray">Client</AdminBadge>
+  );
 }
 
 function UserAvatar({
@@ -177,30 +60,28 @@ function UserAvatar({
   user: AuthUser;
   size?: "sm" | "lg";
 }) {
-  const isAdmin = user.permissions === "admin";
   const dim = size === "lg" ? "w-12 h-12 text-base" : "w-7 h-7 text-[11px]";
+  const isAdmin = user.permissions === "admin";
   return (
     <div
-      className={`${dim} rounded-full flex items-center justify-center font-bold shrink-0 ${
+      className={`${dim} rounded-full flex items-center justify-center font-bold shrink-0 border`}
+      style={
         isAdmin
-          ? "bg-[#c9a84c]/10 border border-[#c9a84c]/20 text-[#c9a84c]"
-          : "bg-[#141414] border border-[#222] text-[#555]"
-      }`}
+          ? {
+              backgroundColor: "var(--color-accent-bg)",
+              borderColor: "var(--color-accent-border)",
+              color: "var(--color-brand-accent)",
+            }
+          : {
+              backgroundColor: "var(--color-bg-surface)",
+              borderColor: "var(--color-border-default)",
+              color: "var(--color-text-disabled)",
+            }
+      }
     >
       {user.email[0].toUpperCase()}
     </div>
   );
-}
-
-// ---------------------------------------------------------------------------
-// Formulaire édition utilisateur
-// ---------------------------------------------------------------------------
-
-interface EditUserFormProps {
-  user: AuthUser;
-  onSubmit: (email?: string, password?: string) => Promise<void>;
-  onCancel: () => void;
-  isLoading: boolean;
 }
 
 function EditUserForm({
@@ -208,10 +89,15 @@ function EditUserForm({
   onSubmit,
   onCancel,
   isLoading,
-}: EditUserFormProps) {
+}: {
+  user: AuthUser;
+  onSubmit: (email?: string, password?: string) => Promise<void>;
+  onCancel: () => void;
+  isLoading: boolean;
+}) {
   const [email, setEmail] = useState(user.email);
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -227,13 +113,14 @@ function EditUserForm({
       setFormError("Format d'email invalide.");
       return;
     }
-    if (newPassword) {
-      if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(newPassword)) {
-        setFormError(
-          "Min. 8 caractères, une majuscule, une minuscule, un chiffre.",
-        );
-        return;
-      }
+    if (
+      newPassword &&
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(newPassword)
+    ) {
+      setFormError(
+        "Min. 8 caractères, une majuscule, une minuscule, un chiffre.",
+      );
+      return;
     }
     try {
       await onSubmit(newEmail, newPassword);
@@ -254,11 +141,11 @@ function EditUserForm({
       </FormField>
       <FormField
         label="Nouveau mot de passe"
-        hint="Laisser vide pour ne pas modifier. Min. 8 chars, 1 maj, 1 min, 1 chiffre."
+        hint="Laisser vide pour ne pas modifier."
       >
         <div className="relative">
           <AdminInput
-            type={showPassword ? "text" : "password"}
+            type={showPwd ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
@@ -268,16 +155,41 @@ function EditUserForm({
           <button
             type="button"
             tabIndex={-1}
-            onClick={() => setShowPassword((v) => !v)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#888] transition-colors"
+            onClick={() => setShowPwd((v) => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+            style={{ color: "var(--color-text-disabled)" }}
           >
-            <IconEye off={showPassword} />
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              {showPwd ? (
+                <path
+                  d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              ) : (
+                <>
+                  <path
+                    d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </>
+              )}
+            </svg>
           </button>
         </div>
       </FormField>
-      <p className="text-[11px] text-[#444]">
-        Le rôle (admin/client) ne peut pas être modifié depuis cette interface.
-      </p>
       <InlineError message={formError} />
       <DialogActions>
         <Btn
@@ -296,37 +208,19 @@ function EditUserForm({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Page principale
-// ---------------------------------------------------------------------------
-
 export default function UsersAdminPage() {
   const { user: currentUser } = useAuth();
-
   const [users, setUsers] = useState<AuthUser[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState<UserRole | "all">("all");
   const [currentPage, setCurrentPage] = useState(1);
-
   const [dialogMode, setDialogMode] = useState<DialogMode>(null);
   const [selected, setSelected] = useState<AuthUser | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-
-  // Credentials admin générés — affichés une seule fois après création
-  const [generatedCredentials, setGeneratedCredentials] = useState<{
-    email: string;
-    password: string;
-  } | null>(null);
-  const [copiedField, setCopiedField] = useState<"email" | "password" | null>(
-    null,
-  );
-
-  // ── Chargement ─────────────────────────────────────────────────────────────
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -348,8 +242,6 @@ export default function UsersAdminPage() {
     setCurrentPage(1);
   }, [searchTerm, filterRole]);
 
-  // ── Filtrage ───────────────────────────────────────────────────────────────
-
   const filtered = users.filter((u) => {
     const matchSearch =
       !searchTerm ||
@@ -364,19 +256,13 @@ export default function UsersAdminPage() {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
-
-  // ── Stats ──────────────────────────────────────────────────────────────────
-
   const adminCount = users.filter((u) => u.permissions === "admin").length;
   const clientCount = users.filter((u) => u.permissions === "client").length;
-
-  // ── Dialogs ────────────────────────────────────────────────────────────────
 
   const closeDialog = () => {
     setDialogMode(null);
     setSelected(null);
     setActionError(null);
-    setGeneratedCredentials(null);
   };
   const openView = (u: AuthUser) => {
     setSelected(u);
@@ -392,8 +278,6 @@ export default function UsersAdminPage() {
     setActionError(null);
     setDialogMode("delete");
   };
-
-  // ── Actions ────────────────────────────────────────────────────────────────
 
   const handleUpdate = async (email?: string, password?: string) => {
     if (!selected) return;
@@ -433,162 +317,74 @@ export default function UsersAdminPage() {
     }
   };
 
-  const handleCreateAdmin = async (email: string) => {
-    setActionLoading(true);
-    setActionError(null);
-    try {
-      const res = await fetch(`${API_BASE}/auth/users/admin`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken") ?? ""}`,
-        },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Erreur création admin.");
-      setUsers((prev) => [...prev, data.user]);
-      setGeneratedCredentials(data.credentials);
-    } catch (err: any) {
-      const msg = err?.message ?? "Erreur.";
-      setActionError(msg);
-      throw new Error(msg);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const copyToClipboard = (value: string, field: "email" | "password") => {
-    navigator.clipboard.writeText(value).then(() => {
-      setCopiedField(field);
-      setTimeout(() => setCopiedField(null), 2000);
-    });
-  };
-
-  // ── Rendu erreur globale ───────────────────────────────────────────────────
-
-  if (loadError && users.length === 0) {
+  if (loadError && users.length === 0)
     return <PageError message={loadError} onRetry={load} />;
-  }
-
-  // ── Stats cards ────────────────────────────────────────────────────────────
 
   const statCards = [
-    {
-      key: "all" as const,
-      label: "Total",
-      value: users.length,
-      icon: (
-        <svg
-          className="w-4 h-4"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <path
-            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ),
-      color: "text-[#666]",
-    },
-    {
-      key: "admin" as const,
-      label: "Admins",
-      value: adminCount,
-      icon: (
-        <svg
-          className="w-4 h-4"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <path
-            d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ),
-      color: "text-[#c9a84c]",
-    },
-    {
-      key: "client" as const,
-      label: "Clients",
-      value: clientCount,
-      icon: (
-        <svg
-          className="w-4 h-4"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <path
-            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ),
-      color: "text-[#555]",
-    },
+    { key: "all" as const, label: "Total", value: users.length },
+    { key: "admin" as const, label: "Admins", value: adminCount },
+    { key: "client" as const, label: "Clients", value: clientCount },
   ];
 
   return (
     <AdminPage>
       <PageHeader
         title="Utilisateurs"
-        subtitle={`${users.length} utilisateur${users.length !== 1 ? "s" : ""} · ${adminCount} admin${adminCount !== 1 ? "s" : ""} · ${clientCount} client${clientCount !== 1 ? "s" : ""}`}
+        subtitle={`${users.length} utilisateur${users.length !== 1 ? "s" : ""} · ${adminCount} admin${adminCount !== 1 ? "s" : ""}`}
         actions={
-          <>
-            <Btn
-              variant="secondary"
-              size="sm"
-              loading={isLoading}
-              onClick={load}
-              icon={<IconRefresh />}
-            >
-              Actualiser
-            </Btn>
-          </>
+          <Btn
+            variant="secondary"
+            size="sm"
+            loading={isLoading}
+            onClick={load}
+            icon={<IconRefresh />}
+          >
+            Actualiser
+          </Btn>
         }
       />
 
-      {/* ── Stats cards cliquables ── */}
       <div className="grid grid-cols-3 gap-3">
-        {statCards.map(({ key, label, value, icon, color }) => {
+        {statCards.map(({ key, label, value }) => {
           const isActive = filterRole === key;
           return (
             <button
               key={key}
               onClick={() => setFilterRole(key)}
-              className={[
-                "flex flex-col gap-3 p-4 rounded-xl border text-left transition-all duration-200",
+              className="flex flex-col gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border text-left transition-all duration-200"
+              style={
                 isActive
-                  ? "bg-[#c9a84c]/5 border-[#c9a84c]/25"
-                  : "bg-[#0e0e0e] border-[#1a1a1a] hover:border-[#252525] hover:bg-[#141414]",
-              ].join(" ")}
+                  ? {
+                      backgroundColor: "var(--color-accent-bg)",
+                      borderColor: "var(--color-accent-border-md)",
+                    }
+                  : {
+                      backgroundColor: "var(--color-bg-base)",
+                      borderColor: "var(--color-border-default)",
+                    }
+              }
             >
-              <div className={`${color} ${isActive ? "text-[#c9a84c]" : ""}`}>
-                {icon}
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.1em] text-[#444] font-semibold">
-                  {label}
-                </p>
-                <p className="text-2xl font-bold text-white mt-0.5">{value}</p>
-              </div>
+              <span
+                className="text-[10px] uppercase tracking-[0.1em] font-semibold"
+                style={{ color: "var(--color-text-disabled)" }}
+              >
+                {label}
+              </span>
+              <p
+                className="text-xl sm:text-2xl font-bold"
+                style={{
+                  color: isActive
+                    ? "var(--color-brand-accent)"
+                    : "var(--color-text-primary)",
+                }}
+              >
+                {value}
+              </p>
             </button>
           );
         })}
       </div>
 
-      {/* ── Tableau ── */}
       <AdminCard
         title="Liste des utilisateurs"
         description="Consultez, modifiez ou supprimez les comptes."
@@ -629,23 +425,32 @@ export default function UsersAdminPage() {
                   <Td>
                     <div className="flex items-center gap-2.5">
                       <UserAvatar user={u} />
-                      <div>
-                        <p className="text-sm font-medium text-white">
+                      <div className="min-w-0">
+                        <p
+                          className="text-sm font-medium truncate max-w-[140px] sm:max-w-none"
+                          style={{ color: "var(--color-text-primary)" }}
+                        >
                           {u.email}
                         </p>
                         {u.id === currentUser?.id && (
-                          <p className="text-[10px] text-[#c9a84c]">
+                          <p
+                            className="text-[10px]"
+                            style={{ color: "var(--color-brand-accent)" }}
+                          >
                             Votre compte
                           </p>
                         )}
                       </div>
                     </div>
                   </Td>
-                  <Td>
-                    <code className="text-[11px] font-mono text-[#444] bg-[#141414] px-2 py-0.5 rounded">
+                  <Td mono muted>
+                    <span className="hidden sm:inline">
                       {String(u.id).slice(0, 16)}
                       {String(u.id).length > 16 ? "…" : ""}
-                    </code>
+                    </span>
+                    <span className="sm:hidden">
+                      {String(u.id).slice(0, 8)}…
+                    </span>
                   </Td>
                   <Td>
                     <RoleBadge role={u.permissions} />
@@ -672,7 +477,7 @@ export default function UsersAdminPage() {
                         onClick={() => openDelete(u)}
                         disabled={u.id === currentUser?.id}
                       >
-                        Supprimer
+                        Suppr.
                       </Btn>
                     </div>
                   </Td>
@@ -690,33 +495,58 @@ export default function UsersAdminPage() {
         />
       </AdminCard>
 
-      {/* ── Dialog Vue ── */}
       <AdminDialog
         open={dialogMode === "view"}
         onClose={closeDialog}
         title="Détails de l'utilisateur"
         size="sm"
       >
-        <div className="space-y-5">
-          <div className="flex items-center gap-4 p-4 bg-[#0a0a0a] border border-[#141414] rounded-xl">
+        <div className="space-y-4">
+          <div
+            className="flex items-center gap-4 p-4 rounded-xl border"
+            style={{
+              backgroundColor: "var(--color-bg-page)",
+              borderColor: "var(--color-border-default)",
+            }}
+          >
             {selected && <UserAvatar user={selected} size="lg" />}
             <div>
-              <p className="font-semibold text-white">{selected?.email}</p>
+              <p
+                className="font-semibold"
+                style={{ color: "var(--color-text-primary)" }}
+              >
+                {selected?.email}
+              </p>
               <div className="mt-1.5">
                 {selected && <RoleBadge role={selected.permissions} />}
               </div>
               {selected?.id === currentUser?.id && (
-                <p className="text-[10px] text-[#c9a84c] mt-1.5">
+                <p
+                  className="text-[10px] mt-1.5"
+                  style={{ color: "var(--color-brand-accent)" }}
+                >
                   Votre compte
                 </p>
               )}
             </div>
           </div>
-          <div className="p-4 bg-[#0a0a0a] border border-[#141414] rounded-xl">
-            <p className="text-[10px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-2">
+          <div
+            className="p-4 rounded-xl border"
+            style={{
+              backgroundColor: "var(--color-bg-page)",
+              borderColor: "var(--color-border-default)",
+            }}
+          >
+            <p
+              className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-2"
+              style={{ color: "var(--color-text-disabled)" }}
+            >
               ID
             </p>
-            <code className="text-xs font-mono text-[#888] break-all">
+            <code
+              className="text-xs font-mono break-all"
+              style={{ color: "var(--color-text-secondary)" }}
+            >
               {selected?.id}
             </code>
           </div>
@@ -737,7 +567,6 @@ export default function UsersAdminPage() {
         </DialogActions>
       </AdminDialog>
 
-      {/* ── Dialog Édition ── */}
       <AdminDialog
         open={dialogMode === "edit"}
         onClose={closeDialog}
@@ -756,7 +585,6 @@ export default function UsersAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
-      {/* ── Dialog Suppression ── */}
       <AdminDialog
         open={dialogMode === "delete"}
         onClose={closeDialog}
@@ -765,10 +593,19 @@ export default function UsersAdminPage() {
         size="sm"
       >
         {selected && (
-          <div className="flex items-center gap-3 p-4 bg-[#141414] border border-[#1e1e1e] rounded-xl mb-2">
+          <div
+            className="flex items-center gap-3 p-4 rounded-xl border"
+            style={{
+              backgroundColor: "var(--color-bg-surface)",
+              borderColor: "var(--color-border-default)",
+            }}
+          >
             <UserAvatar user={selected} />
             <div>
-              <p className="text-sm font-semibold text-white">
+              <p
+                className="text-sm font-semibold"
+                style={{ color: "var(--color-text-primary)" }}
+              >
                 {selected.email}
               </p>
               <RoleBadge role={selected.permissions} />

@@ -7,50 +7,48 @@ export const metadata: Metadata = {
   description: "Cette page n'existe pas ou a été déplacée.",
 };
 
-/**
- * Page 404 — not-found.tsx
- *
- * Next.js App Router : ce fichier doit s'appeler not-found.tsx à la racine de /app
- * pour être utilisé comme 404 global.
- *
- * Header + Footer injectés par ConditionalShell.
- */
-
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
-      {/* Zone centrale */}
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ backgroundColor: "var(--color-bg-page)" }}
+    >
       <div className="flex-1 flex items-center justify-center px-6 py-24">
         <div className="max-w-2xl mx-auto text-center">
-          {/* Numéro 404 décoratif */}
           <div className="relative inline-block mb-8">
             <p
-              className="text-[10rem] md:text-[14rem] font-display font-bold leading-none select-none"
+              className="text-[10rem] md:text-[14rem] font-display font-bold leading-none select-none text-transparent bg-clip-text"
               style={{
-                background:
-                  "linear-gradient(135deg, #1a1a1a 0%, #222 50%, #1a1a1a 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
+                backgroundImage: `linear-gradient(135deg, var(--color-border-default) 0%, var(--color-border-strong) 50%, var(--color-border-default) 100%)`,
               }}
             >
               404
             </p>
           </div>
 
-          {/* Message */}
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">
+          <h1
+            className="font-display text-3xl md:text-4xl font-bold mb-4"
+            style={{ color: "var(--color-text-primary)" }}
+          >
             Cette page est introuvable
           </h1>
-          <p className="text-[#555] text-base leading-relaxed max-w-md mx-auto mb-10">
-            La page que vous cherchez n'existe pas, a été déplacée ou l'URL est
-            incorrecte. Voici quelques liens utiles pour vous orienter.
+          <p
+            className="text-base leading-relaxed max-w-md mx-auto mb-10"
+            style={{ color: "var(--color-text-muted)" }}
+          >
+            La page que vous cherchez n&apos;existe pas, a été déplacée ou
+            l&apos;URL est incorrecte. Voici quelques liens utiles pour vous
+            orienter.
           </p>
 
-          {/* CTA principal */}
           <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] text-[#0e0e0e] text-sm font-bold hover:brightness-110 transition-all"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all hover:brightness-110"
+              style={{
+                background: "var(--gradient-brand)",
+                color: "var(--color-bg-base)",
+              }}
             >
               <svg
                 className="w-4 h-4"
@@ -65,9 +63,8 @@ export default function NotFound() {
                   strokeLinejoin="round"
                 />
               </svg>
-              Retour à l'accueil
+              Retour à l&apos;accueil
             </Link>
-            {/* Composant client — history.back() interdit dans un Server Component */}
             <BackButton />
           </div>
         </div>

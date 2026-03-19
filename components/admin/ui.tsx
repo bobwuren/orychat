@@ -2,7 +2,8 @@
  * components/admin/ui.tsx
  *
  * Primitives UI partagées entre toutes les pages admin.
- * Cohérentes avec le design system Orientys (charbon + or).
+ * Couleurs via variables CSS du design system — aucune valeur hardcodée.
+ * Tables responsives : scroll horizontal sur mobile.
  */
 
 import { ReactNode } from "react";
@@ -11,9 +12,8 @@ import { ReactNode } from "react";
 // Page shell
 // ---------------------------------------------------------------------------
 
-/** Conteneur de page avec en-tête titre + actions */
 export function AdminPage({ children }: { children: ReactNode }) {
-  return <div className="space-y-6">{children}</div>;
+  return <div className="space-y-5 lg:space-y-6">{children}</div>;
 }
 
 export function PageHeader({
@@ -26,15 +26,27 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4">
-      <div>
-        <h1 className="font-display text-2xl lg:text-3xl font-bold text-white">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+      <div className="min-w-0">
+        <h1
+          className="font-display text-2xl lg:text-3xl font-bold truncate"
+          style={{ color: "var(--color-text-primary)" }}
+        >
           {title}
         </h1>
-        {subtitle && <p className="text-sm text-[#555] mt-1">{subtitle}</p>}
+        {subtitle && (
+          <p
+            className="text-sm mt-0.5"
+            style={{ color: "var(--color-text-muted)" }}
+          >
+            {subtitle}
+          </p>
+        )}
       </div>
       {actions && (
-        <div className="flex items-center gap-2 shrink-0">{actions}</div>
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          {actions}
+        </div>
       )}
     </div>
   );
@@ -71,20 +83,32 @@ export function Btn({
     md: "px-4 py-2.5 text-sm",
   };
 
-  const variants: Record<BtnVariant, string> = {
-    primary:
-      "text-[#0e0e0e] bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] hover:brightness-110",
-    secondary:
-      "text-[#888] bg-[#141414] border border-[#222] hover:text-white hover:border-[#333]",
-    ghost: "text-[#555] hover:text-white hover:bg-[#141414]",
-    danger:
-      "text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20",
+  const variants: Record<BtnVariant, React.CSSProperties> = {
+    primary: {
+      background: "var(--gradient-brand)",
+      color: "var(--color-bg-base)",
+    },
+    secondary: {
+      backgroundColor: "var(--color-bg-surface)",
+      color: "var(--color-text-secondary)",
+      border: "1px solid var(--color-border-default)",
+    },
+    ghost: {
+      backgroundColor: "transparent",
+      color: "var(--color-text-muted)",
+    },
+    danger: {
+      backgroundColor: "var(--color-state-error-bg)",
+      color: "var(--color-state-error)",
+      border: "1px solid var(--color-state-error-border)",
+    },
   };
 
   return (
     <button
       disabled={disabled || loading}
-      className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
+      className={`${base} ${sizes[size]} ${className}`}
+      style={variants[variant]}
       {...props}
     >
       {loading ? (
@@ -116,20 +140,32 @@ export function Btn({
 }
 
 // ---------------------------------------------------------------------------
-// Table
+// Table — responsive (scroll horizontal sur mobile)
 // ---------------------------------------------------------------------------
 
 export function AdminTable({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-xl border border-[#1a1a1a] overflow-hidden">
-      <table className="w-full text-sm">{children}</table>
+    <div
+      className="rounded-xl border overflow-hidden"
+      style={{ borderColor: "var(--color-border-default)" }}
+    >
+      {/* Wrapper scroll horizontal pour mobile */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[600px]">{children}</table>
+      </div>
     </div>
   );
 }
 
 export function THead({ children }: { children: ReactNode }) {
   return (
-    <thead className="bg-[#0a0a0a] border-b border-[#1a1a1a]">
+    <thead
+      className="border-b"
+      style={{
+        backgroundColor: "var(--color-bg-page)",
+        borderColor: "var(--color-border-default)",
+      }}
+    >
       <tr>{children}</tr>
     </thead>
   );
@@ -144,7 +180,8 @@ export function Th({
 }) {
   return (
     <th
-      className={`px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#444] ${right ? "text-right" : "text-left"}`}
+      className={`px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] whitespace-nowrap ${right ? "text-right" : "text-left"}`}
+      style={{ color: "var(--color-text-disabled)" }}
     >
       {children}
     </th>
@@ -152,7 +189,14 @@ export function Th({
 }
 
 export function TBody({ children }: { children: ReactNode }) {
-  return <tbody className="divide-y divide-[#111]">{children}</tbody>;
+  return (
+    <tbody
+      className="divide-y"
+      style={{ borderColor: "var(--color-border-subtle)" }}
+    >
+      {children}
+    </tbody>
+  );
 }
 
 export function Tr({
@@ -168,12 +212,19 @@ export function Tr({
     <tr
       onClick={onClick}
       className={[
-        "bg-[#0e0e0e] transition-colors duration-150",
-        onClick ? "cursor-pointer hover:bg-[#141414]" : "hover:bg-[#111]",
+        "transition-colors duration-150",
+        onClick ? "cursor-pointer" : "",
         className,
       ]
         .filter(Boolean)
         .join(" ")}
+      style={{ backgroundColor: "var(--color-bg-base)" }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = "var(--color-bg-surface)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "var(--color-bg-base)";
+      }}
     >
       {children}
     </tr>
@@ -197,15 +248,19 @@ export function Td({
         "px-4 py-3.5",
         right ? "text-right" : "",
         mono ? "font-mono text-xs" : "",
-        muted ? "text-[#555]" : "text-[#aaa]",
       ].join(" ")}
+      style={{
+        color: muted
+          ? "var(--color-text-muted)"
+          : "var(--color-text-secondary)",
+      }}
     >
       {children}
     </td>
   );
 }
 
-/** Ligne de tableau vide (état zéro) */
+/** Ligne vide (état zéro) */
 export function EmptyRow({
   colSpan,
   label,
@@ -218,7 +273,12 @@ export function EmptyRow({
   return (
     <tr>
       <td colSpan={colSpan} className="px-4 py-16 text-center">
-        <p className="text-sm text-[#444] mb-3">{label}</p>
+        <p
+          className="text-sm mb-3"
+          style={{ color: "var(--color-text-disabled)" }}
+        >
+          {label}
+        </p>
         {action}
       </td>
     </tr>
@@ -236,14 +296,15 @@ export function SkeletonRows({
   return (
     <>
       {Array.from({ length: rows }).map((_, i) => (
-        <tr key={i} className="bg-[#0e0e0e]">
+        <tr key={i} style={{ backgroundColor: "var(--color-bg-base)" }}>
           {Array.from({ length: cols }).map((__, j) => (
             <td key={j} className="px-4 py-3.5">
               <div
-                className="h-4 rounded bg-[#1a1a1a] animate-pulse"
+                className="h-4 rounded animate-pulse"
                 style={{
+                  backgroundColor: "var(--color-bg-elevated)",
                   animationDelay: `${(i * cols + j) * 40}ms`,
-                  width: `${60 + Math.random() * 30}%`,
+                  width: `${60 + Math.floor(Math.random() * 30)}%`,
                 }}
               />
             </td>
@@ -255,7 +316,7 @@ export function SkeletonRows({
 }
 
 // ---------------------------------------------------------------------------
-// Card conteneur
+// AdminCard
 // ---------------------------------------------------------------------------
 
 export function AdminCard({
@@ -270,29 +331,50 @@ export function AdminCard({
   toolbar?: ReactNode;
 }) {
   return (
-    <div className="bg-[#0e0e0e] border border-[#1a1a1a] rounded-2xl overflow-hidden">
+    <div
+      className="border rounded-2xl overflow-hidden"
+      style={{
+        backgroundColor: "var(--color-bg-base)",
+        borderColor: "var(--color-border-default)",
+      }}
+    >
       {(title || toolbar) && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-[#1a1a1a]">
+        <div
+          className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 py-4 sm:py-5 border-b"
+          style={{ borderColor: "var(--color-border-default)" }}
+        >
           <div>
             {title && (
-              <h2 className="text-sm font-semibold text-white">{title}</h2>
+              <h2
+                className="text-sm font-semibold"
+                style={{ color: "var(--color-text-primary)" }}
+              >
+                {title}
+              </h2>
             )}
             {description && (
-              <p className="text-xs text-[#444] mt-0.5">{description}</p>
+              <p
+                className="text-xs mt-0.5"
+                style={{ color: "var(--color-text-disabled)" }}
+              >
+                {description}
+              </p>
             )}
           </div>
           {toolbar && (
-            <div className="flex items-center gap-2 shrink-0">{toolbar}</div>
+            <div className="flex items-center gap-2 shrink-0 flex-wrap">
+              {toolbar}
+            </div>
           )}
         </div>
       )}
-      <div className="p-6">{children}</div>
+      <div className="p-4 sm:p-6">{children}</div>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Searchbar
+// SearchBar
 // ---------------------------------------------------------------------------
 
 interface SearchBarProps {
@@ -318,9 +400,10 @@ export function SearchBar({
     >
       <div className="relative">
         <svg
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#444]"
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5"
           viewBox="0 0 16 16"
           fill="none"
+          style={{ color: "var(--color-text-disabled)" }}
         >
           <path
             d="M6.5 12a5.5 5.5 0 100-11 5.5 5.5 0 000 11zM14 14l-3-3"
@@ -333,13 +416,29 @@ export function SearchBar({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="pl-9 pr-8 py-2 w-56 bg-[#141414] border border-[#222] rounded-lg text-sm text-white placeholder:text-[#444] focus:outline-none focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c]/20 transition-all"
+          className="pl-9 pr-8 py-2 w-40 sm:w-56 rounded-lg text-sm focus:outline-none transition-all"
+          style={{
+            backgroundColor: "var(--color-input-bg)",
+            border: `1px solid var(--color-input-border)`,
+            color: "var(--color-text-primary)",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor =
+              "var(--color-input-border-focus)";
+            e.currentTarget.style.boxShadow =
+              "0 0 0 3px var(--color-input-ring)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "var(--color-input-border)";
+            e.currentTarget.style.boxShadow = "none";
+          }}
         />
         {value && (
           <button
             type="button"
             onClick={() => onChange("")}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#888]"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 transition-colors"
+            style={{ color: "var(--color-text-disabled)" }}
           >
             <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
               <path
@@ -367,7 +466,7 @@ export function SearchBar({
 }
 
 // ---------------------------------------------------------------------------
-// Pagination
+// PaginationBar
 // ---------------------------------------------------------------------------
 
 interface PaginationBarProps {
@@ -390,7 +489,6 @@ export function PaginationBar({
   const from = (currentPage - 1) * itemsPerPage + 1;
   const to = Math.min(currentPage * itemsPerPage, totalItems);
 
-  // Génère les pages à afficher (max 5, avec ellipsis)
   const pages: (number | "…")[] = [];
   if (totalPages <= 5) {
     for (let i = 1; i <= totalPages; i++) pages.push(i);
@@ -408,16 +506,23 @@ export function PaginationBar({
     pages.push(totalPages);
   }
 
+  const btnBase =
+    "w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed";
+
   return (
-    <div className="flex items-center justify-between pt-5 border-t border-[#111]">
-      <span className="text-xs text-[#444]">
+    <div
+      className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-5 border-t"
+      style={{ borderColor: "var(--color-border-subtle)" }}
+    >
+      <span className="text-xs" style={{ color: "var(--color-text-disabled)" }}>
         {from}–{to} sur {totalItems}
       </span>
       <div className="flex items-center gap-1">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-[#555] hover:text-white hover:bg-[#141414] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          className={btnBase}
+          style={{ color: "var(--color-text-muted)" }}
         >
           <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
             <path
@@ -432,8 +537,9 @@ export function PaginationBar({
         {pages.map((p, i) =>
           p === "…" ? (
             <span
-              key={`ellipsis-${i}`}
-              className="w-8 h-8 flex items-center justify-center text-xs text-[#444]"
+              key={`e-${i}`}
+              className="w-8 h-8 flex items-center justify-center text-xs"
+              style={{ color: "var(--color-text-disabled)" }}
             >
               …
             </span>
@@ -441,12 +547,16 @@ export function PaginationBar({
             <button
               key={p}
               onClick={() => onPageChange(p as number)}
-              className={[
-                "w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-all",
+              className={btnBase}
+              style={
                 currentPage === p
-                  ? "bg-[#c9a84c]/15 text-[#c9a84c] border border-[#c9a84c]/30"
-                  : "text-[#555] hover:text-white hover:bg-[#141414]",
-              ].join(" ")}
+                  ? {
+                      backgroundColor: "var(--color-accent-bg)",
+                      color: "var(--color-brand-accent)",
+                      border: "1px solid var(--color-accent-border-md)",
+                    }
+                  : { color: "var(--color-text-muted)" }
+              }
             >
               {p}
             </button>
@@ -455,7 +565,8 @@ export function PaginationBar({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-[#555] hover:text-white hover:bg-[#141414] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          className={btnBase}
+          style={{ color: "var(--color-text-muted)" }}
         >
           <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
             <path
@@ -473,7 +584,7 @@ export function PaginationBar({
 }
 
 // ---------------------------------------------------------------------------
-// Dialog / Modal
+// Dialog / Modal — responsive (plein écran sur mobile)
 // ---------------------------------------------------------------------------
 
 interface AdminDialogProps {
@@ -495,32 +606,66 @@ export function AdminDialog({
 }: AdminDialogProps) {
   if (!open) return null;
 
-  const widths = { sm: "max-w-sm", md: "max-w-lg", lg: "max-w-2xl" };
+  const widths = { sm: "sm:max-w-sm", md: "sm:max-w-lg", lg: "sm:max-w-2xl" };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
-      {/* Panel */}
+      {/* Panel — plein écran sur mobile, centré sur desktop */}
       <div
-        className={`relative w-full ${widths[size]} bg-[#0e0e0e] border border-[#1e1e1e] rounded-2xl shadow-2xl overflow-hidden`}
+        className={[
+          "relative w-full rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden",
+          "max-h-[92vh] sm:max-h-[85vh]",
+          widths[size],
+        ].join(" ")}
+        style={{
+          backgroundColor: "var(--color-bg-base)",
+          border: `1px solid var(--color-border-default)`,
+        }}
       >
+        {/* Handle mobile (barre de drag visuelle) */}
+        <div
+          className="w-10 h-1 rounded-full mx-auto mt-3 sm:hidden"
+          style={{ backgroundColor: "var(--color-border-strong)" }}
+        />
+
         {/* Header */}
-        <div className="flex items-start justify-between px-6 pt-6 pb-4 border-b border-[#141414]">
+        <div
+          className="flex items-start justify-between px-5 sm:px-6 pt-4 pb-4 border-b"
+          style={{ borderColor: "var(--color-border-subtle)" }}
+        >
           <div>
-            <h2 className="font-display text-lg font-bold text-white">
+            <h2
+              className="font-display text-base sm:text-lg font-bold"
+              style={{ color: "var(--color-text-primary)" }}
+            >
               {title}
             </h2>
             {description && (
-              <p className="text-sm text-[#555] mt-1">{description}</p>
+              <p
+                className="text-sm mt-1"
+                style={{ color: "var(--color-text-muted)" }}
+              >
+                {description}
+              </p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-[#444] hover:text-white hover:bg-[#141414] transition-all shrink-0 ml-4"
+            className="w-7 h-7 flex items-center justify-center rounded-lg transition-all shrink-0 ml-4"
+            style={{ color: "var(--color-text-disabled)" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "var(--color-text-primary)";
+              e.currentTarget.style.backgroundColor = "var(--color-bg-surface)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "var(--color-text-disabled)";
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
           >
             <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
               <path
@@ -532,8 +677,11 @@ export function AdminDialog({
             </svg>
           </button>
         </div>
-        {/* Body */}
-        <div className="px-6 py-5 max-h-[70vh] overflow-y-auto">{children}</div>
+
+        {/* Body — scrollable */}
+        <div className="px-5 sm:px-6 py-5 overflow-y-auto max-h-[60vh] sm:max-h-[65vh]">
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -542,7 +690,10 @@ export function AdminDialog({
 /** Footer de dialog avec actions */
 export function DialogActions({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center justify-end gap-3 pt-5 mt-5 border-t border-[#141414]">
+    <div
+      className="flex items-center justify-end gap-3 pt-5 mt-5 border-t flex-wrap"
+      style={{ borderColor: "var(--color-border-subtle)" }}
+    >
       {children}
     </div>
   );
@@ -565,21 +716,71 @@ export function FormField({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold uppercase tracking-[0.1em] text-[#666]">
+      <label
+        className="text-xs font-semibold uppercase tracking-[0.1em]"
+        style={{ color: "var(--color-text-muted)" }}
+      >
         {label}
-        {required && <span className="text-[#c9a84c] ml-1">*</span>}
+        {required && (
+          <span className="ml-1" style={{ color: "var(--color-brand-accent)" }}>
+            *
+          </span>
+        )}
       </label>
       {children}
-      {hint && <p className="text-[11px] text-[#444]">{hint}</p>}
+      {hint && (
+        <p
+          className="text-[11px]"
+          style={{ color: "var(--color-text-disabled)" }}
+        >
+          {hint}
+        </p>
+      )}
     </div>
   );
 }
+
+const inputClass =
+  "w-full px-3.5 py-2.5 rounded-lg text-sm focus:outline-none transition-all disabled:opacity-50";
+
+const inputStyle: React.CSSProperties = {
+  backgroundColor: "var(--color-input-bg)",
+  border: `1px solid var(--color-input-border)`,
+  color: "var(--color-text-primary)",
+};
+
+const onInputFocus = (
+  e: React.FocusEvent<
+    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+  >,
+) => {
+  e.currentTarget.style.borderColor = "var(--color-input-border-focus)";
+  e.currentTarget.style.boxShadow = "0 0 0 3px var(--color-input-ring)";
+};
+
+const onInputBlur = (
+  e: React.FocusEvent<
+    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+  >,
+) => {
+  e.currentTarget.style.borderColor = "var(--color-input-border)";
+  e.currentTarget.style.boxShadow = "none";
+};
 
 export function AdminInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`w-full px-3.5 py-2.5 bg-[#141414] border border-[#222] rounded-lg text-sm text-white placeholder:text-[#444] focus:outline-none focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c]/20 transition-all disabled:opacity-50 ${props.className ?? ""}`}
+      className={`${inputClass} ${props.className ?? ""}`}
+      style={{ ...inputStyle, ...props.style }}
+      onFocus={(e) => {
+        onInputFocus(e);
+        props.onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        onInputBlur(e);
+        props.onBlur?.(e);
+      }}
     />
   );
 }
@@ -590,7 +791,16 @@ export function AdminTextarea(
   return (
     <textarea
       {...props}
-      className={`w-full px-3.5 py-2.5 bg-[#141414] border border-[#222] rounded-lg text-sm text-white placeholder:text-[#444] focus:outline-none focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c]/20 transition-all resize-none disabled:opacity-50 ${props.className ?? ""}`}
+      className={`${inputClass} resize-none ${props.className ?? ""}`}
+      style={{ ...inputStyle, ...props.style }}
+      onFocus={(e) => {
+        onInputFocus(e);
+        props.onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        onInputBlur(e);
+        props.onBlur?.(e);
+      }}
     />
   );
 }
@@ -608,15 +818,24 @@ export function AdminSelect({
   return (
     <select
       {...props}
-      className={`w-full px-3.5 py-2.5 bg-[#141414] border border-[#222] rounded-lg text-sm text-white focus:outline-none focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c]/20 transition-all disabled:opacity-50 ${props.className ?? ""}`}
+      className={`${inputClass} ${props.className ?? ""}`}
+      style={{ ...inputStyle, ...props.style }}
+      onFocus={(e) => {
+        onInputFocus(e);
+        props.onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        onInputBlur(e);
+        props.onBlur?.(e);
+      }}
     >
       {placeholder && (
-        <option value="" className="text-[#444]">
+        <option value="" style={{ color: "var(--color-text-disabled)" }}>
           {placeholder}
         </option>
       )}
       {options.map((o) => (
-        <option key={o.value} value={o.value} className="bg-[#141414]">
+        <option key={o.value} value={o.value}>
           {o.label}
         </option>
       ))}
@@ -630,6 +849,34 @@ export function AdminSelect({
 
 type BadgeColor = "gold" | "green" | "red" | "blue" | "gray";
 
+const BADGE_STYLES: Record<BadgeColor, React.CSSProperties> = {
+  gold: {
+    backgroundColor: "var(--color-accent-bg)",
+    borderColor: "var(--color-accent-border-md)",
+    color: "var(--color-brand-accent)",
+  },
+  green: {
+    backgroundColor: "var(--color-state-success-bg)",
+    borderColor: "var(--color-state-success-border)",
+    color: "var(--color-state-success)",
+  },
+  red: {
+    backgroundColor: "var(--color-state-error-bg)",
+    borderColor: "var(--color-state-error-border)",
+    color: "var(--color-state-error)",
+  },
+  blue: {
+    backgroundColor: "rgba(96,165,250,0.08)",
+    borderColor: "rgba(96,165,250,0.25)",
+    color: "#60a5fa",
+  },
+  gray: {
+    backgroundColor: "var(--color-bg-surface)",
+    borderColor: "var(--color-border-default)",
+    color: "var(--color-text-muted)",
+  },
+};
+
 export function AdminBadge({
   children,
   color = "gray",
@@ -637,16 +884,10 @@ export function AdminBadge({
   children: ReactNode;
   color?: BadgeColor;
 }) {
-  const colors: Record<BadgeColor, string> = {
-    gold: "bg-[#c9a84c]/10 border-[#c9a84c]/30 text-[#c9a84c]",
-    green: "bg-green-500/10 border-green-500/20 text-green-400",
-    red: "bg-red-500/10 border-red-500/20 text-red-400",
-    blue: "bg-blue-500/10 border-blue-500/20 text-blue-400",
-    gray: "bg-[#141414] border-[#222] text-[#666]",
-  };
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium border rounded ${colors[color]}`}
+      className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium border rounded"
+      style={BADGE_STYLES[color]}
     >
       {children}
     </span>
@@ -660,11 +901,18 @@ export function AdminBadge({
 export function InlineError({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <div className="flex items-center gap-2 px-3.5 py-2.5 bg-red-500/10 border border-red-500/20 rounded-lg">
+    <div
+      className="flex items-center gap-2 px-3.5 py-2.5 border rounded-lg mt-3"
+      style={{
+        backgroundColor: "var(--color-state-error-bg)",
+        borderColor: "var(--color-state-error-border)",
+      }}
+    >
       <svg
-        className="w-3.5 h-3.5 text-red-400 shrink-0"
+        className="w-3.5 h-3.5 shrink-0"
         viewBox="0 0 16 16"
         fill="none"
+        style={{ color: "var(--color-state-error)" }}
       >
         <path
           d="M8 5v3M8 11h.01M14.5 8a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z"
@@ -673,7 +921,9 @@ export function InlineError({ message }: { message: string | null }) {
           strokeLinecap="round"
         />
       </svg>
-      <span className="text-xs text-red-400">{message}</span>
+      <span className="text-xs" style={{ color: "var(--color-state-error)" }}>
+        {message}
+      </span>
     </div>
   );
 }
@@ -690,14 +940,21 @@ export function PageError({
   onRetry: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] gap-5">
-      <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+    <div className="flex flex-col items-center justify-center min-h-[400px] gap-5 px-4 text-center">
+      <div
+        className="w-14 h-14 rounded-2xl border flex items-center justify-center"
+        style={{
+          backgroundColor: "var(--color-state-error-bg)",
+          borderColor: "var(--color-state-error-border)",
+        }}
+      >
         <svg
-          className="w-6 h-6 text-red-400"
+          className="w-6 h-6"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
+          style={{ color: "var(--color-state-error)" }}
         >
           <path
             d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
@@ -706,11 +963,16 @@ export function PageError({
           />
         </svg>
       </div>
-      <div className="text-center">
-        <p className="font-display text-lg font-bold text-white mb-1">
+      <div>
+        <p
+          className="font-display text-lg font-bold mb-1"
+          style={{ color: "var(--color-text-primary)" }}
+        >
           Erreur de chargement
         </p>
-        <p className="text-sm text-[#555]">{message}</p>
+        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+          {message}
+        </p>
       </div>
       <Btn
         variant="secondary"
@@ -752,24 +1014,42 @@ export function Toggle({ checked, onChange, label, disabled }: ToggleProps) {
         aria-checked={checked}
         disabled={disabled}
         onClick={() => onChange(!checked)}
-        className={[
-          "relative w-9 h-5 rounded-full border transition-all duration-300 shrink-0",
+        className="relative w-9 h-5 rounded-full border transition-all duration-300 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+        style={
           checked
-            ? "bg-[#c9a84c]/20 border-[#c9a84c]/50"
-            : "bg-[#141414] border-[#222]",
-          disabled ? "opacity-50 cursor-not-allowed" : "",
-        ].join(" ")}
+            ? {
+                backgroundColor: "var(--color-accent-bg-active)",
+                borderColor: "var(--color-accent-border-lg)",
+              }
+            : {
+                backgroundColor: "var(--color-bg-surface)",
+                borderColor: "var(--color-border-strong)",
+              }
+        }
       >
         <span
-          className={[
-            "absolute top-0.5 w-4 h-4 rounded-full transition-all duration-300",
+          className="absolute top-0.5 w-4 h-4 rounded-full transition-all duration-300"
+          style={
             checked
-              ? "translate-x-4 bg-[#c9a84c]"
-              : "translate-x-0.5 bg-[#444]",
-          ].join(" ")}
+              ? {
+                  transform: "translateX(16px)",
+                  backgroundColor: "var(--color-brand-accent)",
+                }
+              : {
+                  transform: "translateX(2px)",
+                  backgroundColor: "var(--color-text-disabled)",
+                }
+          }
         />
       </button>
-      {label && <span className="text-sm text-[#888]">{label}</span>}
+      {label && (
+        <span
+          className="text-sm"
+          style={{ color: "var(--color-text-secondary)" }}
+        >
+          {label}
+        </span>
+      )}
     </label>
   );
 }
