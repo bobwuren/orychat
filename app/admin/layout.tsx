@@ -235,7 +235,7 @@ export default function AdminLayout({
           ].join(" ")}
           style={{ borderColor: "var(--color-border-default)" }}
         >
-          <OrientysLogo size={26} />
+          <OrientysLogo height={26} />
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <span
