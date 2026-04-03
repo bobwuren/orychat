@@ -39,8 +39,8 @@ export default function ContactForm() {
       errors.email = "Format d'email invalide.";
     if (!subject) errors.subject = "Veuillez sélectionner un sujet.";
     if (!message.trim()) errors.message = "Le message est obligatoire.";
-    else if (message.trim().length < 20)
-      errors.message = "Le message doit faire au moins 20 caractères.";
+    else if (message.trim().length < 10)
+      errors.message = "Le message doit faire au moins 10 caractères.";
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -253,7 +253,7 @@ export default function ContactForm() {
               <p className="text-xs" style={{ color: "var(--color-state-error)" }}>{fieldErrors.message}</p>
             ) : <span />}
             <p className="text-xs" style={{ color: "var(--color-text-disabled)" }}>
-              {message.trim().length} / 20 min
+              {message.trim().length} / 10 min
             </p>
           </div>
         </div>
