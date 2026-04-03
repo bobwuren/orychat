@@ -586,7 +586,7 @@ exports.sendContactMessage = async (data) => {
                     <tr>
                         <td style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); padding: 40px; text-align: center; border-radius: 12px 12px 0 0;">
                             <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">
-                                📬 Nouvelle Demande de Contact
+                                Nouvelle Demande de Contact
                             </h1>
                         </td>
                     </tr>
@@ -749,7 +749,7 @@ exports.sendContactMessage = async (data) => {
         await transporter.sendMail({
             from: `Orientys - Contact ${process.env.SMTP_USER}`,
             to: teamEmail,
-            subject: `📬 Nouvelle Demande de Contact: ${subject}`,
+            subject: `Nouvelle Demande de Contact: ${subject}`,
             html: teamEmailContent,
             replyTo: email
         });
