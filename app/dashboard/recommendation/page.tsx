@@ -492,13 +492,17 @@ export default function RecommendationPage() {
               dans votre choix de filière lors d&apos;un entretien individuel.
             </p>
           </div>
-          <Link
-            href="/dashboard/consultation"
-            className="shrink-0 group relative px-4 py-2.5 rounded-xl text-xs font-semibold overflow-hidden"
+          {/* TODO: À convertir en <Link href="/dashboard/consultation"> une fois la fonctionnalité complétée
+              Passer en paramètre recommendationId = recommendation.id dans les query params ou sessionStorage
+              pour que la page de consultation puisse recharger les recommandations */}
+          <button
+            disabled
+            className="shrink-0 group relative px-4 py-2.5 rounded-xl text-xs font-semibold overflow-hidden opacity-50 cursor-not-allowed"
             style={{ color: "var(--color-bg-base)" }}
+            title="Fonction en cours de développement"
           >
             <span
-              className="absolute inset-0 transition-transform duration-300 group-hover:scale-105"
+              className="absolute inset-0 transition-transform duration-300"
               style={{ background: "var(--gradient-brand)" }}
             />
             <span className="relative flex items-center gap-1.5">
@@ -513,15 +517,24 @@ export default function RecommendationPage() {
                 />
               </svg>
             </span>
-          </Link>
+            <div
+              className="absolute -top-2 -right-2 px-4 py-1.5 rounded text-[9px] font-bold whitespace-nowrap"
+              style={{
+                backgroundColor: "var(--color-state-warning-bg)",
+                color: "var(--color-state-warning)",
+              }}
+            >
+              Bientôt
+            </div>
+          </button>
         </div>
       </div>
 
       {/* Actions */}
       <div className="mt-4 flex gap-3">
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="flex-1 py-3.5 border text-sm font-medium rounded-xl transition-all duration-200"
+        <Link
+          href="/dashboard/history"
+          className="flex-1 py-3.5 border text-sm font-medium rounded-xl transition-all duration-200 text-center"
           style={{
             borderColor: "var(--color-border-strong)",
             color: "var(--color-text-muted)",
@@ -535,11 +548,11 @@ export default function RecommendationPage() {
             e.currentTarget.style.borderColor = "var(--color-border-strong)";
           }}
         >
-          Nouvelle analyse
-        </button>
-        <Link
-          href="/dashboard/history"
-          className="flex-1 py-3.5 text-center relative overflow-hidden rounded-xl group"
+          Voir l&apos;historique
+        </Link>
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="flex-1 py-3.5 relative overflow-hidden rounded-xl group"
           style={{ color: "var(--color-bg-base)" }}
         >
           <span
@@ -549,20 +562,14 @@ export default function RecommendationPage() {
           <span className="relative flex items-center justify-center gap-2 text-sm font-semibold">
             <svg
               className="w-4 h-4"
-              viewBox="0 0 24 24"
+              viewBox="0 0 16 16"
               fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
             >
-              <path
-                d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+              <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
-            Voir l&apos;historique
+            Nouvelle analyse
           </span>
-        </Link>
+        </button>
       </div>
     </div>
   );
