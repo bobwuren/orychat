@@ -136,7 +136,7 @@ export default function ContactForm() {
               Message envoyé !
             </p>
             <p className="text-xs mt-0.5" style={{ color: "var(--color-state-success)" }}>
-              Nous vous répondrons dans les 24–48h ouvrées.
+              Nous vous répondrons dans les 24 – 48h ouvrées.
             </p>
           </div>
         </div>

@@ -505,7 +505,7 @@ export default function HomePage() {
                 className="font-display text-4xl lg:text-5xl font-bold mt-5 mb-5 leading-tight"
                 style={{ color: "var(--color-text-primary)" }}
               >
-                Trois étapes.{" "}
+                Quatre étapes.{" "}
                 <span
                   className="text-transparent bg-clip-text"
                   style={{ backgroundImage: "var(--gradient-brand)" }}

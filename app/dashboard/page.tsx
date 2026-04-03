@@ -79,7 +79,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Indicateur de progression */}
-      <StepIndicator current={0} steps={["Série", "Notes", "Résultat"]} />
+      <StepIndicator
+        current={0}
+        steps={["Série", "Notes", "Profil", "Résultat"]}
+      />
 
       {/* Grille des séries */}
       {loading ? (
