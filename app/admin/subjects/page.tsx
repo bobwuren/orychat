@@ -28,10 +28,6 @@ import {
 import { useSubjects, useSeries } from "@/lib/hooks";
 import type { SubjectWithCoefficients } from "@/lib/types";
 
-// ---------------------------------------------------------------------------
-// Types locaux
-// ---------------------------------------------------------------------------
-
 type DialogMode = "create" | "edit" | "view" | "delete" | "export" | null;
 const ITEMS_PER_PAGE = 10;
 
@@ -41,12 +37,12 @@ interface SerieCoeffRow {
 }
 
 // ---------------------------------------------------------------------------
-// Helper — normalise seriesCoefficients (objet ou tableau)
+// Normalise seriesCoefficients quel que soit le format retourné par l'API :
+//   - tableau : [{ serieId, coefficient }]
+//   - objet   : { "serieId": coefficient }
 // ---------------------------------------------------------------------------
 
-function normalizeCoefficients(
-  raw: any,
-): Array<{ serieId: string; coefficient: number }> {
+function normalizeCoefficients(raw: any): SerieCoeffRow[] {
   if (!raw) return [];
   if (Array.isArray(raw)) return raw;
   return Object.entries(raw).map(([serieId, coefficient]) => ({
@@ -54,10 +50,6 @@ function normalizeCoefficients(
     coefficient: coefficient as number,
   }));
 }
-
-// ---------------------------------------------------------------------------
-// Icônes SVG inline
-// ---------------------------------------------------------------------------
 
 function IconRefresh() {
   return (
@@ -112,10 +104,6 @@ function IconX() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Styles partagés pour les inputs inline
-// ---------------------------------------------------------------------------
-
 const inlineSelectStyle: React.CSSProperties = {
   backgroundColor: "var(--color-input-bg)",
   border: "1px solid var(--color-input-border)",
@@ -162,10 +150,7 @@ function SubjectForm({
 }: SubjectFormProps) {
   const [name, setName] = useState(initial?.name ?? "");
   const [rows, setRows] = useState<SerieCoeffRow[]>(() =>
-    normalizeCoefficients((initial as any)?.seriesCoefficients).map((sc) => ({
-      serieId: sc.serieId,
-      coefficient: sc.coefficient,
-    })),
+    normalizeCoefficients((initial as any)?.seriesCoefficients),
   );
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -361,6 +346,7 @@ export default function SubjectsAdminPage() {
     load();
     fetchSeries();
   }, [load, fetchSeries]);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
@@ -379,6 +365,7 @@ export default function SubjectsAdminPage() {
     setSelectedSubject(null);
     setActionError(null);
   };
+
   const openCreate = () => {
     setSelectedSubject(null);
     setActionError(null);
@@ -478,6 +465,7 @@ export default function SubjectsAdminPage() {
     code: s.code,
     description: s.description,
   }));
+
   const resolveSerieLabel = (serieId: string) =>
     series?.find((s) => String(s.id) === String(serieId))?.code ?? serieId;
 

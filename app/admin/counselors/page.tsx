@@ -33,7 +33,6 @@ import type {
   UpdateCounselorRequest,
 } from "@/lib/types";
 
-// Icônes communes
 function IconRefresh() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
@@ -46,6 +45,7 @@ function IconRefresh() {
     </svg>
   );
 }
+
 function IconPlus() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
@@ -67,19 +67,6 @@ function IconX() {
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-function IconExternal() {
-  return (
-    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
-      <path
-        d="M7 1h4v4M11 1L6 6M5 2H2a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V8"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
       />
     </svg>
   );
@@ -194,7 +181,7 @@ function CounselorForm({
             <AdminInput
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="ex: Utilisateur"
+              placeholder="ex: Koffi Mensah"
               disabled={isLoading}
             />
           </FormField>
@@ -238,6 +225,7 @@ function CounselorForm({
           </FormField>
         </div>
       </div>
+
       <div className="space-y-2">
         <p
           className="text-xs font-semibold uppercase tracking-[0.1em]"
@@ -297,6 +285,7 @@ function CounselorForm({
           </div>
         )}
       </div>
+
       <Toggle
         checked={isActive}
         onChange={setIsActive}
@@ -354,6 +343,7 @@ export default function CounselorsAdminPage() {
   useEffect(() => {
     load();
   }, [load]);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterActive]);
@@ -363,6 +353,7 @@ export default function CounselorsAdminPage() {
       !searchTerm ||
       c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (c.phone ?? "").includes(searchTerm) ||
       (c.specialties ?? []).some((s) =>
         s.toLowerCase().includes(searchTerm.toLowerCase()),
       );
@@ -372,6 +363,7 @@ export default function CounselorsAdminPage() {
       (filterActive === "inactive" && !c.isActive);
     return matchSearch && matchActive;
   });
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const paginated = filtered.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -384,20 +376,24 @@ export default function CounselorsAdminPage() {
     setSelected(null);
     setActionError(null);
   };
+
   const openCreate = () => {
     setSelected(null);
     setActionError(null);
     setDialogMode("create");
   };
+
   const openEdit = (c: Counselor) => {
     setSelected(c);
     setActionError(null);
     setDialogMode("edit");
   };
+
   const openView = (c: Counselor) => {
     setSelected(c);
     setDialogMode("view");
   };
+
   const openDelete = (c: Counselor) => {
     setSelected(c);
     setActionError(null);
@@ -506,6 +502,7 @@ export default function CounselorsAdminPage() {
           </>
         }
       />
+
       <AdminCard
         title="Liste des conseillers"
         toolbar={
@@ -546,25 +543,27 @@ export default function CounselorsAdminPage() {
                 if (!v) setSearchTerm("");
               }}
               onSubmit={() => setSearchTerm(searchInput)}
-              placeholder="Nom, email, spécialité…"
+              placeholder="Nom, email, téléphone…"
             />
           </div>
         }
       >
         <AdminTable>
           <THead>
-            <Th>Conseiller</Th>
+            <Th>Photo</Th>
+            <Th>Nom</Th>
             <Th>Email</Th>
+            <Th>Téléphone</Th>
             <Th>Spécialités</Th>
             <Th>Statut</Th>
             <Th right>Actions</Th>
           </THead>
           <TBody>
             {isLoading ? (
-              <SkeletonRows cols={5} />
+              <SkeletonRows cols={7} />
             ) : paginated.length === 0 ? (
               <EmptyRow
-                colSpan={5}
+                colSpan={7}
                 label={
                   searchTerm || filterActive !== "all"
                     ? "Aucun résultat."
@@ -586,27 +585,30 @@ export default function CounselorsAdminPage() {
             ) : (
               paginated.map((c) => (
                 <Tr key={c.id} className={!c.isActive ? "opacity-50" : ""}>
+                  {/* Photo */}
                   <Td>
-                    <div className="flex items-center gap-2.5">
-                      <CounselorAvatar counselor={c} />
-                      <div className="min-w-0">
+                    <CounselorAvatar counselor={c} />
+                  </Td>
+                  {/* Nom */}
+                  <Td>
+                    <div className="min-w-0">
+                      <p
+                        className="text-sm font-medium truncate max-w-[120px]"
+                        style={{ color: "var(--color-text-primary)" }}
+                      >
+                        {c.name}
+                      </p>
+                      {c.bio && (
                         <p
-                          className="text-sm font-medium truncate"
-                          style={{ color: "var(--color-text-primary)" }}
+                          className="text-xs truncate max-w-[120px]"
+                          style={{ color: "var(--color-text-disabled)" }}
                         >
-                          {c.name}
+                          {c.bio}
                         </p>
-                        {c.bio && (
-                          <p
-                            className="text-xs truncate max-w-[140px]"
-                            style={{ color: "var(--color-text-disabled)" }}
-                          >
-                            {c.bio}
-                          </p>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </Td>
+                  {/* Email */}
                   <Td>
                     <a
                       href={`mailto:${c.email}`}
@@ -615,15 +617,26 @@ export default function CounselorsAdminPage() {
                     >
                       {c.email}
                     </a>
-                    {c.phone && (
-                      <p
-                        className="text-xs mt-0.5"
-                        style={{ color: "var(--color-text-disabled)" }}
+                  </Td>
+                  {/* Téléphone */}
+                  <Td>
+                    {c.phone ? (
+                      <span
+                        className="text-xs"
+                        style={{ color: "var(--color-text-secondary)" }}
                       >
                         {c.phone}
-                      </p>
+                      </span>
+                    ) : (
+                      <span
+                        className="text-xs"
+                        style={{ color: "var(--color-text-disabled)" }}
+                      >
+                        -
+                      </span>
                     )}
                   </Td>
+                  {/* Spécialités */}
                   <Td>
                     <div className="flex flex-wrap gap-1">
                       {(c.specialties ?? []).length === 0 ? (
@@ -649,6 +662,7 @@ export default function CounselorsAdminPage() {
                       )}
                     </div>
                   </Td>
+                  {/* Statut */}
                   <Td>
                     {c.isActive ? (
                       <AdminBadge color="green">Actif</AdminBadge>
@@ -656,6 +670,7 @@ export default function CounselorsAdminPage() {
                       <AdminBadge color="gray">Inactif</AdminBadge>
                     )}
                   </Td>
+                  {/* Actions */}
                   <Td right>
                     <div className="flex items-center justify-end gap-1 flex-wrap">
                       <Btn
@@ -702,6 +717,7 @@ export default function CounselorsAdminPage() {
         />
       </AdminCard>
 
+      {/* ── Dialog Création ── */}
       <AdminDialog
         open={dialogMode === "create"}
         onClose={closeDialog}
@@ -718,6 +734,7 @@ export default function CounselorsAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
+      {/* ── Dialog Édition ── */}
       <AdminDialog
         open={dialogMode === "edit"}
         onClose={closeDialog}
@@ -735,6 +752,7 @@ export default function CounselorsAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
+      {/* ── Dialog Vue ── */}
       <AdminDialog
         open={dialogMode === "view"}
         onClose={closeDialog}
@@ -781,6 +799,7 @@ export default function CounselorsAdminPage() {
                 )}
               </div>
             </div>
+
             {selected.bio && (
               <div>
                 <p
@@ -797,6 +816,7 @@ export default function CounselorsAdminPage() {
                 </p>
               </div>
             )}
+
             {(selected.specialties ?? []).length > 0 && (
               <div>
                 <p
@@ -829,6 +849,7 @@ export default function CounselorsAdminPage() {
         </DialogActions>
       </AdminDialog>
 
+      {/* ── Dialog Suppression ── */}
       <AdminDialog
         open={dialogMode === "delete"}
         onClose={closeDialog}
@@ -858,6 +879,14 @@ export default function CounselorsAdminPage() {
               >
                 {selected.email}
               </p>
+              {selected.phone && (
+                <p
+                  className="text-xs"
+                  style={{ color: "var(--color-text-disabled)" }}
+                >
+                  {selected.phone}
+                </p>
+              )}
             </div>
           </div>
         )}

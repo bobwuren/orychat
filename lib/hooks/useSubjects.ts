@@ -1,11 +1,6 @@
 /**
- * =====================================================
- * Hook - Matières - CORRIGÉ
- * =====================================================
- * Hook React pour la gestion des matières
- *
+ * Hook - Matières
  * @module lib/hooks/useSubjects
- * @version 1.2
  */
 
 "use client";
@@ -56,32 +51,9 @@ export function useSubjects() {
   const [error, setError] = useState<Error | null>(null);
 
   /**
-   * Normalise un objet SubjectWithCoefficients pour s'assurer que seriesCoefficients est un tableau
-   */
-  const normalizeSubject = (
-    subject: SubjectWithCoefficients,
-  ): SubjectWithCoefficients => {
-    return {
-      ...subject,
-      seriesCoefficients: Array.isArray(subject.seriesCoefficients)
-        ? subject.seriesCoefficients
-        : subject.seriesCoefficients
-          ? [subject.seriesCoefficients as any]
-          : [],
-    };
-  };
-
-  /**
-   * Normalise un tableau de sujets
-   */
-  const normalizeSubjects = (
-    items: SubjectWithCoefficients[],
-  ): SubjectWithCoefficients[] => {
-    return items.map(normalizeSubject);
-  };
-
-  /**
-   * Extrait un sujet d'une réponse API (format unique)
+   * Extrait un sujet d'une réponse API (format unique).
+   * On ne normalise pas seriesCoefficients ici : la page gère
+   * les deux formats (tableau ou objet) via normalizeCoefficients.
    */
   const extractSingleSubject = (
     response: unknown,
@@ -90,48 +62,37 @@ export function useSubjects() {
 
     const resp = response as ApiSingleResponse<SubjectWithCoefficients>;
 
-    // Cas 1: { subject: {...} }
     if ("subject" in resp && resp.subject && typeof resp.subject === "object") {
-      return normalizeSubject(resp.subject);
+      return resp.subject as SubjectWithCoefficients;
     }
-
-    // Cas 2: { data: {...} }
     if ("data" in resp && resp.data && typeof resp.data === "object") {
-      return normalizeSubject(resp.data);
+      return resp.data as SubjectWithCoefficients;
     }
-
-    // Cas 3: direct {...}
-    if (resp && typeof resp === "object" && "id" in resp) {
-      return normalizeSubject(resp as SubjectWithCoefficients);
+    if ("id" in (resp as object)) {
+      return resp as SubjectWithCoefficients;
     }
 
     return null;
   };
 
   /**
-   * Extrait une liste de sujets d'une réponse API (format multiple)
+   * Extrait une liste de sujets d'une réponse API (format multiple).
    */
   const extractListSubjects = (
     response: unknown,
   ): SubjectWithCoefficients[] => {
     if (!response) return [];
 
-    // Cas 1: Tableau direct
-    if (Array.isArray(response)) {
-      return normalizeSubjects(response);
-    }
+    if (Array.isArray(response)) return response as SubjectWithCoefficients[];
 
     if (typeof response === "object") {
       const resp = response as ApiListResponse<SubjectWithCoefficients>;
 
-      // Cas 2: { subjects: [...] }
       if ("subjects" in resp && Array.isArray(resp.subjects)) {
-        return normalizeSubjects(resp.subjects);
+        return resp.subjects;
       }
-
-      // Cas 3: { data: [...] }
       if ("data" in resp && Array.isArray(resp.data)) {
-        return normalizeSubjects(resp.data);
+        return resp.data;
       }
     }
 
@@ -145,11 +106,9 @@ export function useSubjects() {
     async (params?: { page?: number; limit?: number; search?: string }) => {
       setIsLoading(true);
       setError(null);
-
       try {
         const response = await subjectsApi.getAll(params);
-        const subjectsData = extractListSubjects(response);
-        setSubjects(subjectsData);
+        setSubjects(extractListSubjects(response));
         return response;
       } catch (err) {
         const error = err as Error;
@@ -168,15 +127,10 @@ export function useSubjects() {
   const fetchSubjectById = useCallback(async (subjectId: string) => {
     setIsLoading(true);
     setError(null);
-
     try {
       const response = await subjectsApi.getById(subjectId);
       const subjectData = extractSingleSubject(response);
-
-      if (subjectData) {
-        setCurrentSubject(subjectData);
-      }
-
+      if (subjectData) setCurrentSubject(subjectData);
       return subjectData;
     } catch (err) {
       const error = err as Error;
@@ -193,11 +147,9 @@ export function useSubjects() {
   const fetchSubjectsBySerie = useCallback(async (serieId: string) => {
     setIsLoading(true);
     setError(null);
-
     try {
       const response = await subjectsApi.getBySerie(serieId);
-      const subjectsData = extractListSubjects(response);
-      setSubjects(subjectsData);
+      setSubjects(extractListSubjects(response));
       return response;
     } catch (err) {
       const error = err as Error;
@@ -214,15 +166,10 @@ export function useSubjects() {
   const createSubject = useCallback(async (data: CreateSubjectRequest) => {
     setIsLoading(true);
     setError(null);
-
     try {
       const response = await subjectsApi.create(data);
       const newSubject = extractSingleSubject(response);
-
-      if (newSubject) {
-        setSubjects((prev) => [...prev, newSubject]);
-      }
-
+      if (newSubject) setSubjects((prev) => [...prev, newSubject]);
       return response;
     } catch (err) {
       const error = err as Error;
@@ -240,23 +187,16 @@ export function useSubjects() {
     async (subjectId: string, data: UpdateSubjectRequest) => {
       setIsLoading(true);
       setError(null);
-
       try {
         const response = await subjectsApi.update(subjectId, data);
         const updatedSubject = extractSingleSubject(response);
-
         if (updatedSubject) {
           setSubjects((prev) =>
-            prev.map((subject) =>
-              subject.id === subjectId ? updatedSubject : subject,
-            ),
+            prev.map((s) => (s.id === subjectId ? updatedSubject : s)),
           );
-
-          if (currentSubject?.id === subjectId) {
+          if (currentSubject?.id === subjectId)
             setCurrentSubject(updatedSubject);
-          }
         }
-
         return response;
       } catch (err) {
         const error = err as Error;
@@ -276,15 +216,10 @@ export function useSubjects() {
     async (subjectId: string) => {
       setIsLoading(true);
       setError(null);
-
       try {
         const response = await subjectsApi.delete(subjectId);
-        setSubjects((prev) =>
-          prev.filter((subject) => subject.id !== subjectId),
-        );
-        if (currentSubject?.id === subjectId) {
-          setCurrentSubject(null);
-        }
+        setSubjects((prev) => prev.filter((s) => s.id !== subjectId));
+        if (currentSubject?.id === subjectId) setCurrentSubject(null);
         return response;
       } catch (err) {
         const error = err as Error;
@@ -297,17 +232,12 @@ export function useSubjects() {
     [currentSubject],
   );
 
-  /**
-   * Exporter les matières
-   */
   const exportSubjects = useCallback(
     async (params?: { format?: "csv" | "json" }) => {
       setIsLoading(true);
       setError(null);
-
       try {
-        const blob = await subjectsApi.export(params);
-        return blob;
+        return await subjectsApi.export(params);
       } catch (err) {
         const error = err as Error;
         setError(error);

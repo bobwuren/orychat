@@ -403,16 +403,15 @@ export default function UsersAdminPage() {
         <AdminTable>
           <THead>
             <Th>Utilisateur</Th>
-            <Th>ID</Th>
             <Th>Rôle</Th>
             <Th right>Actions</Th>
           </THead>
           <TBody>
             {isLoading ? (
-              <SkeletonRows cols={4} />
+              <SkeletonRows cols={3} />
             ) : paginated.length === 0 ? (
               <EmptyRow
-                colSpan={4}
+                colSpan={3}
                 label={
                   searchTerm || filterRole !== "all"
                     ? "Aucun résultat."
@@ -442,15 +441,6 @@ export default function UsersAdminPage() {
                         )}
                       </div>
                     </div>
-                  </Td>
-                  <Td mono muted>
-                    <span className="hidden sm:inline">
-                      {String(u.id).slice(0, 16)}
-                      {String(u.id).length > 16 ? "…" : ""}
-                    </span>
-                    <span className="sm:hidden">
-                      {String(u.id).slice(0, 8)}…
-                    </span>
                   </Td>
                   <Td>
                     <RoleBadge role={u.permissions} />

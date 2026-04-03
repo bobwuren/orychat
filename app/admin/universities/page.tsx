@@ -28,24 +28,11 @@ import {
   PageError,
 } from "@/components/admin/ui";
 import { useUniversities, useDegrees } from "@/lib/hooks";
-import type { University } from "@/lib/types";
-
-// ---------------------------------------------------------------------------
-// Types locaux
-// ---------------------------------------------------------------------------
+import type { University, Degree } from "@/lib/types";
 
 type DialogMode = "create" | "edit" | "view" | "delete" | "export" | null;
 type SponsorFilter = "all" | "sponsors" | "non-sponsors";
 const ITEMS_PER_PAGE = 10;
-
-interface DegreeRow {
-  name: string;
-  description?: string;
-}
-
-// ---------------------------------------------------------------------------
-// Icônes SVG inline
-// ---------------------------------------------------------------------------
 
 function IconRefresh() {
   return (
@@ -115,18 +102,18 @@ function IconExternal() {
 }
 
 // ---------------------------------------------------------------------------
-// Formulaire université
+// Formulaire université — formations sélectionnées depuis la liste des diplômes
 // ---------------------------------------------------------------------------
 
 interface UniversityFormProps {
   initial?: Partial<University>;
-  availableDegrees: Array<{ id: string; name: string }>;
+  availableDegrees: Degree[];
   onSubmit: (data: {
     name: string;
     webSite?: string;
     description?: string;
     isSponsor: boolean;
-    degrees: DegreeRow[];
+    degreeIds: string[];
   }) => Promise<void>;
   onCancel: () => void;
   isLoading: boolean;
@@ -135,6 +122,7 @@ interface UniversityFormProps {
 
 function UniversityForm({
   initial,
+  availableDegrees,
   onSubmit,
   onCancel,
   isLoading,
@@ -146,22 +134,19 @@ function UniversityForm({
   );
   const [description, setDescription] = useState(initial?.description ?? "");
   const [isSponsor, setIsSponsor] = useState(initial?.isSponsor ?? false);
-  const [degrees, setDegrees] = useState<DegreeRow[]>(() =>
-    (initial?.degrees ?? []).map((d: any) => ({
-      name: d.name ?? "",
-      description: d.description ?? "",
-    })),
+
+  // Initialise les IDs depuis les formations déjà associées à l'université
+  const [selectedDegreeIds, setSelectedDegreeIds] = useState<string[]>(() =>
+    (initial?.degrees ?? []).map((d: any) => String(d.id)),
   );
+
   const [formError, setFormError] = useState<string | null>(null);
 
-  const addDegree = () =>
-    setDegrees((prev) => [...prev, { name: "", description: "" }]);
-  const removeDegree = (i: number) =>
-    setDegrees((prev) => prev.filter((_, idx) => idx !== i));
-  const updateDegree = (i: number, field: keyof DegreeRow, value: string) =>
-    setDegrees((prev) =>
-      prev.map((d, idx) => (idx === i ? { ...d, [field]: value } : d)),
+  const toggleDegree = (id: string) => {
+    setSelectedDegreeIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,15 +155,9 @@ function UniversityForm({
       setFormError("Le nom est obligatoire.");
       return;
     }
-    if (mode === "create" && degrees.length === 0) {
+    if (mode === "create" && selectedDegreeIds.length === 0) {
       setFormError("Au moins une formation est requise.");
       return;
-    }
-    for (const d of degrees) {
-      if (!d.name.trim()) {
-        setFormError("Chaque formation doit avoir un nom.");
-        return;
-      }
     }
     try {
       await onSubmit({
@@ -186,7 +165,7 @@ function UniversityForm({
         webSite: webSite.trim() || undefined,
         description: description.trim() || undefined,
         isSponsor,
-        degrees,
+        degreeIds: selectedDegreeIds,
       });
     } catch (err: any) {
       setFormError(err?.message ?? "Une erreur est survenue.");
@@ -227,79 +206,119 @@ function UniversityForm({
         disabled={isLoading}
       />
 
-      {/* Formations */}
+      {/* Sélection des formations depuis le catalogue de diplômes */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between mb-2">
-          <p
-            className="text-xs font-semibold uppercase tracking-[0.1em]"
-            style={{ color: "var(--color-text-muted)" }}
-          >
-            Formations{" "}
-            {mode === "create" && (
-              <span style={{ color: "var(--color-brand-accent)" }}>*</span>
-            )}
-          </p>
-          <Btn
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={addDegree}
-            disabled={isLoading}
-            icon={<IconPlus />}
-          >
-            Ajouter
-          </Btn>
-        </div>
-        {degrees.length === 0 ? (
+        <p
+          className="text-xs font-semibold uppercase tracking-[0.1em]"
+          style={{ color: "var(--color-text-muted)" }}
+        >
+          Formations{" "}
+          {mode === "create" && (
+            <span style={{ color: "var(--color-brand-accent)" }}>*</span>
+          )}
+        </p>
+
+        {availableDegrees.length === 0 ? (
           <p
             className="text-sm italic py-2"
             style={{ color: "var(--color-text-disabled)" }}
           >
-            {mode === "create"
-              ? "Au moins une formation requise."
-              : "Aucune formation associée."}
+            Aucun diplôme disponible dans le catalogue.
           </p>
         ) : (
-          <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-            {degrees.map((d, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <div className="flex-1 space-y-1.5">
-                  <AdminInput
-                    value={d.name}
-                    onChange={(e) => updateDegree(i, "name", e.target.value)}
-                    placeholder="Nom de la formation"
-                    disabled={isLoading}
-                  />
-                  <AdminInput
-                    value={d.description ?? ""}
-                    onChange={(e) =>
-                      updateDegree(i, "description", e.target.value)
-                    }
-                    placeholder="Description (optionnel)"
-                    disabled={isLoading}
-                  />
-                </div>
+          <div
+            className="max-h-48 overflow-y-auto space-y-1.5 pr-1 border rounded-xl p-3"
+            style={{
+              backgroundColor: "var(--color-bg-page)",
+              borderColor: "var(--color-border-default)",
+            }}
+          >
+            {availableDegrees.map((degree) => {
+              const isSelected = selectedDegreeIds.includes(String(degree.id));
+              return (
                 <button
+                  key={degree.id}
                   type="button"
-                  onClick={() => removeDegree(i)}
+                  onClick={() => toggleDegree(String(degree.id))}
                   disabled={isLoading}
-                  className="w-7 h-7 mt-1 flex items-center justify-center rounded-lg transition-all shrink-0"
-                  style={{ color: "var(--color-text-disabled)" }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "var(--color-state-error)";
-                    e.currentTarget.style.backgroundColor =
-                      "var(--color-state-error-bg)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = "var(--color-text-disabled)";
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all"
+                  style={
+                    isSelected
+                      ? {
+                          backgroundColor: "var(--color-accent-bg)",
+                          border: "1px solid var(--color-accent-border-md)",
+                        }
+                      : {
+                          backgroundColor: "var(--color-bg-base)",
+                          border: "1px solid var(--color-border-default)",
+                        }
+                  }
                 >
-                  <IconX />
+                  {/* Checkbox visuelle */}
+                  <span
+                    className="w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-all"
+                    style={
+                      isSelected
+                        ? {
+                            backgroundColor: "var(--color-brand-accent)",
+                            borderColor: "var(--color-brand-accent)",
+                          }
+                        : {
+                            borderColor: "var(--color-border-strong)",
+                          }
+                    }
+                  >
+                    {isSelected && (
+                      <svg
+                        className="w-2.5 h-2.5"
+                        viewBox="0 0 10 10"
+                        fill="none"
+                      >
+                        <path
+                          d="M2 5l2.5 2.5L8 3"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className="text-sm font-medium truncate"
+                      style={{
+                        color: isSelected
+                          ? "var(--color-brand-accent)"
+                          : "var(--color-text-primary)",
+                      }}
+                    >
+                      {degree.name}
+                    </p>
+                    {degree.description && (
+                      <p
+                        className="text-xs truncate"
+                        style={{ color: "var(--color-text-disabled)" }}
+                      >
+                        {degree.description}
+                      </p>
+                    )}
+                  </div>
                 </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
+        )}
+
+        {selectedDegreeIds.length > 0 && (
+          <p
+            className="text-xs"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
+            {selectedDegreeIds.length} formation
+            {selectedDegreeIds.length > 1 ? "s" : ""} sélectionnée
+            {selectedDegreeIds.length > 1 ? "s" : ""}
+          </p>
         )}
       </div>
 
@@ -338,6 +357,7 @@ export default function UniversitiesAdminPage() {
     deleteUniversity,
     exportUniversities,
   } = useUniversities();
+
   const { degrees: availableDegrees, fetchDegrees } = useDegrees();
 
   const [searchInput, setSearchInput] = useState("");
@@ -360,6 +380,7 @@ export default function UniversitiesAdminPage() {
     load();
     fetchDegrees();
   }, [load, fetchDegrees]);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterSponsor]);
@@ -373,10 +394,12 @@ export default function UniversitiesAdminPage() {
       (filterSponsor === "non-sponsors" && !u.isSponsor);
     return matchSearch && matchSponsor;
   });
+
   const paginated = filtered.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
+
   const sponsorCount = (universities ?? []).filter((u) => u.isSponsor).length;
 
   const closeDialog = () => {
@@ -384,6 +407,7 @@ export default function UniversitiesAdminPage() {
     setSelectedUniversity(null);
     setActionError(null);
   };
+
   const openCreate = () => {
     setSelectedUniversity(null);
     setActionError(null);
@@ -470,10 +494,6 @@ export default function UniversitiesAdminPage() {
     currentUniversity?.id === selectedUniversity?.id
       ? (currentUniversity ?? selectedUniversity)
       : selectedUniversity;
-  const degreesForForm = (availableDegrees ?? []).map((d) => ({
-    id: String(d.id),
-    name: d.name,
-  }));
 
   if (error) return <PageError message={error.message} onRetry={load} />;
 
@@ -687,7 +707,7 @@ export default function UniversitiesAdminPage() {
       >
         <UniversityForm
           mode="create"
-          availableDegrees={degreesForForm}
+          availableDegrees={availableDegrees ?? []}
           onSubmit={handleCreate}
           onCancel={closeDialog}
           isLoading={actionLoading}
@@ -706,7 +726,7 @@ export default function UniversitiesAdminPage() {
           key={selectedUniversity?.id}
           mode="edit"
           initial={activeUniversity ?? undefined}
-          availableDegrees={degreesForForm}
+          availableDegrees={availableDegrees ?? []}
           onSubmit={handleUpdate}
           onCancel={closeDialog}
           isLoading={actionLoading}
