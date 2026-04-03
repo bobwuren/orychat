@@ -233,19 +233,7 @@ export default function HistoryPage() {
                                     color: "var(--color-text-muted)",
                                   }}
                                 >
-                                  {d.articleLink ? (
-                                    <a
-                                      href={d.articleLink}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center gap-1 link-accent"
-                                    >
-                                      {d.name}
-                                      <svg className="w-2.5 h-2.5" viewBox="0 0 10 10" fill="none">
-                                        <path d="M2.5 7.5l5-5M4 2.5h3.5V6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-                                      </svg>
-                                    </a>
-                                  ) : d.name}
+                                  {d.name}
                                 </span>
                               ))}
                             </div>
@@ -255,45 +243,45 @@ export default function HistoryPage() {
                         {/* Universités */}
                         {o.universities.length > 0 && (
                           <div className="ml-9 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                            {o.universities.map((u, i) => (
-                              <div
-                                key={i}
-                                className="flex items-center gap-2 px-3 py-2 border rounded-lg"
-                                style={{
-                                  backgroundColor: "var(--color-bg-surface)",
-                                  borderColor: "var(--color-border-default)",
-                                }}
-                              >
-                                <svg
-                                  className="w-3 h-3 shrink-0"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="1.5"
-                                  style={{ color: "var(--color-text-disabled)" }}
+                            {o.universities.map((u, i) => {
+                              const url = u.site ?? u.website;
+                              const Component = url ? 'a' : 'div';
+                              return (
+                                <Component
+                                  key={i}
+                                  href={url}
+                                  target={url ? "_blank" : undefined}
+                                  rel={url ? "noopener noreferrer" : undefined}
+                                  className="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer hover:border-current transition-all"
+                                  style={{
+                                    backgroundColor: "var(--color-bg-surface)",
+                                    borderColor: "var(--color-border-default)",
+                                  }}
                                 >
-                                  <path d="M4 10.5v9.75a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V15a.75.75 0 01.75-.75h3a.75.75 0 01.75.75v5.25a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V10.5M12 3L2.25 10.5M21.75 10.5L12 3" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                                <span
-                                  className="text-xs truncate flex-1"
-                                  style={{ color: "var(--color-text-muted)" }}
-                                >
-                                  {u.name}
-                                </span>
-                                {(u.site || u.website) && (
-                                  <a
-                                    href={u.site ?? u.website}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="link-accent shrink-0"
+                                  <svg
+                                    className="w-3 h-3 shrink-0"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    style={{ color: "var(--color-text-disabled)" }}
                                   >
-                                    <svg className="w-3 h-3" viewBox="0 0 10 10" fill="none">
+                                    <path d="M4 10.5v9.75a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V15a.75.75 0 01.75-.75h3a.75.75 0 01.75.75v5.25a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V10.5M12 3L2.25 10.5M21.75 10.5L12 3" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                  <span
+                                    className="text-xs truncate flex-1"
+                                    style={{ color: "var(--color-text-muted)" }}
+                                  >
+                                    {u.name}
+                                  </span>
+                                  {url && (
+                                    <svg className="w-3 h-3 shrink-0" viewBox="0 0 10 10" fill="none">
                                       <path d="M2.5 7.5l5-5M4 2.5h3.5V6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
-                                  </a>
-                                )}
-                              </div>
-                            ))}
+                                  )}
+                                </Component>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
