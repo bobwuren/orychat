@@ -610,7 +610,7 @@ export default function HomePage() {
               className="leading-relaxed"
               style={{ color: "var(--color-text-muted)" }}
             >
-              Orientys référence plus de 60 universités et grandes écoles en
+              Orientys référence des universités et grandes écoles en
               Afrique francophone pour vous proposer des formations accessibles
               et reconnues.
             </p>

@@ -151,7 +151,7 @@ export default function ContactForm() {
           }}
         >
           <p className="text-sm" style={{ color: "var(--color-state-error)" }}>
-            Une erreur est survenue. Veuillez réessayer ou nous écrire directement à contact@orientys.com.
+            Une erreur est survenue. Veuillez réessayer ou nous écrire directement à contactacan.info@gmail.com.
           </p>
         </div>
       )}

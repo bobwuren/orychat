@@ -127,8 +127,8 @@ export default function ContactPage() {
                     </svg>
                   ),
                   label: "Email",
-                  value: "contact@orientys.com",
-                  href: "mailto:contact@orientys.com",
+                  value: "contactacan.info@gmail.com",
+                  href: "mailto:contactacan.info@gmail.com",
                 },
                 {
                   icon: (
@@ -141,8 +141,8 @@ export default function ContactPage() {
                     </svg>
                   ),
                   label: "WhatsApp",
-                  value: "+228 90 00 00 00",
-                  href: "https://wa.me/22890000000",
+                  value: "+228 97 13 33 38",
+                  href: "https://wa.me/22897133338",
                 },
               ].map(({ icon, label, value, href }) => (
                 <div key={label} className="flex items-center gap-3">
@@ -194,8 +194,7 @@ export default function ContactPage() {
               <div className="space-y-2">
                 {[
                   { day: "Lundi – Vendredi", hours: "8h – 18h" },
-                  { day: "Samedi", hours: "9h – 13h" },
-                  { day: "Dimanche", hours: "Fermé" },
+                  { day: "Samedi et Dimanche", hours: "Fermé" },
                 ].map(({ day, hours }) => (
                   <div
                     key={day}
@@ -225,7 +224,7 @@ export default function ContactPage() {
                   borderColor: "var(--color-border-subtle)",
                 }}
               >
-                Temps de réponse moyen : 24h ouvrées
+                Temps de réponse moyen : 48h ouvrées
               </p>
             </div>
           </div>

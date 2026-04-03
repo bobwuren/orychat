@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 const PRIVACY_SECTIONS = [
   {
     title: "1. Responsable du traitement",
-    content: `Orientys est responsable du traitement de vos données personnelles. Pour toute question, contactez-nous à privacy@orientys.com.`,
+    content: `Orientys est responsable du traitement de vos données personnelles. Pour toute question, contactez-nous à contactacan.info@gmail.com.`,
   },
   {
     title: "2. Données collectées",
@@ -65,7 +65,7 @@ const PRIVACY_SECTIONS = [
       "Droit d'opposition : vous opposer à certains traitements",
     ],
     after:
-      "Pour exercer ces droits, contactez privacy@orientys.com. Nous répondrons sous 30 jours.",
+      "Pour exercer ces droits, contactez contactacan.info@gmail.com. Nous répondrons sous 30 jours.",
   },
   {
     title: "9. Sécurité",
@@ -88,14 +88,12 @@ function LegalHero({
   badge,
   title,
   highlight,
-  intro,
-  date,
+  intro
 }: {
   badge: string;
   title: string;
   highlight: string;
   intro: string;
-  date: string;
 }) {
   return (
     <section className="relative pt-28 pb-16 overflow-hidden">
@@ -143,12 +141,6 @@ function LegalHero({
           style={{ color: "var(--color-text-muted)" }}
         >
           {intro}
-        </p>
-        <p
-          className="text-xs mt-4"
-          style={{ color: "var(--color-text-disabled)" }}
-        >
-          {date}
         </p>
       </div>
     </section>
@@ -223,7 +215,6 @@ export default function PolitiqueConfidentialitePage() {
         title="Politique de"
         highlight="confidentialité"
         intro="La protection de vos données personnelles est une priorité pour Orientys. Ce document décrit comment nous collectons, utilisons et protégeons vos informations."
-        date="Dernière mise à jour : 1er janvier 2025"
       />
 
       <section className="max-w-3xl mx-auto px-6 pb-24">
@@ -295,7 +286,7 @@ export default function PolitiqueConfidentialitePage() {
             Une question sur vos données personnelles ?
           </p>
           <a
-            href="mailto:privacy@orientys.com"
+            href="mailto:contactacan.info@gmail.com"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-medium transition-all"
             style={{
               backgroundColor: "var(--color-accent-bg)",
@@ -316,7 +307,7 @@ export default function PolitiqueConfidentialitePage() {
                 strokeLinejoin="round"
               />
             </svg>
-            privacy@orientys.com
+            contactacan.info@gmail.com
           </a>
         </div>
       </section>

@@ -207,12 +207,6 @@ export default function ConditionsUtilisationPage() {
             créant un compte, vous acceptez ces termes. Merci de les lire
             attentivement.
           </p>
-          <p
-            className="text-xs mt-4"
-            style={{ color: "var(--color-text-disabled)" }}
-          >
-            Dernière mise à jour : 1er janvier 2025
-          </p>
         </div>
       </section>
 
