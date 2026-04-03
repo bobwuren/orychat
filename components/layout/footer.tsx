@@ -5,10 +5,10 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   const productLinks = [
-    { href: "#features", label: "Fonctionnalités" },
-    { href: "#how-it-works", label: "Comment ça marche" },
-    { href: "#universities", label: "Universités partenaires" },
-    { href: "#faq", label: "FAQ" },
+    { href: "/#features", label: "Fonctionnalités" },
+    { href: "/#how-it-works", label: "Comment ça marche" },
+    { href: "/#universities", label: "Universités partenaires" },
+    { href: "/#faq", label: "FAQ" },
     { href: "/signup", label: "Créer un compte" },
     { href: "/login", label: "Se connecter" },
   ];
@@ -21,7 +21,7 @@ export default function Footer() {
 
   const socialLinks = [
     {
-      href: "#",
+      href: "https://www.facebook.com/acan.tg12",
       label: "Facebook",
       icon: (
         <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -30,16 +30,16 @@ export default function Footer() {
       ),
     },
     {
-      href: "#",
-      label: "Twitter / X",
+      href: "https://tg.linkedin.com/company/acan12",
+      label: "LinkedIn",
       icon: (
         <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.475-2.236-1.986-2.236-1.081 0-1.722.722-2.004 1.418-.103.249-.129.597-.129.946v5.441h-3.554s.05-8.736 0-9.646h3.554v1.364c.429-.658 1.196-1.593 2.905-1.593 2.121 0 3.713 1.388 3.713 4.373v5.502zM5.337 8.855c-1.144 0-1.915-.758-1.915-1.704 0-.951.77-1.704 1.96-1.704 1.188 0 1.914.753 1.939 1.704 0 .946-.751 1.704-1.984 1.704zm1.6 11.597H3.738V9.859h3.199v10.593zM22.224 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.224 0z" />
         </svg>
       ),
     },
     {
-      href: "#",
+      href: "https://www.instagram.com/acan_officiel",
       label: "Instagram",
       icon: (
         <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">

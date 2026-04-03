@@ -325,9 +325,9 @@ export function LoginForm({
               style={{ borderColor: "var(--color-border-default)" }}
             >
               {[
-                ["2 400+", "Élèves"],
+                ["15+", "Élèves"],
                 ["94%", "Satisfaction"],
-                ["60+", "Universités"],
+                ["10+", "Universités"],
               ].map(([v, l]) => (
                 <div key={l} className="text-center">
                   <div
