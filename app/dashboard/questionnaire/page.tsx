@@ -179,11 +179,6 @@ export default function QuestionnairePage() {
     }
   };
 
-  const handleSkip = () => {
-    sessionStorage.removeItem("questionnaireId");
-    router.push("/dashboard/recommendation");
-  };
-
   const handleSubmit = async () => {
     const serieRaw = sessionStorage.getItem("selectedSerie");
     if (!serieRaw) {
@@ -612,21 +607,6 @@ export default function QuestionnairePage() {
               </>
             )}
           </span>
-        </button>
-
-        <button
-          onClick={handleSkip}
-          disabled={submitting}
-          className="w-full py-3 text-sm transition-colors disabled:opacity-40"
-          style={{ color: "var(--color-text-muted)" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "var(--color-text-secondary)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "var(--color-text-muted)";
-          }}
-        >
-          Passer cette étape et continuer sans questionnaire
         </button>
       </div>
     </div>

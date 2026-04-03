@@ -354,38 +354,14 @@ export default function RecommendationPage() {
                     {orientation.degrees.map((d, i) => (
                       <span
                         key={i}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-lg transition-all duration-200"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-lg"
                         style={{
                           backgroundColor: "var(--color-bg-surface)",
                           borderColor: "var(--color-border-default)",
                           color: "var(--color-text-secondary)",
                         }}
                       >
-                        {d.articleLink ? (
-                          <a
-                            href={d.articleLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 link-accent"
-                          >
-                            {d.name}
-                            <svg
-                              className="w-3 h-3"
-                              viewBox="0 0 12 12"
-                              fill="none"
-                            >
-                              <path
-                                d="M3.5 8.5l5-5M5 3.5h3.5V7"
-                                stroke="currentColor"
-                                strokeWidth="1.2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </a>
-                        ) : (
-                          d.name
-                        )}
+                        {d.name}
                       </span>
                     ))}
                   </div>
@@ -402,51 +378,51 @@ export default function RecommendationPage() {
                     Universités partenaires
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {orientation.universities.map((u, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3 px-4 py-3 border rounded-xl transition-all duration-200"
-                        style={{
-                          backgroundColor: "var(--color-bg-surface)",
-                          borderColor: "var(--color-border-default)",
-                        }}
-                      >
-                        <div
-                          className="w-7 h-7 rounded flex items-center justify-center shrink-0"
+                    {orientation.universities.map((u, i) => {
+                      const url = u.site ?? u.website;
+                      const Component = url ? 'a' : 'div';
+                      return (
+                        <Component
+                          key={i}
+                          href={url}
+                          target={url ? "_blank" : undefined}
+                          rel={url ? "noopener noreferrer" : undefined}
+                          className="flex items-center gap-3 px-4 py-3 border rounded-xl transition-all duration-200 cursor-pointer hover:border-current"
                           style={{
-                            backgroundColor: "var(--color-bg-elevated)",
+                            backgroundColor: "var(--color-bg-surface)",
+                            borderColor: "var(--color-border-default)",
                           }}
                         >
-                          <svg
-                            className="w-3.5 h-3.5"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            style={{ color: "var(--color-text-disabled)" }}
-                          >
-                            <path
-                              d="M4 10.5v9.75a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V15a.75.75 0 01.75-.75h3a.75.75 0 01.75.75v5.25a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V10.5M12 3L2.25 10.5M21.75 10.5L12 3"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </div>
-                        <span
-                          className="text-sm font-medium truncate flex-1"
-                          style={{ color: "var(--color-text-secondary)" }}
-                        >
-                          {u.name}
-                        </span>
-                        {(u.site || u.website) && (
-                          <a
-                            href={u.site ?? u.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="shrink-0 link-accent transition-colors"
+                          <div
+                            className="w-7 h-7 rounded flex items-center justify-center shrink-0"
+                            style={{
+                              backgroundColor: "var(--color-bg-elevated)",
+                            }}
                           >
                             <svg
                               className="w-3.5 h-3.5"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              style={{ color: "var(--color-text-disabled)" }}
+                            >
+                              <path
+                                d="M4 10.5v9.75a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V15a.75.75 0 01.75-.75h3a.75.75 0 01.75.75v5.25a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V10.5M12 3L2.25 10.5M21.75 10.5L12 3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </div>
+                          <span
+                            className="text-sm font-medium truncate flex-1"
+                            style={{ color: "var(--color-text-secondary)" }}
+                          >
+                            {u.name}
+                          </span>
+                          {url && (
+                            <svg
+                              className="w-3.5 h-3.5 shrink-0"
                               viewBox="0 0 12 12"
                               fill="none"
                             >
@@ -458,10 +434,10 @@ export default function RecommendationPage() {
                                 strokeLinejoin="round"
                               />
                             </svg>
-                          </a>
-                        )}
-                      </div>
-                    ))}
+                          )}
+                        </Component>
+                      );
+                    })}
                   </div>
                 </div>
               )}
