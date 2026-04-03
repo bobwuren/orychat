@@ -89,7 +89,7 @@ export default function Footer() {
               style={{ color: "var(--color-text-muted)" }}
             >
               La plateforme d&apos;orientation numérique qui guide les lycéens
-              africains vers les formations qui leur correspondent - grâce à
+              africains vers les formations digitales qui leur correspondent - grâce à
               l&apos;intelligence artificielle.
             </p>
             <div className="flex items-center gap-3">

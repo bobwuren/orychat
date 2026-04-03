@@ -9,10 +9,10 @@ import Link from "next/link";
  * --------------------------------------------------------------------------- */
 
 const stats = [
-  { value: "2 400+", label: "Élèves orientés" },
-  { value: "18", label: "Séries supportées" },
+  { value: "15 +", label: "Élèves orientés" },
+  { value: "10", label: "Séries supportées" },
   { value: "94%", label: "Taux de satisfaction" },
-  { value: "60+", label: "Universités partenaires" },
+  // { value: "60+", label: "Universités partenaires" },
 ];
 
 const features = [
@@ -51,6 +51,12 @@ const steps = [
   },
   {
     step: "03",
+    title: "Renseignez votre profil",
+    description:
+      "L'IA se base sur votre profil pour déterminer le meilleur parcours.",
+  },
+  {
+    step: "04",
     title: "Recevez votre orientation",
     description:
       "L'IA analyse votre profil et génère instantanément des recommandations d'orientation détaillées.",
@@ -92,7 +98,7 @@ const faqs = [
   {
     question: "Comment fonctionne l'IA derrière les recommandations ?",
     answer:
-      "Notre modèle analyse le poids de chaque matière dans votre série, identifie vos dominantes et les croise avec les prérequis des filières universitaires pour générer des orientations pertinentes.",
+      "Notre modèle analyse le poids de chaque matière dans votre série, identifie vos dominantes et les croise avec les prérequis des filières universitaires ainsi que votre profil pour générer des orientations pertinentes.",
   },
   {
     question: "Puis-je consulter mes anciennes recommandations ?",
@@ -309,7 +315,7 @@ export default function HomePage() {
                 <div className="space-y-3">
                   {[
                     { label: "Génie Informatique", score: 94 },
-                    { label: "Mathématiques Appliquées", score: 87 },
+                    { label: "Analyste en Data Science", score: 87 },
                     { label: "Sciences de l'Ingénieur", score: 79 },
                   ].map((item) => (
                     <div key={item.label}>
@@ -394,7 +400,7 @@ export default function HomePage() {
         }}
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3">
             {stats.map((stat, i) => (
               <div
                 key={stat.label}
