@@ -168,6 +168,16 @@ export default function QuestionnairePage() {
   const answeredCount = Object.values(qcm).filter(Boolean).length;
   const totalQcm = QCM_QUESTIONS.length;
 
+  // Vérifier si tous les champs requis sont remplis
+  const isFormValid =
+    qcm.visionProfessionnelle &&
+    qcm.styleApprentissage &&
+    qcm.domaineNumerique &&
+    qcm.prioriteFormation &&
+    qcm.modeTravail &&
+    open.matieresPreferees.trim() &&
+    open.passionsExtraScolaires.trim();
+
   const handleQcmChange = (key: keyof QcmState, value: string) => {
     setQcm((prev) => ({ ...prev, [key]: value }));
     if (error) setError(null);
@@ -294,7 +304,7 @@ export default function QuestionnairePage() {
         <p style={{ color: "var(--color-text-muted)" }}>
           Ces informations personnalisent vos recommandations IA.{" "}
           <span style={{ color: "var(--color-text-disabled)" }}>
-            Toutes les questions sont optionnelles.
+            Les 5 questions à choix multiples sont obligatoires, les questions ouvertes sont optionnelles.
           </span>
         </p>
       </div>
@@ -365,7 +375,8 @@ export default function QuestionnairePage() {
                 className="text-sm font-semibold leading-snug"
                 style={{ color: "var(--color-text-primary)" }}
               >
-                {question.title}
+                {question.title}{" "}
+                <span style={{ color: "var(--color-state-error)" }}>*</span>
               </p>
             </div>
 
@@ -502,6 +513,9 @@ export default function QuestionnairePage() {
                       (optionnel)
                     </span>
                   )}
+                  {!optional && (
+                    <span style={{ color: "var(--color-state-error)" }}>*</span>
+                  )}
                 </p>
                 <p
                   className="text-xs"
@@ -566,9 +580,18 @@ export default function QuestionnairePage() {
 
       {/* Actions */}
       <div className="flex flex-col gap-3">
+        {!isFormValid && (
+          <p
+            className="text-xs text-center"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
+            Veuillez remplir tous les champs marqués avec{" "}
+            <span style={{ color: "var(--color-state-error)" }}>*</span>
+          </p>
+        )}
         <button
           onClick={handleSubmit}
-          disabled={submitting}
+          disabled={submitting || !isFormValid}
           className="group relative w-full py-4 font-semibold text-sm rounded-xl overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
           style={{ color: "var(--color-bg-base)" }}
         >
