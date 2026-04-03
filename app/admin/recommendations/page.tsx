@@ -212,7 +212,7 @@ export default function RecommendationsAdminPage() {
                       <AdminBadge color="gold">{reco.serieCode}</AdminBadge>
                     ) : (
                       <span style={{ color: "var(--color-text-disabled)" }}>
-                        —
+                        -
                       </span>
                     )}
                   </Td>
@@ -228,7 +228,7 @@ export default function RecommendationsAdminPage() {
                           addSuffix: true,
                           locale: fr,
                         })
-                      : "—"}
+                      : "-"}
                   </Td>
                   <Td right>
                     <Btn
@@ -302,7 +302,7 @@ export default function RecommendationsAdminPage() {
                   >
                     {value ?? (
                       <span style={{ color: "var(--color-text-disabled)" }}>
-                        —
+                        -
                       </span>
                     )}
                   </p>

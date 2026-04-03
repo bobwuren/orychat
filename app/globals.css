@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 /**
- * Orientys Design System — CSS Variables
+ * Orientys Design System - CSS Variables
  *
  * Palette de marque extraite du logo :
- *   --color-brand-primary : #1e1b6e  (bleu indigo profond — corps du bonnet)
- *   --color-brand-accent  : #6b5dd3  (violet-bleu — plans/chevrons du logo)
- *   --color-brand-light   : #8b7fe8  (violet clair — reflets/hover)
+ *   --color-brand-primary : #1e1b6e  (bleu indigo profond - corps du bonnet)
+ *   --color-brand-accent  : #6b5dd3  (violet-bleu - plans/chevrons du logo)
+ *   --color-brand-light   : #8b7fe8  (violet clair - reflets/hover)
  *
  * Thèmes :
  *   :root / [data-theme="dark"]  → fond charbon, accents indigo/violet
@@ -213,7 +213,7 @@
 }
 
 /* ---------------------------------------------------------------------------
- * Hover utilities CSS-only — utilisables dans les Server Components
+ * Hover utilities CSS-only - utilisables dans les Server Components
  *
  * Principe : on évite tout onMouseEnter/onMouseLeave dans les Server
  * Components. Les transitions de couleur au survol sont gérées ici via CSS
@@ -221,7 +221,7 @@
  * --------------------------------------------------------------------------- */
 
 @layer components {
-  /* Carte de surface — fond + bordure au hover */
+  /* Carte de surface - fond + bordure au hover */
   .card-hover {
     background-color: var(--color-bg-base);
     border-color: var(--color-border-default);
@@ -234,7 +234,7 @@
     border-color: var(--color-border-strong);
   }
 
-  /* Carte feature — fond seul */
+  /* Carte feature - fond seul */
   .feature-card {
     background-color: var(--color-bg-base);
     transition: background-color 300ms;

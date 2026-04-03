@@ -606,7 +606,7 @@ export default function SeriesAdminPage() {
                         className="text-sm"
                         style={{ color: "var(--color-text-disabled)" }}
                       >
-                        —
+                        -
                       </span>
                     ) : (
                       <AdminBadge color="gray">

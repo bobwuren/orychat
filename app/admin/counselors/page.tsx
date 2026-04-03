@@ -631,7 +631,7 @@ export default function CounselorsAdminPage() {
                           className="text-xs"
                           style={{ color: "var(--color-text-disabled)" }}
                         >
-                          —
+                          -
                         </span>
                       ) : (
                         <>

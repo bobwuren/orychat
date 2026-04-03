@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Conditions d'utilisation — Orientys",
+  title: "Conditions d'utilisation - Orientys",
   description:
     "Consultez les conditions générales d'utilisation de la plateforme Orientys.",
 };

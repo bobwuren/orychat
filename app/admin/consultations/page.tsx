@@ -416,7 +416,7 @@ export default function ConsultationsAdminPage() {
                           addSuffix: true,
                           locale: fr,
                         })
-                      : "—"}
+                      : "-"}
                   </Td>
                   <Td right>
                     <div
@@ -556,7 +556,7 @@ export default function ConsultationsAdminPage() {
                     className="text-sm"
                     style={{ color: "var(--color-text-primary)" }}
                   >
-                    {selected?.studentPhone ?? "—"}
+                    {selected?.studentPhone ?? "-"}
                   </p>
                 </div>
               </div>
@@ -716,7 +716,7 @@ export default function ConsultationsAdminPage() {
                     hour: "2-digit",
                     minute: "2-digit",
                   })
-                : "—"}
+                : "-"}
             </p>
           </div>
         )}
@@ -779,7 +779,7 @@ export default function ConsultationsAdminPage() {
               ) : (
                 activeCounselors.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name} — {c.email}
+                    {c.name} - {c.email}
                   </option>
                 ))
               )}
@@ -849,7 +849,7 @@ export default function ConsultationsAdminPage() {
         open={dialogMode === "status"}
         onClose={closeDialog}
         title="Changer le statut"
-        description={`Statut actuel : ${selected ? STATUS_LABELS[selected.status] : "—"}`}
+        description={`Statut actuel : ${selected ? STATUS_LABELS[selected.status] : "-"}`}
         size="sm"
       >
         <div className="space-y-2">

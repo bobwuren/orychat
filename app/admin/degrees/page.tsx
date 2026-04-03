@@ -339,7 +339,7 @@ export default function DegreesAdminPage() {
                   </Td>
                   <Td muted>
                     <span className="block max-w-xs truncate">
-                      {degree.description ?? "—"}
+                      {degree.description ?? "-"}
                     </span>
                   </Td>
                   <Td right>
@@ -449,7 +449,7 @@ export default function DegreesAdminPage() {
                 style={{ color: "var(--color-text-primary)" }}
               >
                 {value ?? (
-                  <span style={{ color: "var(--color-text-disabled)" }}>—</span>
+                  <span style={{ color: "var(--color-text-disabled)" }}>-</span>
                 )}
               </p>
             </div>

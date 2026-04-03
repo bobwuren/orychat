@@ -1,9 +1,9 @@
 import Link from "next/link";
 
 /* ---------------------------------------------------------------------------
- * Page d'accueil publique — Orientys
+ * Page d'accueil publique - Orientys
  *
- * Server Component — aucun event handler (onMouseEnter, onMouseLeave, etc.).
+ * Server Component - aucun event handler (onMouseEnter, onMouseLeave, etc.).
  * Les hovers sont gérés exclusivement via les classes CSS définies dans
  * globals.css (@layer components).
  * --------------------------------------------------------------------------- */
@@ -26,7 +26,7 @@ const features = [
     number: "02",
     title: "Recommandations personnalisées par IA",
     description:
-      "Chaque recommandation est générée spécifiquement pour votre profil. Pas de liste générique — une orientation pensée pour vous.",
+      "Chaque recommandation est générée spécifiquement pour votre profil. Pas de liste générique - une orientation pensée pour vous.",
   },
   {
     number: "03",
@@ -62,19 +62,19 @@ const testimonials = [
     quote:
       "Orientys m'a aidé à comprendre que la filière droit correspondait vraiment à mon profil. Je n'aurais pas fait ce choix seul.",
     name: "Kofi A.",
-    serie: "Série A — Terminale",
+    serie: "Série A - Terminale",
   },
   {
     quote:
       "En 3 minutes j'avais une recommandation claire avec les universités qui proposaient la formation. Impressionnant.",
     name: "Mariama D.",
-    serie: "Série C — Terminale",
+    serie: "Série C - Terminale",
   },
   {
     quote:
       "J'hésitais entre informatique et comptabilité. L'analyse de mes notes a tout clarifié. Je suis maintenant en L1 Info.",
     name: "Edem K.",
-    serie: "Série G1 — Terminale",
+    serie: "Série G1 - Terminale",
   },
 ];
 
@@ -107,7 +107,7 @@ const faqs = [
 ];
 
 // ---------------------------------------------------------------------------
-// Composants utilitaires — Server Components, pas d'event handlers
+// Composants utilitaires - Server Components, pas d'event handlers
 // ---------------------------------------------------------------------------
 
 /** Séparateur horizontal avec gradient de marque */
@@ -445,7 +445,7 @@ export default function HomePage() {
             <BrandDivider />
           </div>
 
-          {/* gap-px + bg de grille — feature-card gère le hover via CSS */}
+          {/* gap-px + bg de grille - feature-card gère le hover via CSS */}
           <div
             className="grid grid-cols-1 lg:grid-cols-3 gap-px rounded-2xl overflow-hidden"
             style={{ backgroundColor: "var(--color-border-default)" }}
@@ -513,7 +513,7 @@ export default function HomePage() {
                 style={{ color: "var(--color-text-muted)" }}
               >
                 Le processus est conçu pour être rapide et sans friction. Pas de
-                création de dossier complexe — juste vos notes et votre série.
+                création de dossier complexe - juste vos notes et votre série.
               </p>
             </div>
 

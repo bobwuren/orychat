@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import BackButton from "@/components/BackButton";
 
 export const metadata: Metadata = {
-  title: "Page introuvable — Orientys",
+  title: "Page introuvable - Orientys",
   description: "Cette page n'existe pas ou a été déplacée.",
 };
 

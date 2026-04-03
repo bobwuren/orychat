@@ -63,7 +63,7 @@ export interface CreateSubjectRequest {
   }>;
 }
 
-// PUT accepte des mises à jour partielles — tous les champs sont optionnels
+// PUT accepte des mises à jour partielles - tous les champs sont optionnels
 export interface UpdateSubjectRequest {
   name?: string;
   description?: string;
@@ -84,7 +84,7 @@ export interface CreateSerieRequest {
   }>;
 }
 
-// PUT accepte des mises à jour partielles — tous les champs sont optionnels
+// PUT accepte des mises à jour partielles - tous les champs sont optionnels
 export interface UpdateSerieRequest {
   code?: string;
   description?: string;
@@ -95,7 +95,7 @@ export interface UpdateSerieRequest {
   }>;
 }
 
-// ========== RESPONSES — SUBJECTS ==========
+// ========== RESPONSES - SUBJECTS ==========
 
 export interface SubjectsListResponse {
   success?: boolean;
@@ -139,7 +139,7 @@ export interface DeleteSubjectResponse {
   };
 }
 
-// ========== RESPONSES — SERIES ==========
+// ========== RESPONSES - SERIES ==========
 
 export interface SeriesListResponse {
   series: Serie[];

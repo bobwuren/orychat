@@ -3,13 +3,13 @@ import "./globals.css";
 import ConditionalShell from "@/components/layout/ConditionalShell";
 
 export const metadata: Metadata = {
-  title: "Orientys — Orientation numérique pour lycéens",
+  title: "Orientys - Orientation numérique pour lycéens",
   description:
     "Entrez vos notes, obtenez une recommandation d'orientation universitaire personnalisée par IA.",
 };
 
 /**
- * Root layout — appliqué à toutes les routes.
+ * Root layout - appliqué à toutes les routes.
  *
  * Le Header et Footer ne s'affichent que sur les routes publiques
  * (pas sur /login, /signup, /dashboard/*, /admin/*).

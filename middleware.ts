@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 /**
- * middleware.ts — Racine du projet (même niveau que /app)
+ * middleware.ts - Racine du projet (même niveau que /app)
  *
  * Responsabilités :
  *
@@ -21,7 +21,7 @@ import type { NextRequest } from "next/server";
  *    - Tenter d'accéder à une étape sans avoir complété la précédente
  *      redirige vers la première étape manquante
  *
- * IMPORTANT — Comment ça fonctionne avec localStorage :
+ * IMPORTANT - Comment ça fonctionne avec localStorage :
  *    Le middleware s'exécute côté serveur (Edge Runtime) et ne peut pas
  *    lire localStorage. On synchronise l'état via des cookies légers
  *    posés côté client par useAuth et les pages du flow.
@@ -65,12 +65,12 @@ export function middleware(request: NextRequest) {
   // -------------------------------------------------------------------------
 
   if (sessionExists) {
-    // Étape 2 — /dashboard/notes : requiert flow_serie
+    // Étape 2 - /dashboard/notes : requiert flow_serie
     if (pathname === "/dashboard/notes" && !flowSerie) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
-    // Étape 3 — /dashboard/recommendation : requiert flow_serie + flow_notes
+    // Étape 3 - /dashboard/recommendation : requiert flow_serie + flow_notes
     if (pathname === "/dashboard/recommendation") {
       if (!flowSerie) {
         return NextResponse.redirect(new URL("/dashboard", request.url));

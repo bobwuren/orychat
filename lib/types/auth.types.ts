@@ -17,7 +17,7 @@ export interface AuthUser {
   permissions: UserRole;
   createdAt?: string; // ISO 8601
   updatedAt?: string; // ISO 8601
-  lastLogin?: string; // ISO 8601 — présent dans getUsers/getUserById
+  lastLogin?: string; // ISO 8601 - présent dans getUsers/getUserById
   isActive?: boolean; // présent dans getUserById
 }
 
@@ -44,7 +44,7 @@ export interface LogoutRequest {
   refreshToken: string;
 }
 
-// Tous les champs sont optionnels — seuls les champs fournis sont mis à jour
+// Tous les champs sont optionnels - seuls les champs fournis sont mis à jour
 export interface UpdateUserRequest {
   email?: string;
   password?: string;

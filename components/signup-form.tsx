@@ -85,7 +85,7 @@ export function SignupForm({
           boxShadow: "var(--shadow-2xl)",
         }}
       >
-        {/* Panneau gauche — visuel */}
+        {/* Panneau gauche - visuel */}
         <div
           className="hidden lg:flex order-last lg:order-first relative border-r overflow-hidden"
           style={{
@@ -163,7 +163,7 @@ export function SignupForm({
           </div>
         </div>
 
-        {/* Panneau droit — formulaire */}
+        {/* Panneau droit - formulaire */}
         <div className="flex flex-col justify-center px-8 py-12 lg:px-12">
           <Link
             href="/"
@@ -189,7 +189,7 @@ export function SignupForm({
               Créer un compte
             </h1>
             <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-              Gratuit — aucune carte bancaire requise
+              Gratuit - aucune carte bancaire requise
             </p>
           </div>
 

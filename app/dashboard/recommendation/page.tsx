@@ -260,7 +260,7 @@ export default function RecommendationPage() {
           className="text-xs uppercase tracking-[0.15em] font-semibold mb-3"
           style={{ color: "var(--color-brand-accent)" }}
         >
-          Étape 4 sur 4 — Terminé
+          Étape 4 sur 4 - Terminé
         </p>
         <h1
           className="font-display text-3xl lg:text-4xl font-bold mb-2"

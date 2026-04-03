@@ -263,7 +263,7 @@ function SubjectForm({
                   <option value="">Série…</option>
                   {serieOptions.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {s.code} — {s.description}
+                      {s.code} - {s.description}
                     </option>
                   ))}
                 </select>
@@ -585,7 +585,7 @@ export default function SubjectsAdminPage() {
                           className="text-sm"
                           style={{ color: "var(--color-text-disabled)" }}
                         >
-                          —
+                          -
                         </span>
                       ) : (
                         <div className="flex flex-wrap gap-1">

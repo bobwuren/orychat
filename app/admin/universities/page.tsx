@@ -600,7 +600,7 @@ export default function UniversitiesAdminPage() {
                           className="text-sm"
                           style={{ color: "var(--color-text-disabled)" }}
                         >
-                          —
+                          -
                         </span>
                       ) : (
                         <AdminBadge color="gray">
@@ -626,7 +626,7 @@ export default function UniversitiesAdminPage() {
                           className="text-sm"
                           style={{ color: "var(--color-text-disabled)" }}
                         >
-                          —
+                          -
                         </span>
                       )}
                     </Td>

@@ -2,7 +2,7 @@
  * components/admin/ui.tsx
  *
  * Primitives UI partagées entre toutes les pages admin.
- * Couleurs via variables CSS du design system — aucune valeur hardcodée.
+ * Couleurs via variables CSS du design system - aucune valeur hardcodée.
  * Tables responsives : scroll horizontal sur mobile.
  */
 
@@ -140,7 +140,7 @@ export function Btn({
 }
 
 // ---------------------------------------------------------------------------
-// Table — responsive (scroll horizontal sur mobile)
+// Table - responsive (scroll horizontal sur mobile)
 // ---------------------------------------------------------------------------
 
 export function AdminTable({ children }: { children: ReactNode }) {
@@ -584,7 +584,7 @@ export function PaginationBar({
 }
 
 // ---------------------------------------------------------------------------
-// Dialog / Modal — responsive (plein écran sur mobile)
+// Dialog / Modal - responsive (plein écran sur mobile)
 // ---------------------------------------------------------------------------
 
 interface AdminDialogProps {
@@ -615,7 +615,7 @@ export function AdminDialog({
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
-      {/* Panel — plein écran sur mobile, centré sur desktop */}
+      {/* Panel - plein écran sur mobile, centré sur desktop */}
       <div
         className={[
           "relative w-full rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden",
@@ -678,7 +678,7 @@ export function AdminDialog({
           </button>
         </div>
 
-        {/* Body — scrollable */}
+        {/* Body - scrollable */}
         <div className="px-5 sm:px-6 py-5 overflow-y-auto max-h-[60vh] sm:max-h-[65vh]">
           {children}
         </div>

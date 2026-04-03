@@ -7,7 +7,7 @@ import Link from "next/link";
 import OrientysLogo from "@/components/OrientysLogo";
 
 /**
- * Layout admin — Topbar persistante + Sidebar collapsible.
+ * Layout admin - Topbar persistante + Sidebar collapsible.
  * Couleurs via variables CSS du design system.
  * Responsif : sidebar cachée sur mobile, overlay slide depuis la gauche.
  */
@@ -254,7 +254,7 @@ export default function AdminLayout({
           )}
         </div>
 
-        {/* Bouton collapse — desktop */}
+        {/* Bouton collapse - desktop */}
         <button
           onClick={() => setCollapsed((c) => !c)}
           className="hidden lg:flex w-9 h-9 ml-2 items-center justify-center rounded-lg transition-all shrink-0"
@@ -292,7 +292,7 @@ export default function AdminLayout({
           )}
         </button>
 
-        {/* Hamburger — mobile */}
+        {/* Hamburger - mobile */}
         <button
           onClick={() => setMobileOpen((o) => !o)}
           className="lg:hidden flex w-9 h-9 ml-2 items-center justify-center rounded-lg transition-all shrink-0"
@@ -377,7 +377,7 @@ export default function AdminLayout({
                 "A"}
             </div>
 
-            {/* Nom — masqué sur mobile */}
+            {/* Nom - masqué sur mobile */}
             <div className="hidden md:block leading-none">
               <p
                 className="text-xs font-semibold truncate max-w-[100px]"

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Politique de confidentialité — Orientys",
+  title: "Politique de confidentialité - Orientys",
   description:
     "Découvrez comment Orientys collecte, utilise et protège vos données personnelles.",
 };

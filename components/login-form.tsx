@@ -67,7 +67,7 @@ export function LoginForm({
           borderColor: "var(--color-border-default)",
         }}
       >
-        {/* Panneau gauche — formulaire */}
+        {/* Panneau gauche - formulaire */}
         <div className="flex flex-col justify-center px-8 py-12 lg:px-12">
           <Link
             href="/"
@@ -274,7 +274,7 @@ export function LoginForm({
           </p>
         </div>
 
-        {/* Panneau droit — visuel */}
+        {/* Panneau droit - visuel */}
         <div
           className="hidden lg:flex relative border-l overflow-hidden"
           style={{

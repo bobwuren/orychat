@@ -2,13 +2,13 @@ import ContactForm from "@/components/ContactForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact — Orientys",
+  title: "Contact - Orientys",
   description:
     "Contactez l'équipe Orientys pour toute question sur notre service d'orientation universitaire.",
 };
 
 /**
- * Page Contact — Server Component.
+ * Page Contact - Server Component.
  * Aucun event handler. Les hovers sont gérés via les classes CSS
  * (card-hover, link-muted, etc.) définies dans globals.css.
  */
@@ -230,7 +230,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Colonne droite — formulaire (Client Component) */}
+          {/* Colonne droite - formulaire (Client Component) */}
           <div className="lg:col-span-3">
             <ContactForm />
           </div>

@@ -7,7 +7,7 @@ import type { Serie } from "@/lib/types";
 
 /**
  * Retourne la couleur d'accent associée à une série.
- * Ces couleurs sont des accents sémantiques par série — indépendants du thème.
+ * Ces couleurs sont des accents sémantiques par série - indépendants du thème.
  */
 function getSerieAccent(code: string): string {
   if (!code) return "var(--color-brand-accent)";
@@ -35,7 +35,7 @@ function getSerieShortLabel(code: string): string {
   return map[code.toUpperCase()] ?? "Série générale";
 }
 
-/** Page de sélection de la série — dashboard principal */
+/** Page de sélection de la série - dashboard principal */
 export default function DashboardPage() {
   const router = useRouter();
   const [series, setSeries] = useState<Serie[]>([]);
@@ -175,7 +175,7 @@ export default function DashboardPage() {
 }
 
 // ---------------------------------------------------------------------------
-// Composant indicateur d'étapes — partagé dans les pages dashboard
+// Composant indicateur d'étapes - partagé dans les pages dashboard
 // ---------------------------------------------------------------------------
 
 /**

@@ -7,7 +7,7 @@ import { subjectsApi } from "@/lib/api";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { StepIndicator } from "@/app/dashboard/page";
 
-/** Page de saisie des notes par matière — étape 2 */
+/** Page de saisie des notes par matière - étape 2 */
 export default function NotesPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -159,7 +159,7 @@ export default function NotesPage() {
           {serie?.description && (
             <span style={{ color: "var(--color-text-disabled)" }}>
               {" "}
-              — {serie.description}
+              - {serie.description}
             </span>
           )}
         </p>
@@ -261,7 +261,7 @@ export default function NotesPage() {
                 min={0}
                 max={20}
                 step={0.5}
-                placeholder="—"
+                placeholder="-"
                 value={value}
                 onChange={(e) => handleChange(subject.id, e.target.value)}
                 className="w-20 px-3 py-2 text-center text-sm font-semibold rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 shrink-0"

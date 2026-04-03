@@ -154,7 +154,7 @@ export default function HistoryPage() {
                     {/* Infos */}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                        Série {rec.serieCode ?? "—"}
+                        Série {rec.serieCode ?? "-"}
                       </p>
                       <div className="flex items-center gap-3 mt-0.5">
                         <span className="text-xs" style={{ color: "var(--color-text-disabled)" }}>

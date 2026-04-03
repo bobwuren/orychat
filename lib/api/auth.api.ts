@@ -32,7 +32,7 @@ function buildQuery(params?: ListUsersQuery): Record<string, string | number> {
 }
 
 /* =========================================================
-   AUTH — PUBLIC
+   AUTH - PUBLIC
    ========================================================= */
 
 export const register = async (data: RegisterRequest) => {
@@ -48,7 +48,7 @@ export const refreshToken = async (data: RefreshTokenRequest) => {
 };
 
 /* =========================================================
-   AUTH — PROTECTED
+   AUTH - PROTECTED
    ========================================================= */
 
 export const logout = async (data: LogoutRequest) => {
@@ -56,7 +56,7 @@ export const logout = async (data: LogoutRequest) => {
 };
 
 /* =========================================================
-   USERS — ADMIN / SELF
+   USERS - ADMIN / SELF
    ========================================================= */
 
 export const getUsers = async (query?: ListUsersQuery) => {
