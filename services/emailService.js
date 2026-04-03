@@ -548,6 +548,232 @@ exports.sendStudentConfirmation = async (data) => {
 };
 
 /**
+ * Envoie un email pour une demande de contact du formulaire public
+ *
+ * @param {Object} data - Données du contact
+ * @param {string} data.name - Nom du contact
+ * @param {string} data.email - Email du contact
+ * @param {string} data.subject - Sujet du message
+ * @param {string} data.message - Corps du message
+ * @returns {Promise<Object>} Résultat de l'envoi
+ */
+exports.sendContactMessage = async (data) => {
+    console.log('📧 [Email] Processus demande de contact:', data.email);
+
+    if (!transporter) {
+        console.error('❌ [Email] Transporteur non initialisé');
+        throw new Error('Service email non disponible - Vérifier configuration SMTP');
+    }
+
+    const { name, email, subject, message } = data;
+    const teamEmail = process.env.SMTP_USER;
+
+    // Email à l'équipe Orientys
+    const teamEmailContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvelle Demande de Contact - Orientys</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #0a0615; color: #f7f7f8;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width: 600px; background-color: #18151c; border-radius: 12px; border: 1px solid #252426;">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); padding: 40px; text-align: center; border-radius: 12px 12px 0 0;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">
+                                📬 Nouvelle Demande de Contact
+                            </h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Contenu -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <div style="background-color: #0a0615; border: 1px solid #7c3aed; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+                                <h3 style="color: #7c3aed; margin: 0 0 16px; font-size: 18px;">
+                                    👤 Profil du Contact
+                                </h3>
+                                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                    <tr>
+                                        <td style="padding: 8px 0; width: 100px;">
+                                            <strong style="color: #f7f7f8;">Nom :</strong>
+                                        </td>
+                                        <td style="padding: 8px 0; color: #b8b8ba;">
+                                            ${name}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <strong style="color: #f7f7f8;">Email :</strong>
+                                        </td>
+                                        <td style="padding: 8px 0;">
+                                            <a href="mailto:${email}" style="color: #7c3aed; text-decoration: none;">
+                                                ${email}
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <div style="background-color: #0a0615; border: 1px solid #252426; border-radius: 8px; padding: 24px;">
+                                <h3 style="color: #7c3aed; margin: 0 0 16px; font-size: 18px;">
+                                    📝 Message
+                                </h3>
+                                <div style="background-color: #18151c; border-left: 3px solid #7c3aed; padding: 16px; border-radius: 4px;">
+                                    <h4 style="margin: 0 0 12px; color: #f7f7f8; font-size: 16px;">
+                                        Sujet : ${subject}
+                                    </h4>
+                                    <p style="margin: 0; color: #b8b8ba; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">
+                                        ${message}
+                                    </p>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #0a0615; padding: 24px; text-align: center; border-top: 1px solid #252426; border-radius: 0 0 12px 12px;">
+                            <p style="color: #b8b8ba; font-size: 12px; margin: 0 0 8px;">
+                                Reçu le ${new Date().toLocaleString('fr-FR')}
+                            </p>
+                            <p style="color: #b8b8ba; font-size: 12px; margin: 0;">
+                                © ${new Date().getFullYear()} Orientys - Tous droits réservés
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`;
+
+    // Email de confirmation à l'utilisateur
+    const userEmailContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation de Contact - Orientys</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #0a0615; color: #f7f7f8;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width: 600px; background-color: #18151c; border-radius: 12px; border: 1px solid #252426;">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); padding: 40px; text-align: center; border-radius: 12px 12px 0 0;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">
+                                ✅ Message Reçu
+                            </h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Contenu -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <h2 style="color: #f7f7f8; margin: 0 0 20px; font-size: 20px;">
+                                Bonjour ${name},
+                            </h2>
+                            
+                            <p style="color: #b8b8ba; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+                                Merci de nous avoir contactés. Nous avons bien reçu votre message et nous vous répondrons dans les plus brefs délais.
+                            </p>
+                            
+                            <div style="background-color: #0a0615; border: 1px solid #7c3aed; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+                                <h3 style="color: #7c3aed; margin: 0 0 16px; font-size: 18px;">
+                                    📋 Récapitulatif
+                                </h3>
+                                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                    <tr>
+                                        <td style="padding: 8px 0; width: 100px;">
+                                            <strong style="color: #f7f7f8;">Email :</strong>
+                                        </td>
+                                        <td style="padding: 8px 0; color: #b8b8ba;">
+                                            ${email}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <strong style="color: #f7f7f8;">Sujet :</strong>
+                                        </td>
+                                        <td style="padding: 8px 0; color: #b8b8ba;">
+                                            ${subject}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <div style="background-color: #0a0615; border: 1px solid #252426; border-radius: 8px; padding: 24px;">
+                                <h3 style="color: #7c3aed; margin: 0 0 16px; font-size: 18px;">
+                                    ⏱️ Délai de Réponse
+                                </h3>
+                                <p style="color: #b8b8ba; font-size: 14px; line-height: 1.6; margin: 0;">
+                                    L'équipe Orientys répondra à votre message sous 48 heures ouvrables.
+                                </p>
+                            </div>
+                            
+                            <p style="color: #b8b8ba; font-size: 14px; line-height: 1.6; margin-top: 24px;">
+                                Cordialement,
+                                <br>
+                                <strong>L'équipe Orientys 🚀</strong>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #0a0615; padding: 24px; text-align: center; border-top: 1px solid #252426; border-radius: 0 0 12px 12px;">
+                            <p style="color: #b8b8ba; font-size: 12px; margin: 0 0 8px;">
+                                © ${new Date().getFullYear()} Orientys - Tous droits réservés
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`;
+
+    try {
+        // Envoi de l'email à l'équipe
+        await transporter.sendMail({
+            from: `Orientys - Contact ${process.env.SMTP_USER}`,
+            to: teamEmail,
+            subject: `📬 Nouvelle Demande de Contact: ${subject}`,
+            html: teamEmailContent,
+            replyTo: email
+        });
+
+        // Envoi de la confirmation à l'utilisateur
+        await transporter.sendMail({
+            from: `Orientys - Support ${process.env.SMTP_USER}`,
+            to: email,
+            subject: '✅ Nous avons reçu votre message',
+            html: userEmailContent
+        });
+
+        console.log('✅ [Email] Emails de contact envoyés avec succès');
+        return {
+            success: true,
+            message: 'Message envoyé avec succès'
+        };
+    } catch (error) {
+        console.error('❌ [Email] Erreur envoi contact:', error.message);
+        throw new Error(`Échec envoi email contact: ${error.message}`);
+    }
+};
+
+/**
  * Vérifie si le service email est disponible
  *
  * @returns {boolean} True si disponible

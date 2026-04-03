@@ -21,7 +21,19 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true, // Ne pas compter les connexions réussies
 });
 
+// Limitation pour le formulaire de contact
+const contactLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 heure
+  max: 5, // 5 messages de contact par IP par heure
+  message: {
+    error: 'Trop de messages de contact. Veuillez réessayer dans une heure.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 module.exports = {
   generalLimiter,
-  authLimiter
+  authLimiter,
+  contactLimiter
 };
