@@ -48,7 +48,7 @@ interface RequestOptions<B = unknown> {
 export class ApiClient {
   private baseURL: string;
   private accessToken: string | null = null;
-  private isDev = process.env.NODE_ENV !== "production";
+  private isDev = process.env.NEXT_PUBLIC_NODE_ENV !== "production";
 
   constructor(baseURL: string) {
     this.baseURL = baseURL.replace(/\/$/, "");

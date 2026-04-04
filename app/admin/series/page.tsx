@@ -29,10 +29,6 @@ import {
 import { useSeries, useSubjects } from "@/lib/hooks";
 import type { Serie } from "@/lib/types";
 
-// ---------------------------------------------------------------------------
-// Types locaux
-// ---------------------------------------------------------------------------
-
 type DialogMode = "create" | "edit" | "view" | "delete" | "export" | null;
 const ITEMS_PER_PAGE = 10;
 
@@ -40,10 +36,6 @@ interface SubjectRow {
   subjectId: string;
   coefficient: number;
 }
-
-// ---------------------------------------------------------------------------
-// Icônes SVG inline
-// ---------------------------------------------------------------------------
 
 function IconRefresh() {
   return (
@@ -98,10 +90,6 @@ function IconX() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Styles partagés pour les inputs inline dans les formulaires
-// ---------------------------------------------------------------------------
-
 const inlineSelectStyle: React.CSSProperties = {
   backgroundColor: "var(--color-input-bg)",
   border: "1px solid var(--color-input-border)",
@@ -121,10 +109,6 @@ const inlineInputBlur = (
   e.currentTarget.style.borderColor = "var(--color-input-border)";
   e.currentTarget.style.boxShadow = "none";
 };
-
-// ---------------------------------------------------------------------------
-// Formulaire série
-// ---------------------------------------------------------------------------
 
 interface SerieFormProps {
   initial?: Partial<Serie>;
@@ -209,20 +193,25 @@ function SerieForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FormField label="Code" required>
+        <FormField label="Code" required hint="Ex : A, C, D, G1">
           <AdminInput
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="ex: A, C, D, G1"
+            placeholder="ex: A"
             disabled={isLoading}
+            required
           />
         </FormField>
         <div className="sm:col-span-2">
-          <FormField label="Description" required>
+          <FormField
+            label="Description"
+            required
+            hint="Intitulé complet de la série"
+          >
             <AdminTextarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Description de la série"
+              placeholder="ex: Sciences de la Vie et de la Terre"
               rows={2}
               disabled={isLoading}
             />
@@ -232,12 +221,18 @@ function SerieForm({
 
       {/* Matières */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-1">
           <p
             className="text-xs font-semibold uppercase tracking-[0.1em]"
             style={{ color: "var(--color-text-muted)" }}
           >
-            Matières
+            Matières{" "}
+            <span
+              className="font-normal normal-case tracking-normal"
+              style={{ color: "var(--color-text-disabled)" }}
+            >
+              (optionnel)
+            </span>
           </p>
           <Btn
             type="button"
@@ -333,10 +328,6 @@ function SerieForm({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Page principale
-// ---------------------------------------------------------------------------
-
 export default function SeriesAdminPage() {
   const {
     series,
@@ -370,6 +361,7 @@ export default function SeriesAdminPage() {
     load();
     fetchSubjects();
   }, [load, fetchSubjects]);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
@@ -501,7 +493,6 @@ export default function SeriesAdminPage() {
   const resolveSubjectName = (subjectId: string) =>
     subjects?.find((s) => String(s.id) === String(subjectId))?.name ??
     subjectId;
-
   const activeSerie =
     currentSerie?.id === selectedSerie?.id
       ? (currentSerie ?? selectedSerie)
@@ -573,11 +564,7 @@ export default function SeriesAdminPage() {
             ) : paginated.length === 0 ? (
               <EmptyRow
                 colSpan={4}
-                label={
-                  searchTerm
-                    ? "Aucun résultat pour cette recherche."
-                    : "Aucune série."
-                }
+                label={searchTerm ? "Aucun résultat." : "Aucune série."}
                 action={
                   !searchTerm ? (
                     <Btn variant="secondary" size="sm" onClick={openCreate}>
@@ -654,13 +641,12 @@ export default function SeriesAdminPage() {
         />
       </AdminCard>
 
-      {/* ── Dialog Création ── */}
       <AdminDialog
         open={dialogMode === "create"}
         onClose={closeDialog}
         size="md"
         title="Nouvelle série"
-        description="Remplissez les informations de la série."
+        description="Code et description sont obligatoires."
       >
         <SerieForm
           mode="create"
@@ -672,7 +658,6 @@ export default function SeriesAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
-      {/* ── Dialog Édition ── */}
       <AdminDialog
         open={dialogMode === "edit"}
         onClose={closeDialog}
@@ -691,7 +676,6 @@ export default function SeriesAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
-      {/* ── Dialog Vue ── */}
       <AdminDialog
         open={dialogMode === "view"}
         onClose={closeDialog}
@@ -784,12 +768,11 @@ export default function SeriesAdminPage() {
         </DialogActions>
       </AdminDialog>
 
-      {/* ── Dialog Suppression ── */}
       <AdminDialog
         open={dialogMode === "delete"}
         onClose={closeDialog}
         title="Confirmer la suppression"
-        description="Cette action est irréversible. Toutes les dépendances seront supprimées en cascade."
+        description="Cette action est irréversible. Toutes les dépendances seront supprimées."
         size="sm"
       >
         <div
@@ -829,7 +812,6 @@ export default function SeriesAdminPage() {
         </DialogActions>
       </AdminDialog>
 
-      {/* ── Dialog Export ── */}
       <AdminDialog
         open={dialogMode === "export"}
         onClose={closeDialog}

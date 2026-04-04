@@ -56,25 +56,26 @@ export function LoginForm({
   };
 
   const inputClass =
-    "w-full px-4 py-3 border rounded-lg text-sm placeholder:text-[var(--color-text-placeholder)] focus:outline-none transition-all duration-200";
+    "w-full px-4 py-3 border rounded-xl text-sm placeholder:text-[var(--color-text-placeholder)] focus:outline-none transition-all duration-200";
 
   return (
     <div className={cn("w-full", className)} {...props}>
       <div
-        className="grid lg:grid-cols-2 min-h-[520px] border rounded-2xl overflow-hidden shadow-2xl"
+        className="grid lg:grid-cols-2 min-h-[480px] sm:min-h-[520px] border rounded-2xl overflow-hidden"
         style={{
           backgroundColor: "var(--color-bg-base)",
           borderColor: "var(--color-border-default)",
+          boxShadow: "var(--shadow-2xl)",
         }}
       >
-        {/* Panneau gauche - formulaire */}
-        <div className="flex flex-col justify-center px-8 py-12 lg:px-12">
+        {/* Formulaire */}
+        <div className="flex flex-col justify-center px-6 py-10 sm:px-8 sm:py-12 lg:px-12">
           <Link
             href="/"
-            className="inline-flex items-center gap-2.5 mb-10 group w-fit"
+            className="inline-flex items-center gap-2.5 mb-8 sm:mb-10 group w-fit"
           >
             <OrientysLogo
-              height={30}
+              height={28}
               className="transition-transform duration-500 group-hover:scale-105"
             />
             <span
@@ -85,9 +86,9 @@ export function LoginForm({
             </span>
           </Link>
 
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <h1
-              className="font-display text-3xl font-bold mb-2"
+              className="font-display text-2xl sm:text-3xl font-bold mb-2"
               style={{ color: "var(--color-text-primary)" }}
             >
               Bon retour
@@ -97,17 +98,20 @@ export function LoginForm({
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-4 sm:gap-5"
+          >
             <div className="flex flex-col gap-2">
               <label
-                htmlFor="email"
+                htmlFor="login-email"
                 className="text-xs font-semibold uppercase tracking-[0.12em]"
                 style={{ color: "var(--color-text-secondary)" }}
               >
                 Adresse email
               </label>
               <input
-                id="email"
+                id="login-email"
                 type="email"
                 required
                 autoComplete="email"
@@ -123,7 +127,7 @@ export function LoginForm({
 
             <div className="flex flex-col gap-2">
               <label
-                htmlFor="password"
+                htmlFor="login-password"
                 className="text-xs font-semibold uppercase tracking-[0.12em]"
                 style={{ color: "var(--color-text-secondary)" }}
               >
@@ -131,7 +135,7 @@ export function LoginForm({
               </label>
               <div className="relative">
                 <input
-                  id="password"
+                  id="login-password"
                   type={showPassword ? "text" : "password"}
                   required
                   autoComplete="current-password"
@@ -190,7 +194,7 @@ export function LoginForm({
 
             {error && (
               <div
-                className="flex items-center gap-2 px-4 py-3 border rounded-lg"
+                className="flex items-center gap-2 px-4 py-3 border rounded-xl"
                 style={{
                   backgroundColor: "var(--color-state-error-bg)",
                   borderColor: "var(--color-state-error-border)",
@@ -221,11 +225,11 @@ export function LoginForm({
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full py-3.5 font-semibold text-sm rounded-lg overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed mt-1"
+              className="group relative w-full py-3 sm:py-3.5 font-semibold text-sm rounded-xl overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed mt-1"
               style={{ color: "var(--color-bg-base)" }}
             >
               <span
-                className="absolute inset-0 transition-transform duration-300 group-hover:scale-105 group-disabled:scale-100"
+                className="absolute inset-0 transition-all duration-300 group-hover:brightness-110 group-disabled:brightness-100"
                 style={{ background: "var(--gradient-brand)" }}
               />
               <span className="relative flex items-center justify-center gap-2">
@@ -260,7 +264,7 @@ export function LoginForm({
           </form>
 
           <p
-            className="mt-6 text-center text-sm"
+            className="mt-5 sm:mt-6 text-center text-sm"
             style={{ color: "var(--color-text-disabled)" }}
           >
             Pas encore de compte ?{" "}
@@ -274,7 +278,7 @@ export function LoginForm({
           </p>
         </div>
 
-        {/* Panneau droit - visuel */}
+        {/* Panneau visuel desktop */}
         <div
           className="hidden lg:flex relative border-l overflow-hidden"
           style={{
@@ -295,8 +299,7 @@ export function LoginForm({
           />
 
           <div className="relative z-10 flex flex-col items-center justify-center p-12 text-center gap-6 w-full">
-            <OrientysLogo height={72} />
-
+            <OrientysLogo height={68} className="animate-float" />
             <div>
               <p
                 className="font-display text-2xl font-bold mb-3"
@@ -319,7 +322,6 @@ export function LoginForm({
                 série.
               </p>
             </div>
-
             <div
               className="flex gap-6 pt-4 border-t w-full justify-center"
               style={{ borderColor: "var(--color-border-default)" }}

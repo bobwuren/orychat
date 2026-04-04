@@ -36,12 +36,6 @@ interface SerieCoeffRow {
   coefficient: number;
 }
 
-// ---------------------------------------------------------------------------
-// Normalise seriesCoefficients quel que soit le format retourné par l'API :
-//   - tableau : [{ serieId, coefficient }]
-//   - objet   : { "serieId": coefficient }
-// ---------------------------------------------------------------------------
-
 function normalizeCoefficients(raw: any): SerieCoeffRow[] {
   if (!raw) return [];
   if (Array.isArray(raw)) return raw;
@@ -63,7 +57,6 @@ function IconRefresh() {
     </svg>
   );
 }
-
 function IconDownload() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
@@ -77,7 +70,6 @@ function IconDownload() {
     </svg>
   );
 }
-
 function IconPlus() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
@@ -90,7 +82,6 @@ function IconPlus() {
     </svg>
   );
 }
-
 function IconX() {
   return (
     <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
@@ -104,29 +95,19 @@ function IconX() {
   );
 }
 
-const inlineSelectStyle: React.CSSProperties = {
+const inlineStyle: React.CSSProperties = {
   backgroundColor: "var(--color-input-bg)",
   border: "1px solid var(--color-input-border)",
   color: "var(--color-text-primary)",
 };
-
-const inlineInputFocus = (
-  e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>,
-) => {
+const onFocus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
   e.currentTarget.style.borderColor = "var(--color-input-border-focus)";
   e.currentTarget.style.boxShadow = "0 0 0 3px var(--color-input-ring)";
 };
-
-const inlineInputBlur = (
-  e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>,
-) => {
+const onBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
   e.currentTarget.style.borderColor = "var(--color-input-border)";
   e.currentTarget.style.boxShadow = "none";
 };
-
-// ---------------------------------------------------------------------------
-// Formulaire matière
-// ---------------------------------------------------------------------------
 
 interface SubjectFormProps {
   initial?: Partial<SubjectWithCoefficients>;
@@ -197,22 +178,29 @@ function SubjectForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <FormField label="Nom" required>
+      <FormField label="Nom" required hint="Nom complet de la matière">
         <AdminInput
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="ex: Mathématiques"
           disabled={isLoading}
+          required
         />
       </FormField>
 
       <div className="space-y-2">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-1">
           <p
             className="text-xs font-semibold uppercase tracking-[0.1em]"
             style={{ color: "var(--color-text-muted)" }}
           >
-            Coefficients par série
+            Coefficients par série{" "}
+            <span
+              className="font-normal normal-case tracking-normal"
+              style={{ color: "var(--color-text-disabled)" }}
+            >
+              (optionnel)
+            </span>
           </p>
           <Btn
             type="button"
@@ -241,9 +229,9 @@ function SubjectForm({
                   onChange={(e) => updateRow(i, "serieId", e.target.value)}
                   disabled={isLoading}
                   className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none transition-all"
-                  style={inlineSelectStyle}
-                  onFocus={inlineInputFocus}
-                  onBlur={inlineInputBlur}
+                  style={inlineStyle}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
                 >
                   <option value="">Série…</option>
                   {serieOptions.map((s) => (
@@ -262,9 +250,9 @@ function SubjectForm({
                   }
                   disabled={isLoading}
                   className="w-20 px-3 py-2 rounded-lg text-sm text-center focus:outline-none transition-all"
-                  style={inlineSelectStyle}
-                  onFocus={inlineInputFocus}
-                  onBlur={inlineInputBlur}
+                  style={inlineStyle}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
                 />
                 <button
                   type="button"
@@ -308,10 +296,6 @@ function SubjectForm({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Page principale
-// ---------------------------------------------------------------------------
-
 export default function SubjectsAdminPage() {
   const {
     subjects,
@@ -346,7 +330,6 @@ export default function SubjectsAdminPage() {
     load();
     fetchSeries();
   }, [load, fetchSeries]);
-
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
@@ -365,27 +348,23 @@ export default function SubjectsAdminPage() {
     setSelectedSubject(null);
     setActionError(null);
   };
-
   const openCreate = () => {
     setSelectedSubject(null);
     setActionError(null);
     setDialogMode("create");
   };
-
   const openEdit = async (s: SubjectWithCoefficients) => {
     setActionError(null);
     setSelectedSubject(s);
     setDialogMode("edit");
     await fetchSubjectById(s.id);
   };
-
   const openView = async (s: SubjectWithCoefficients) => {
     setActionError(null);
     setSelectedSubject(s);
     setDialogMode("view");
     await fetchSubjectById(s.id);
   };
-
   const openDelete = (s: SubjectWithCoefficients) => {
     setActionError(null);
     setSelectedSubject(s);
@@ -465,10 +444,8 @@ export default function SubjectsAdminPage() {
     code: s.code,
     description: s.description,
   }));
-
   const resolveSerieLabel = (serieId: string) =>
     series?.find((s) => String(s.id) === String(serieId))?.code ?? serieId;
-
   const activeSubject =
     currentSubject?.id === selectedSubject?.id
       ? (currentSubject ?? selectedSubject)
@@ -514,7 +491,6 @@ export default function SubjectsAdminPage() {
 
       <AdminCard
         title="Liste des matières"
-        description="Créez, modifiez ou supprimez des matières."
         toolbar={
           <SearchBar
             value={searchInput}
@@ -539,11 +515,7 @@ export default function SubjectsAdminPage() {
             ) : paginated.length === 0 ? (
               <EmptyRow
                 colSpan={3}
-                label={
-                  searchTerm
-                    ? "Aucun résultat pour cette recherche."
-                    : "Aucune matière."
-                }
+                label={searchTerm ? "Aucun résultat." : "Aucune matière."}
                 action={
                   !searchTerm ? (
                     <Btn variant="secondary" size="sm" onClick={openCreate}>
@@ -633,13 +605,12 @@ export default function SubjectsAdminPage() {
         />
       </AdminCard>
 
-      {/* ── Dialog Création ── */}
       <AdminDialog
         open={dialogMode === "create"}
         onClose={closeDialog}
         size="md"
         title="Nouvelle matière"
-        description="Remplissez les informations de la matière."
+        description="Le nom est obligatoire."
       >
         <SubjectForm
           mode="create"
@@ -651,7 +622,6 @@ export default function SubjectsAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
-      {/* ── Dialog Édition ── */}
       <AdminDialog
         open={dialogMode === "edit"}
         onClose={closeDialog}
@@ -670,7 +640,6 @@ export default function SubjectsAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
-      {/* ── Dialog Vue ── */}
       <AdminDialog
         open={dialogMode === "view"}
         onClose={closeDialog}
@@ -769,12 +738,11 @@ export default function SubjectsAdminPage() {
         </DialogActions>
       </AdminDialog>
 
-      {/* ── Dialog Suppression ── */}
       <AdminDialog
         open={dialogMode === "delete"}
         onClose={closeDialog}
         title="Confirmer la suppression"
-        description="Cette action est irréversible. Toutes les notes et dépendances seront supprimées."
+        description="Toutes les notes et dépendances seront supprimées."
         size="sm"
       >
         <div
@@ -816,7 +784,6 @@ export default function SubjectsAdminPage() {
         </DialogActions>
       </AdminDialog>
 
-      {/* ── Dialog Export ── */}
       <AdminDialog
         open={dialogMode === "export"}
         onClose={closeDialog}

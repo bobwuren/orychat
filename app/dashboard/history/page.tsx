@@ -26,13 +26,12 @@ export default function HistoryPage() {
   }, []);
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-12">
-
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       {/* En-tête */}
-      <div className="flex items-start justify-between mb-10 gap-4">
+      <div className="flex items-start justify-between mb-8 sm:mb-10 gap-4">
         <div>
           <h1
-            className="font-display text-3xl lg:text-4xl font-bold mb-2"
+            className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold mb-1.5"
             style={{ color: "var(--color-text-primary)" }}
           >
             Historique
@@ -43,16 +42,21 @@ export default function HistoryPage() {
         </div>
         <button
           onClick={() => router.push("/dashboard")}
-          className="group shrink-0 relative overflow-hidden px-5 py-2.5 rounded-lg text-sm font-semibold"
+          className="group shrink-0 relative overflow-hidden px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold"
           style={{ color: "var(--color-bg-base)" }}
         >
           <span
-            className="absolute inset-0 transition-transform duration-300 group-hover:scale-105"
+            className="absolute inset-0 transition-all duration-300 group-hover:brightness-110"
             style={{ background: "var(--gradient-brand)" }}
           />
           <span className="relative flex items-center gap-1.5">
             <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
-              <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              <path
+                d="M8 2v12M2 8h12"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
             </svg>
             Nouvelle analyse
           </span>
@@ -61,83 +65,100 @@ export default function HistoryPage() {
 
       {/* Chargement */}
       {loading ? (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2.5 sm:gap-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="h-20 rounded-xl animate-pulse"
-              style={{ backgroundColor: "var(--color-bg-surface)", animationDelay: `${i * 80}ms` }}
+              className="h-18 sm:h-20 rounded-xl skeleton"
+              style={{ animationDelay: `${i * 80}ms` }}
             />
           ))}
         </div>
       ) : recommendations.length === 0 ? (
-
         /* État vide */
-        <div className="flex flex-col items-center text-center py-20 gap-5">
+        <div className="flex flex-col items-center text-center py-16 sm:py-20 gap-5">
           <div
-            className="w-16 h-16 rounded-2xl border flex items-center justify-center"
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border flex items-center justify-center"
             style={{
               backgroundColor: "var(--color-bg-surface)",
               borderColor: "var(--color-border-default)",
             }}
           >
             <svg
-              className="w-7 h-7"
+              className="w-6 h-6 sm:w-7 sm:h-7"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.2"
               style={{ color: "var(--color-border-strong)" }}
             >
-              <path d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </div>
           <div>
-            <p className="font-display text-lg font-bold mb-1" style={{ color: "var(--color-text-primary)" }}>
+            <p
+              className="font-display text-lg font-bold mb-1.5"
+              style={{ color: "var(--color-text-primary)" }}
+            >
               Aucune analyse pour l&apos;instant
             </p>
-            <p className="text-sm" style={{ color: "var(--color-text-disabled)" }}>
+            <p
+              className="text-sm max-w-xs"
+              style={{ color: "var(--color-text-disabled)" }}
+            >
               Lancez votre première analyse pour découvrir vos orientations.
             </p>
           </div>
           <button
             onClick={() => router.push("/dashboard")}
-            className="group relative px-6 py-3 rounded-lg text-sm font-semibold overflow-hidden"
+            className="group relative px-6 py-3 rounded-xl text-sm font-semibold overflow-hidden"
             style={{ color: "var(--color-bg-base)" }}
           >
             <span
-              className="absolute inset-0 transition-transform duration-300 group-hover:scale-105"
+              className="absolute inset-0 transition-all duration-300 group-hover:brightness-110"
               style={{ background: "var(--gradient-brand)" }}
             />
             <span className="relative">Faire ma première analyse</span>
           </button>
         </div>
-
       ) : (
-
         /* Liste */
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2.5 sm:gap-3">
           {recommendations.map((rec) => {
             const isOpen = expanded === rec.id;
 
             return (
               <div
                 key={rec.id}
-                className="border rounded-2xl overflow-hidden transition-all duration-300"
+                className="border rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300"
                 style={{
                   backgroundColor: "var(--color-bg-base)",
-                  borderColor: isOpen ? "var(--color-border-strong)" : "var(--color-border-default)",
+                  borderColor: isOpen
+                    ? "var(--color-border-strong)"
+                    : "var(--color-border-default)",
                 }}
               >
                 {/* Ligne résumé */}
                 <button
-                  className="w-full text-left px-6 py-5"
+                  className="w-full text-left px-4 sm:px-6 py-4 sm:py-5 transition-colors duration-200"
                   onClick={() => setExpanded(isOpen ? null : rec.id)}
+                  onMouseEnter={(e) => {
+                    if (!isOpen)
+                      e.currentTarget.style.backgroundColor =
+                        "var(--color-bg-surface)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
                     {/* Badge série */}
                     <div
-                      className="w-11 h-11 rounded-xl border flex items-center justify-center shrink-0"
+                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl border flex items-center justify-center shrink-0"
                       style={{
                         backgroundColor: "var(--color-accent-bg)",
                         borderColor: "var(--color-accent-border)",
@@ -153,22 +174,32 @@ export default function HistoryPage() {
 
                     {/* Infos */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
+                      <p
+                        className="text-sm font-semibold"
+                        style={{ color: "var(--color-text-primary)" }}
+                      >
                         Série {rec.serieCode ?? "-"}
                       </p>
-                      <div className="flex items-center gap-3 mt-0.5">
-                        <span className="text-xs" style={{ color: "var(--color-text-disabled)" }}>
-                          {formatDistanceToNow(new Date(rec.createdAt), { addSuffix: true, locale: fr })}
+                      <div className="flex items-center gap-2 sm:gap-3 mt-0.5 flex-wrap">
+                        <span
+                          className="text-xs"
+                          style={{ color: "var(--color-text-disabled)" }}
+                        >
+                          {formatDistanceToNow(new Date(rec.createdAt), {
+                            addSuffix: true,
+                            locale: fr,
+                          })}
                         </span>
                         <span
-                          className="text-[10px] px-2 py-0.5 border rounded"
+                          className="text-[10px] px-1.5 py-0.5 border rounded"
                           style={{
                             backgroundColor: "var(--color-bg-surface)",
                             borderColor: "var(--color-border-default)",
                             color: "var(--color-text-disabled)",
                           }}
                         >
-                          {rec.orientations.length} orientation{rec.orientations.length > 1 ? "s" : ""}
+                          {rec.orientations.length} orientation
+                          {rec.orientations.length > 1 ? "s" : ""}
                         </span>
                       </div>
                     </div>
@@ -180,7 +211,13 @@ export default function HistoryPage() {
                       fill="none"
                       style={{ color: "var(--color-text-disabled)" }}
                     >
-                      <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d="M4 6l4 4 4-4"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </div>
                 </button>
@@ -188,32 +225,45 @@ export default function HistoryPage() {
                 {/* Contenu déplié */}
                 {isOpen && (
                   <div
-                    className="border-t px-6 py-5 flex flex-col gap-5"
+                    className="border-t px-4 sm:px-6 py-4 sm:py-5 flex flex-col gap-4 sm:gap-5 animate-fade-in"
                     style={{ borderColor: "var(--color-border-subtle)" }}
                   >
                     {rec.orientations.map((o, idx) => (
                       <div
                         key={idx}
-                        className={idx > 0 ? "pt-5 border-t" : ""}
-                        style={idx > 0 ? { borderColor: "var(--color-border-subtle)" } : undefined}
+                        className={idx > 0 ? "pt-4 sm:pt-5 border-t" : ""}
+                        style={
+                          idx > 0
+                            ? { borderColor: "var(--color-border-subtle)" }
+                            : undefined
+                        }
                       >
-                        <div className="flex items-start gap-3 mb-4">
+                        <div className="flex items-start gap-3 mb-3 sm:mb-4">
                           <div
-                            className="w-6 h-6 rounded-md border flex items-center justify-center shrink-0 mt-0.5"
+                            className="w-5 h-5 sm:w-6 sm:h-6 rounded-md border flex items-center justify-center shrink-0 mt-0.5"
                             style={{
                               backgroundColor: "var(--color-bg-surface)",
                               borderColor: "var(--color-border-default)",
                             }}
                           >
-                            <span className="text-[10px] font-bold" style={{ color: "var(--color-text-disabled)" }}>
+                            <span
+                              className="text-[9px] sm:text-[10px] font-bold"
+                              style={{ color: "var(--color-text-disabled)" }}
+                            >
                               {idx + 1}
                             </span>
                           </div>
                           <div>
-                            <p className="text-sm font-semibold mb-1" style={{ color: "var(--color-text-primary)" }}>
+                            <p
+                              className="text-sm font-semibold mb-1"
+                              style={{ color: "var(--color-text-primary)" }}
+                            >
                               {o.name}
                             </p>
-                            <p className="text-xs leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
+                            <p
+                              className="text-xs sm:text-sm leading-relaxed"
+                              style={{ color: "var(--color-text-muted)" }}
+                            >
                               {o.why}
                             </p>
                           </div>
@@ -221,12 +271,12 @@ export default function HistoryPage() {
 
                         {/* Diplômes */}
                         {o.degrees.length > 0 && (
-                          <div className="mb-3 ml-9">
+                          <div className="mb-3 ml-8 sm:ml-9">
                             <div className="flex flex-wrap gap-1.5">
                               {o.degrees.map((d, i) => (
                                 <span
                                   key={i}
-                                  className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 border rounded-lg"
+                                  className="inline-flex items-center text-[10px] sm:text-[11px] px-2 sm:px-2.5 py-1 border rounded-lg"
                                   style={{
                                     backgroundColor: "var(--color-bg-surface)",
                                     borderColor: "var(--color-border-default)",
@@ -242,21 +292,38 @@ export default function HistoryPage() {
 
                         {/* Universités */}
                         {o.universities.length > 0 && (
-                          <div className="ml-9 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                          <div className="ml-8 sm:ml-9 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                             {o.universities.map((u, i) => {
                               const url = u.site ?? u.website;
-                              const Component = url ? 'a' : 'div';
+                              const Component = url ? "a" : "div";
                               return (
                                 <Component
                                   key={i}
                                   href={url}
                                   target={url ? "_blank" : undefined}
                                   rel={url ? "noopener noreferrer" : undefined}
-                                  className="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer hover:border-current transition-all"
+                                  className="flex items-center gap-2 px-3 py-2 border rounded-lg transition-all duration-200"
                                   style={{
                                     backgroundColor: "var(--color-bg-surface)",
                                     borderColor: "var(--color-border-default)",
+                                    cursor: url ? "pointer" : "default",
                                   }}
+                                  onMouseEnter={
+                                    url
+                                      ? (e: any) => {
+                                          e.currentTarget.style.borderColor =
+                                            "var(--color-border-strong)";
+                                        }
+                                      : undefined
+                                  }
+                                  onMouseLeave={
+                                    url
+                                      ? (e: any) => {
+                                          e.currentTarget.style.borderColor =
+                                            "var(--color-border-default)";
+                                        }
+                                      : undefined
+                                  }
                                 >
                                   <svg
                                     className="w-3 h-3 shrink-0"
@@ -264,9 +331,15 @@ export default function HistoryPage() {
                                     fill="none"
                                     stroke="currentColor"
                                     strokeWidth="1.5"
-                                    style={{ color: "var(--color-text-disabled)" }}
+                                    style={{
+                                      color: "var(--color-text-disabled)",
+                                    }}
                                   >
-                                    <path d="M4 10.5v9.75a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V15a.75.75 0 01.75-.75h3a.75.75 0 01.75.75v5.25a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V10.5M12 3L2.25 10.5M21.75 10.5L12 3" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path
+                                      d="M4 10.5v9.75a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V15a.75.75 0 01.75-.75h3a.75.75 0 01.75.75v5.25a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V10.5M12 3L2.25 10.5M21.75 10.5L12 3"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
                                   </svg>
                                   <span
                                     className="text-xs truncate flex-1"
@@ -275,8 +348,18 @@ export default function HistoryPage() {
                                     {u.name}
                                   </span>
                                   {url && (
-                                    <svg className="w-3 h-3 shrink-0" viewBox="0 0 10 10" fill="none">
-                                      <path d="M2.5 7.5l5-5M4 2.5h3.5V6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+                                    <svg
+                                      className="w-3 h-3 shrink-0 opacity-50"
+                                      viewBox="0 0 10 10"
+                                      fill="none"
+                                    >
+                                      <path
+                                        d="M2.5 7.5l5-5M4 2.5h3.5V6"
+                                        stroke="currentColor"
+                                        strokeWidth="1"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
                                     </svg>
                                   )}
                                 </Component>

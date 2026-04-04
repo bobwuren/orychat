@@ -13,7 +13,7 @@ function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
-/** Page de demande de consultation conseiller — étape 6 (optionnelle) */
+/** Page de demande de consultation conseiller */
 export default function ConsultationPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -78,14 +78,14 @@ export default function ConsultationPage() {
     }
   };
 
-  /* Styles partagés inputs */
-  const inputBase = {
+  const inputBase: React.CSSProperties = {
     backgroundColor: "var(--color-input-bg)",
     borderColor: "var(--color-input-border)",
     color: "var(--color-text-primary)",
   };
+
   const inputClass =
-    "w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-1 transition-all duration-200";
+    "w-full px-4 py-3 border rounded-xl text-sm focus:outline-none transition-all duration-200";
 
   const onFocus = (
     e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -93,6 +93,7 @@ export default function ConsultationPage() {
     e.currentTarget.style.borderColor = "var(--color-input-border-focus)";
     e.currentTarget.style.boxShadow = "0 0 0 3px var(--color-input-ring)";
   };
+
   const onBlur = (
     e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
     hasError: boolean,
@@ -103,21 +104,19 @@ export default function ConsultationPage() {
     e.currentTarget.style.boxShadow = "none";
   };
 
-  /* -------------------------------------------------------------------------
-   * Succès
-   * ------------------------------------------------------------------------- */
+  /* Succès */
   if (success) {
     return (
-      <div className="max-w-lg mx-auto px-6 py-24 flex flex-col items-center gap-6 text-center">
+      <div className="max-w-lg mx-auto px-4 sm:px-6 py-16 sm:py-24 flex flex-col items-center gap-6 text-center animate-fade-in-up">
         <div
-          className="w-16 h-16 rounded-full border flex items-center justify-center"
+          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border flex items-center justify-center"
           style={{
             backgroundColor: "var(--color-state-success-bg)",
             borderColor: "var(--color-state-success-border)",
           }}
         >
           <svg
-            className="w-7 h-7"
+            className="w-6 h-6 sm:w-7 sm:h-7"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -134,7 +133,7 @@ export default function ConsultationPage() {
 
         <div>
           <h2
-            className="font-display text-2xl font-bold mb-3"
+            className="font-display text-xl sm:text-2xl font-bold mb-3"
             style={{ color: "var(--color-text-primary)" }}
           >
             Demande enregistrée
@@ -143,15 +142,15 @@ export default function ConsultationPage() {
             className="text-sm leading-relaxed max-w-sm"
             style={{ color: "var(--color-text-muted)" }}
           >
-            Votre demande de consultation a été transmise avec succès. Vous
-            allez recevoir un message WhatsApp avec les modalités de paiement et
-            les prochaines étapes.
+            Votre demande de consultation a été transmise. Vous allez recevoir
+            un message WhatsApp avec les modalités de paiement et les prochaines
+            étapes.
           </p>
         </div>
 
-        {/* Étapes */}
+        {/* Étapes suivantes */}
         <div
-          className="w-full border rounded-2xl p-6 text-left mt-2"
+          className="w-full border rounded-xl sm:rounded-2xl p-5 sm:p-6 text-left"
           style={{
             backgroundColor: "var(--color-bg-base)",
             borderColor: "var(--color-border-default)",
@@ -198,11 +197,11 @@ export default function ConsultationPage() {
 
         <button
           onClick={() => router.push("/dashboard/history")}
-          className="group relative px-8 py-3 rounded-xl text-sm font-semibold overflow-hidden mt-2"
+          className="group relative px-7 sm:px-8 py-3 rounded-xl text-sm font-semibold overflow-hidden"
           style={{ color: "var(--color-bg-base)" }}
         >
           <span
-            className="absolute inset-0 transition-transform duration-300 group-hover:scale-105"
+            className="absolute inset-0 transition-all duration-300 group-hover:brightness-110"
             style={{ background: "var(--gradient-brand)" }}
           />
           <span className="relative">Voir mon historique</span>
@@ -211,28 +210,12 @@ export default function ConsultationPage() {
     );
   }
 
-  /* -------------------------------------------------------------------------
-   * Formulaire
-   * ------------------------------------------------------------------------- */
+  /* Formulaire */
   return (
-    <div className="max-w-lg mx-auto px-6 py-12">
+    <div className="max-w-lg mx-auto px-4 sm:px-6 py-8 sm:py-12">
       {/* Retour */}
-      <button
-        onClick={() => router.back()}
-        className="flex items-center gap-2 text-sm mb-10 group transition-colors duration-200"
-        style={{ color: "var(--color-text-muted)" }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.color = "var(--color-text-primary)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.color = "var(--color-text-muted)";
-        }}
-      >
-        <svg
-          className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-0.5"
-          viewBox="0 0 16 16"
-          fill="none"
-        >
+      <button onClick={() => router.back()} className="btn-back mb-8 sm:mb-10">
+        <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
           <path
             d="M13 8H3M7 4l-4 4 4 4"
             stroke="currentColor"
@@ -245,15 +228,15 @@ export default function ConsultationPage() {
       </button>
 
       {/* En-tête */}
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <p
-          className="text-xs uppercase tracking-[0.15em] font-semibold mb-3"
+          className="text-xs uppercase tracking-[0.15em] font-semibold mb-2 sm:mb-3"
           style={{ color: "var(--color-brand-accent)" }}
         >
           Consultation conseiller
         </p>
         <h1
-          className="font-display text-3xl font-bold mb-2"
+          className="font-display text-2xl sm:text-3xl font-bold mb-2"
           style={{ color: "var(--color-text-primary)" }}
         >
           Parler à un expert
@@ -269,14 +252,14 @@ export default function ConsultationPage() {
 
       {/* Info service */}
       <div
-        className="border rounded-2xl p-5 mb-8 flex gap-4"
+        className="border rounded-xl sm:rounded-2xl p-4 sm:p-5 mb-6 sm:mb-8 flex gap-3 sm:gap-4"
         style={{
           backgroundColor: "var(--color-bg-base)",
           borderColor: "var(--color-border-default)",
         }}
       >
         <div
-          className="w-10 h-10 rounded-xl border flex items-center justify-center shrink-0"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center shrink-0"
           style={{
             backgroundColor: "var(--color-accent-bg)",
             borderColor: "var(--color-accent-border)",
@@ -284,7 +267,7 @@ export default function ConsultationPage() {
           }}
         >
           <svg
-            className="w-5 h-5"
+            className="w-4 h-4 sm:w-5 sm:h-5"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -315,7 +298,7 @@ export default function ConsultationPage() {
       </div>
 
       {/* Formulaire */}
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4 sm:gap-5">
         {/* Email */}
         <div>
           <label
@@ -445,7 +428,7 @@ export default function ConsultationPage() {
       {/* Erreur globale */}
       {errors.global && (
         <div
-          className="mt-5 flex items-center gap-2 px-4 py-3 border rounded-lg"
+          className="mt-5 flex items-center gap-2 px-4 py-3 border rounded-xl"
           style={{
             backgroundColor: "var(--color-state-error-bg)",
             borderColor: "var(--color-state-error-border)",
@@ -477,11 +460,11 @@ export default function ConsultationPage() {
       <button
         onClick={handleSubmit}
         disabled={submitting}
-        className="group relative w-full mt-8 py-4 font-semibold text-sm rounded-xl overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
+        className="group relative w-full mt-6 sm:mt-8 py-3.5 sm:py-4 font-semibold text-sm rounded-xl overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
         style={{ color: "var(--color-bg-base)" }}
       >
         <span
-          className="absolute inset-0 transition-transform duration-300 group-hover:scale-105 group-disabled:scale-100"
+          className="absolute inset-0 transition-all duration-300 group-hover:brightness-110 group-disabled:brightness-100"
           style={{ background: "var(--gradient-brand)" }}
         />
         <span className="relative flex items-center justify-center gap-2">

@@ -7,9 +7,8 @@ import Link from "next/link";
 import OrientysLogo from "@/components/OrientysLogo";
 
 /**
- * Layout admin - Topbar persistante + Sidebar collapsible.
- * Couleurs via variables CSS du design system.
- * Responsif : sidebar cachée sur mobile, overlay slide depuis la gauche.
+ * Layout admin — Topbar persistante + Sidebar collapsible.
+ * Sidebar cachée sur mobile avec overlay slide.
  */
 
 const NAV_ITEMS = [
@@ -44,7 +43,7 @@ const NAV_ITEMS = [
         strokeWidth="1.5"
       >
         <path
-          d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0118 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
+          d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
@@ -195,13 +194,21 @@ export default function AdminLayout({
         className="min-h-screen flex items-center justify-center"
         style={{ backgroundColor: "var(--color-bg-page)" }}
       >
-        <div
-          className="w-6 h-6 border-2 rounded-full animate-spin"
-          style={{
-            borderColor: "var(--color-accent-border)",
-            borderTopColor: "var(--color-brand-accent)",
-          }}
-        />
+        <div className="flex flex-col items-center gap-3">
+          <div
+            className="w-7 h-7 border-2 rounded-full animate-spin"
+            style={{
+              borderColor: "var(--color-accent-border)",
+              borderTopColor: "var(--color-brand-accent)",
+            }}
+          />
+          <p
+            className="text-xs"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
+            Vérification des accès…
+          </p>
+        </div>
       </div>
     );
   }
@@ -210,32 +217,33 @@ export default function AdminLayout({
     pathname.startsWith(item.href),
   );
 
+  const sidebarWidth = collapsed ? "lg:w-14" : "lg:w-60";
+
   return (
     <div
       className="min-h-screen"
-      // data-theme="dark"
       style={{ backgroundColor: "var(--color-bg-page)" }}
     >
-      {/* ══════════════════════════════════════════
+      {/* ═══════════════════════════════════════
           TOPBAR
-      ══════════════════════════════════════════ */}
+      ═══════════════════════════════════════ */}
       <header
-        className="fixed top-0 left-0 right-0 z-50 h-14 backdrop-blur-md border-b flex items-center"
+        className="fixed top-0 left-0 right-0 z-50 h-14 backdrop-blur-xl border-b flex items-center"
         style={{
           backgroundColor:
             "color-mix(in srgb, var(--color-bg-base) 97%, transparent)",
           borderColor: "var(--color-border-default)",
         }}
       >
-        {/* Bloc logo + collapse */}
+        {/* Logo + collapse desktop */}
         <div
           className={[
             "flex items-center h-full border-r shrink-0 transition-all duration-300",
-            collapsed ? "w-16 justify-center" : "w-60 px-4 gap-3",
+            collapsed ? "w-14 justify-center" : "w-60 px-4 gap-3",
           ].join(" ")}
           style={{ borderColor: "var(--color-border-default)" }}
         >
-          <OrientysLogo height={26} />
+          <OrientysLogo height={24} />
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <span
@@ -254,10 +262,10 @@ export default function AdminLayout({
           )}
         </div>
 
-        {/* Bouton collapse - desktop */}
+        {/* Collapse / Hamburger */}
         <button
-          onClick={() => setCollapsed((c) => !c)}
-          className="hidden lg:flex w-9 h-9 ml-2 items-center justify-center rounded-lg transition-all shrink-0"
+          onClick={() => (collapsed ? setCollapsed(false) : setCollapsed(true))}
+          className="hidden lg:flex w-8 h-8 ml-2 items-center justify-center rounded-lg transition-all shrink-0"
           style={{ color: "var(--color-text-disabled)" }}
           onMouseEnter={(e) => {
             e.currentTarget.style.color = "var(--color-text-primary)";
@@ -267,10 +275,10 @@ export default function AdminLayout({
             e.currentTarget.style.color = "var(--color-text-disabled)";
             e.currentTarget.style.backgroundColor = "transparent";
           }}
-          title={collapsed ? "Déplier la navigation" : "Réduire la navigation"}
+          title={collapsed ? "Déplier" : "Réduire"}
         >
           {collapsed ? (
-            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
+            <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
               <path
                 d="M5 4l4 4-4 4M9 4l4 4-4 4"
                 stroke="currentColor"
@@ -280,7 +288,7 @@ export default function AdminLayout({
               />
             </svg>
           ) : (
-            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
+            <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
               <path
                 d="M11 4L7 8l4 4M7 4L3 8l4 4"
                 stroke="currentColor"
@@ -292,10 +300,9 @@ export default function AdminLayout({
           )}
         </button>
 
-        {/* Hamburger - mobile */}
         <button
           onClick={() => setMobileOpen((o) => !o)}
-          className="lg:hidden flex w-9 h-9 ml-2 items-center justify-center rounded-lg transition-all shrink-0"
+          className="lg:hidden flex w-8 h-8 ml-2 items-center justify-center rounded-lg transition-all shrink-0"
           style={{ color: "var(--color-text-disabled)" }}
           onMouseEnter={(e) => {
             e.currentTarget.style.color = "var(--color-text-primary)";
@@ -305,9 +312,10 @@ export default function AdminLayout({
             e.currentTarget.style.color = "var(--color-text-disabled)";
             e.currentTarget.style.backgroundColor = "transparent";
           }}
+          aria-label="Menu"
         >
           {mobileOpen ? (
-            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
+            <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
               <path
                 d="M3 3l10 10M13 3L3 13"
                 stroke="currentColor"
@@ -316,7 +324,7 @@ export default function AdminLayout({
               />
             </svg>
           ) : (
-            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
+            <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
               <path
                 d="M2 4h12M2 8h12M2 12h12"
                 stroke="currentColor"
@@ -332,10 +340,10 @@ export default function AdminLayout({
           {currentSection && (
             <>
               <span
-                style={{ color: "var(--color-border-strong)" }}
                 className="hidden sm:block"
+                style={{ color: "var(--color-border-strong)" }}
               >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
+                <svg className="w-3 h-3" viewBox="0 0 16 16" fill="none">
                   <path
                     d="M6 4l4 4-4 4"
                     stroke="currentColor"
@@ -346,7 +354,7 @@ export default function AdminLayout({
                 </svg>
               </span>
               <span
-                className="text-sm font-medium truncate hidden sm:block"
+                className="text-xs sm:text-sm font-medium truncate hidden sm:block"
                 style={{ color: "var(--color-text-muted)" }}
               >
                 {currentSection.label}
@@ -355,17 +363,16 @@ export default function AdminLayout({
           )}
         </div>
 
-        {/* Profil + actions */}
-        <div className="flex items-center gap-2 pr-4 shrink-0">
+        {/* Profil */}
+        <div className="flex items-center gap-2 pr-3 sm:pr-4 shrink-0">
           <div
-            className="w-px h-6 mx-1"
+            className="w-px h-5 mx-1"
             style={{ backgroundColor: "var(--color-border-default)" }}
           />
 
-          <div className="flex items-center gap-2.5">
-            {/* Avatar */}
+          <div className="flex items-center gap-2">
             <div
-              className="w-8 h-8 rounded-full border flex items-center justify-center text-xs font-bold shrink-0 select-none"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center text-[11px] sm:text-xs font-bold shrink-0 select-none"
               style={{
                 backgroundColor: "var(--color-accent-bg)",
                 borderColor: "var(--color-accent-border)",
@@ -377,7 +384,6 @@ export default function AdminLayout({
                 "A"}
             </div>
 
-            {/* Nom - masqué sur mobile */}
             <div className="hidden md:block leading-none">
               <p
                 className="text-xs font-semibold truncate max-w-[100px]"
@@ -393,7 +399,6 @@ export default function AdminLayout({
               </p>
             </div>
 
-            {/* Déconnexion */}
             <button
               onClick={logout}
               title="Déconnexion"
@@ -422,24 +427,26 @@ export default function AdminLayout({
         </div>
       </header>
 
-      {/* ══════════════════════════════════════════
-          Sous la topbar
-      ══════════════════════════════════════════ */}
+      {/* ═══════════════════════════════════════
+          BODY (sidebar + main)
+      ═══════════════════════════════════════ */}
       <div className="flex pt-14 min-h-screen">
         {/* Overlay mobile */}
         {mobileOpen && (
           <div
-            className="fixed inset-0 z-30 bg-black/60 lg:hidden"
+            className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"
             style={{ top: "56px" }}
             onClick={() => setMobileOpen(false)}
           />
         )}
 
-        {/* ── SIDEBAR ── */}
+        {/* ─── SIDEBAR ─── */}
         <aside
           className={[
             "fixed top-14 left-0 bottom-0 z-40 flex flex-col border-r transition-all duration-300 overflow-x-hidden",
-            collapsed ? "hidden lg:flex lg:w-16" : "hidden lg:flex lg:w-60",
+            // Desktop
+            collapsed ? "hidden lg:flex lg:w-14" : "hidden lg:flex lg:w-60",
+            // Mobile override
             mobileOpen ? "!flex w-64" : "",
           ].join(" ")}
           style={{
@@ -450,29 +457,44 @@ export default function AdminLayout({
           <nav className="flex-1 px-2 py-3 overflow-y-auto space-y-0.5">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname.startsWith(item.href);
+              const showLabel = !collapsed || mobileOpen;
+
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  title={collapsed && !mobileOpen ? item.label : undefined}
+                  title={!showLabel ? item.label : undefined}
                   className={[
-                    "flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200 group relative",
-                    collapsed && !mobileOpen
-                      ? "justify-center px-0 py-3"
-                      : "px-3 py-2.5",
+                    "flex items-center rounded-lg text-sm font-medium transition-all duration-200 group relative",
+                    showLabel
+                      ? "px-3 py-2.5 gap-3"
+                      : "justify-center px-0 py-3",
                   ].join(" ")}
                   style={
                     isActive
                       ? {
                           backgroundColor: "var(--color-accent-bg)",
                           color: "var(--color-brand-accent)",
-                          border: `1px solid var(--color-accent-border)`,
+                          border: "1px solid var(--color-accent-border)",
                         }
                       : {
                           color: "var(--color-text-muted)",
                           border: "1px solid transparent",
                         }
                   }
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor =
+                        "var(--color-bg-surface)";
+                      e.currentTarget.style.color = "var(--color-text-primary)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                      e.currentTarget.style.color = "var(--color-text-muted)";
+                    }
+                  }}
                 >
                   <span
                     style={{
@@ -484,26 +506,24 @@ export default function AdminLayout({
                     {item.icon}
                   </span>
 
-                  {(!collapsed || mobileOpen) && (
-                    <span className="truncate">{item.label}</span>
-                  )}
+                  {showLabel && <span className="truncate">{item.label}</span>}
 
-                  {/* Indicateur actif (collapsed) */}
-                  {isActive && collapsed && !mobileOpen && (
+                  {/* Indicateur collapsed */}
+                  {isActive && !showLabel && (
                     <span
                       className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full"
                       style={{ backgroundColor: "var(--color-brand-accent)" }}
                     />
                   )}
 
-                  {/* Tooltip collapsed desktop */}
-                  {collapsed && !mobileOpen && (
+                  {/* Tooltip */}
+                  {!showLabel && (
                     <span
                       className="absolute left-full ml-2.5 px-2.5 py-1.5 text-xs font-medium rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-all whitespace-nowrap z-50 shadow-lg"
                       style={{
                         backgroundColor: "var(--color-bg-elevated)",
                         color: "var(--color-text-primary)",
-                        border: `1px solid var(--color-border-strong)`,
+                        border: "1px solid var(--color-border-strong)",
                       }}
                     >
                       {item.label}
@@ -529,11 +549,11 @@ export default function AdminLayout({
           )}
         </aside>
 
-        {/* ── CONTENU ── */}
+        {/* ─── MAIN ─── */}
         <main
           className={[
             "flex-1 min-h-full transition-all duration-300",
-            collapsed ? "lg:pl-16" : "lg:pl-60",
+            collapsed ? "lg:pl-14" : "lg:pl-60",
           ].join(" ")}
         >
           <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">{children}</div>

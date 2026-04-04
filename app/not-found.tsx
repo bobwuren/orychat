@@ -13,11 +13,12 @@ export default function NotFound() {
       className="min-h-screen flex flex-col"
       style={{ backgroundColor: "var(--color-bg-page)" }}
     >
-      <div className="flex-1 flex items-center justify-center px-6 py-24">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-16 sm:py-24">
         <div className="max-w-2xl mx-auto text-center">
-          <div className="relative inline-block mb-8">
+          {/* 404 */}
+          <div className="relative inline-block mb-6 sm:mb-8">
             <p
-              className="text-[10rem] md:text-[14rem] font-display font-bold leading-none select-none text-transparent bg-clip-text"
+              className="text-[7rem] sm:text-[10rem] md:text-[14rem] font-display font-bold leading-none select-none text-transparent bg-clip-text"
               style={{
                 backgroundImage: `linear-gradient(135deg, var(--color-border-default) 0%, var(--color-border-strong) 50%, var(--color-border-default) 100%)`,
               }}
@@ -27,24 +28,23 @@ export default function NotFound() {
           </div>
 
           <h1
-            className="font-display text-3xl md:text-4xl font-bold mb-4"
+            className="font-display text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4"
             style={{ color: "var(--color-text-primary)" }}
           >
             Cette page est introuvable
           </h1>
           <p
-            className="text-base leading-relaxed max-w-md mx-auto mb-10"
+            className="text-sm sm:text-base leading-relaxed max-w-md mx-auto mb-8 sm:mb-10"
             style={{ color: "var(--color-text-muted)" }}
           >
             La page que vous cherchez n&apos;existe pas, a été déplacée ou
-            l&apos;URL est incorrecte. Voici quelques liens utiles pour vous
-            orienter.
+            l&apos;URL est incorrecte.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all hover:brightness-110"
+              className="inline-flex items-center gap-2 px-5 sm:px-6 py-3 rounded-xl text-sm font-bold transition-all hover:brightness-110 w-full sm:w-auto justify-center"
               style={{
                 background: "var(--gradient-brand)",
                 color: "var(--color-bg-base)",

@@ -142,6 +142,33 @@ const QCM_QUESTIONS: QcmQuestion[] = [
   },
 ];
 
+const OPEN_QUESTIONS = [
+  {
+    num: "6",
+    key: "matieresPreferees" as keyof OpenState,
+    title: "Matières préférées et forces",
+    hint: "Quelles matières vous réussissent le mieux et pourquoi ?",
+    placeholder: "Ex : J'aime les mathématiques car j'ai un esprit logique...",
+    optional: false,
+  },
+  {
+    num: "7",
+    key: "passionsExtraScolaires" as keyof OpenState,
+    title: "Passions et activités extra-scolaires",
+    hint: "Hobbies, sports, bénévolat, tech, arts...",
+    placeholder: "Ex : Je fais de la programmation dans mon temps libre...",
+    optional: false,
+  },
+  {
+    num: "8",
+    key: "messageLibre" as keyof OpenState,
+    title: "Message libre",
+    hint: "Un projet, une ambition, quelque chose à ajouter ?",
+    placeholder: "Ex : Je veux créer ma startup dans 5 ans...",
+    optional: true,
+  },
+];
+
 const OPEN_QUESTION_MAX = 2000;
 
 /** Page questionnaire d'orientation — étape 3 */
@@ -168,7 +195,6 @@ export default function QuestionnairePage() {
   const answeredCount = Object.values(qcm).filter(Boolean).length;
   const totalQcm = QCM_QUESTIONS.length;
 
-  // Vérifier si tous les champs requis sont remplis
   const isFormValid =
     qcm.visionProfessionnelle &&
     qcm.styleApprentissage &&
@@ -238,10 +264,7 @@ export default function QuestionnairePage() {
     }
   };
 
-  /* Styles partagés pour les textareas */
-  const textareaClass =
-    "w-full px-4 py-3 border rounded-xl text-sm resize-none focus:outline-none focus:ring-1 transition-all duration-200";
-  const textareaStyle = {
+  const textareaStyle: React.CSSProperties = {
     backgroundColor: "var(--color-input-bg)",
     borderColor: "var(--color-input-border)",
     color: "var(--color-text-primary)",
@@ -258,24 +281,10 @@ export default function QuestionnairePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-12">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       {/* Retour */}
-      <button
-        onClick={() => router.back()}
-        className="flex items-center gap-2 text-sm mb-10 group transition-colors duration-200"
-        style={{ color: "var(--color-text-muted)" }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.color = "var(--color-text-primary)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.color = "var(--color-text-muted)";
-        }}
-      >
-        <svg
-          className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-0.5"
-          viewBox="0 0 16 16"
-          fill="none"
-        >
+      <button onClick={() => router.back()} className="btn-back mb-8 sm:mb-10">
+        <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
           <path
             d="M13 8H3M7 4l-4 4 4 4"
             stroke="currentColor"
@@ -288,23 +297,26 @@ export default function QuestionnairePage() {
       </button>
 
       {/* En-tête */}
-      <div className="mb-10">
+      <div className="mb-6 sm:mb-8">
         <p
-          className="text-xs uppercase tracking-[0.15em] font-semibold mb-3"
+          className="text-xs uppercase tracking-[0.15em] font-semibold mb-2 sm:mb-3"
           style={{ color: "var(--color-brand-accent)" }}
         >
           Étape 3 sur 4
         </p>
         <h1
-          className="font-display text-3xl lg:text-4xl font-bold mb-2"
+          className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold mb-2"
           style={{ color: "var(--color-text-primary)" }}
         >
           Votre profil
         </h1>
-        <p style={{ color: "var(--color-text-muted)" }}>
+        <p
+          className="text-sm sm:text-base"
+          style={{ color: "var(--color-text-muted)" }}
+        >
           Ces informations personnalisent vos recommandations IA.{" "}
           <span style={{ color: "var(--color-text-disabled)" }}>
-            Les 5 questions à choix multiples sont obligatoires, les questions ouvertes sont optionnelles.
+            Les 5 QCM sont obligatoires, les questions ouvertes optionnelles.
           </span>
         </p>
       </div>
@@ -316,7 +328,7 @@ export default function QuestionnairePage() {
       />
 
       {/* Barre progression QCM */}
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <div className="flex items-center justify-between mb-2">
           <span
             className="text-xs"
@@ -331,45 +343,61 @@ export default function QuestionnairePage() {
             {Math.round((answeredCount / totalQcm) * 100)}%
           </span>
         </div>
-        <div
-          className="h-1 rounded-full overflow-hidden"
-          style={{ backgroundColor: "var(--color-bg-elevated)" }}
-        >
+        <div className="progress-bar-track">
           <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{
-              width: `${(answeredCount / totalQcm) * 100}%`,
-              background: "var(--gradient-brand)",
-            }}
+            className="progress-bar-fill"
+            style={{ width: `${(answeredCount / totalQcm) * 100}%` }}
           />
         </div>
       </div>
 
       {/* Questions QCM */}
-      <div className="flex flex-col gap-6 mb-8">
+      <div className="flex flex-col gap-4 sm:gap-5 mb-6 sm:mb-8">
         {QCM_QUESTIONS.map((question, qIdx) => (
           <div
             key={question.key}
-            className="border rounded-2xl p-6"
+            className="border rounded-xl sm:rounded-2xl p-4 sm:p-6 transition-all duration-200"
             style={{
               backgroundColor: "var(--color-bg-base)",
-              borderColor: "var(--color-border-default)",
+              borderColor: qcm[question.key]
+                ? "var(--color-accent-border-md)"
+                : "var(--color-border-default)",
             }}
           >
-            <div className="flex items-start gap-3 mb-5">
+            {/* En-tête question */}
+            <div className="flex items-start gap-3 mb-4 sm:mb-5">
               <div
                 className="w-6 h-6 rounded-md border flex items-center justify-center shrink-0 mt-0.5"
-                style={{
-                  backgroundColor: "var(--color-bg-surface)",
-                  borderColor: "var(--color-border-default)",
-                }}
+                style={
+                  qcm[question.key]
+                    ? {
+                        backgroundColor: "var(--color-accent-bg)",
+                        borderColor: "var(--color-accent-border-md)",
+                      }
+                    : {
+                        backgroundColor: "var(--color-bg-surface)",
+                        borderColor: "var(--color-border-default)",
+                      }
+                }
               >
-                <span
-                  className="text-[10px] font-bold"
-                  style={{ color: "var(--color-text-disabled)" }}
-                >
-                  {qIdx + 1}
-                </span>
+                {qcm[question.key] ? (
+                  <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+                    <path
+                      d="M2 6l3 3 5-5"
+                      stroke="var(--color-brand-accent)"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                ) : (
+                  <span
+                    className="text-[10px] font-bold"
+                    style={{ color: "var(--color-text-disabled)" }}
+                  >
+                    {qIdx + 1}
+                  </span>
+                )}
               </div>
               <p
                 className="text-sm font-semibold leading-snug"
@@ -380,14 +408,15 @@ export default function QuestionnairePage() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-2 ml-9">
+            {/* Options */}
+            <div className="flex flex-col gap-2 sm:ml-9">
               {question.options.map((option) => {
                 const isSelected = qcm[question.key] === option.value;
                 return (
                   <button
                     key={option.value}
                     onClick={() => handleQcmChange(question.key, option.value)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl border text-left text-sm transition-all duration-200"
+                    className="flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border text-left text-sm transition-all duration-200"
                     style={
                       isSelected
                         ? {
@@ -402,7 +431,6 @@ export default function QuestionnairePage() {
                           }
                     }
                   >
-                    {/* Indicateur radio */}
                     <div
                       className="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
                       style={
@@ -431,13 +459,13 @@ export default function QuestionnairePage() {
       </div>
 
       {/* Séparateur */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
         <div
           className="flex-1 h-[1px]"
           style={{ backgroundColor: "var(--color-border-default)" }}
         />
         <span
-          className="text-xs uppercase tracking-widest"
+          className="text-xs uppercase tracking-widest whitespace-nowrap"
           style={{ color: "var(--color-text-disabled)" }}
         >
           Questions ouvertes
@@ -449,108 +477,86 @@ export default function QuestionnairePage() {
       </div>
 
       {/* Questions ouvertes */}
-      <div className="flex flex-col gap-5 mb-8">
-        {[
-          {
-            num: "6",
-            key: "matieresPreferees" as keyof OpenState,
-            title: "Matières préférées et forces",
-            hint: "Quelles matières vous réussissent le mieux et pourquoi ?",
-            placeholder:
-              "Ex : J'aime les mathématiques car j'ai un esprit logique...",
-          },
-          {
-            num: "7",
-            key: "passionsExtraScolaires" as keyof OpenState,
-            title: "Passions et activités extra-scolaires",
-            hint: "Hobbies, sports, bénévolat, tech, arts...",
-            placeholder:
-              "Ex : Je fais de la programmation dans mon temps libre...",
-          },
-          {
-            num: "8",
-            key: "messageLibre" as keyof OpenState,
-            title: "Message libre",
-            hint: "Un projet, une ambition, quelque chose à ajouter ?",
-            placeholder: "Ex : Je veux créer ma startup dans 5 ans...",
-            optional: true,
-          },
-        ].map(({ num, key, title, hint, placeholder, optional }) => (
-          <div
-            key={key}
-            className="border rounded-2xl p-6"
-            style={{
-              backgroundColor: "var(--color-bg-base)",
-              borderColor: "var(--color-border-default)",
-            }}
-          >
-            <div className="flex items-start gap-3 mb-4">
-              <div
-                className="w-6 h-6 rounded-md border flex items-center justify-center shrink-0 mt-0.5"
-                style={{
-                  backgroundColor: "var(--color-bg-surface)",
-                  borderColor: "var(--color-border-default)",
-                }}
-              >
+      <div className="flex flex-col gap-4 sm:gap-5 mb-6 sm:mb-8">
+        {OPEN_QUESTIONS.map(
+          ({ num, key, title, hint, placeholder, optional }) => (
+            <div
+              key={key}
+              className="border rounded-xl sm:rounded-2xl p-4 sm:p-6"
+              style={{
+                backgroundColor: "var(--color-bg-base)",
+                borderColor: "var(--color-border-default)",
+              }}
+            >
+              <div className="flex items-start gap-3 mb-4">
+                <div
+                  className="w-6 h-6 rounded-md border flex items-center justify-center shrink-0 mt-0.5"
+                  style={{
+                    backgroundColor: "var(--color-bg-surface)",
+                    borderColor: "var(--color-border-default)",
+                  }}
+                >
+                  <span
+                    className="text-[10px] font-bold"
+                    style={{ color: "var(--color-text-disabled)" }}
+                  >
+                    {num}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <p
+                    className="text-sm font-semibold mb-1"
+                    style={{ color: "var(--color-text-primary)" }}
+                  >
+                    {title}{" "}
+                    {optional ? (
+                      <span
+                        className="font-normal"
+                        style={{ color: "var(--color-text-disabled)" }}
+                      >
+                        (optionnel)
+                      </span>
+                    ) : (
+                      <span style={{ color: "var(--color-state-error)" }}>
+                        *
+                      </span>
+                    )}
+                  </p>
+                  <p
+                    className="text-xs"
+                    style={{ color: "var(--color-text-disabled)" }}
+                  >
+                    {hint}
+                  </p>
+                </div>
+              </div>
+              <div className="relative">
+                <textarea
+                  value={open[key]}
+                  onChange={(e) => handleOpenChange(key, e.target.value)}
+                  placeholder={placeholder}
+                  rows={3}
+                  className="w-full px-3 sm:px-4 py-3 border rounded-xl text-sm resize-none focus:outline-none transition-all duration-200"
+                  style={textareaStyle}
+                  onFocus={onTextareaFocus}
+                  onBlur={onTextareaBlur}
+                />
                 <span
-                  className="text-[10px] font-bold"
+                  className="absolute bottom-3 right-3 text-[10px]"
                   style={{ color: "var(--color-text-disabled)" }}
                 >
-                  {num}
+                  {open[key].length}/{OPEN_QUESTION_MAX}
                 </span>
               </div>
-              <div className="flex-1">
-                <p
-                  className="text-sm font-semibold mb-1"
-                  style={{ color: "var(--color-text-primary)" }}
-                >
-                  {title}{" "}
-                  {optional && (
-                    <span
-                      className="font-normal"
-                      style={{ color: "var(--color-text-disabled)" }}
-                    >
-                      (optionnel)
-                    </span>
-                  )}
-                  {!optional && (
-                    <span style={{ color: "var(--color-state-error)" }}>*</span>
-                  )}
-                </p>
-                <p
-                  className="text-xs"
-                  style={{ color: "var(--color-text-disabled)" }}
-                >
-                  {hint}
-                </p>
-              </div>
             </div>
-            <div className="relative">
-              <textarea
-                value={open[key]}
-                onChange={(e) => handleOpenChange(key, e.target.value)}
-                placeholder={placeholder}
-                rows={3}
-                className={textareaClass}
-                style={{ ...textareaStyle, placeholder: undefined } as any}
-                onFocus={onTextareaFocus}
-                onBlur={onTextareaBlur}
-              />
-              <span
-                className="absolute bottom-3 right-3 text-[10px]"
-                style={{ color: "var(--color-text-disabled)" }}
-              >
-                {open[key].length}/{OPEN_QUESTION_MAX}
-              </span>
-            </div>
-          </div>
-        ))}
+          ),
+        )}
       </div>
 
       {/* Erreur */}
       {error && (
         <div
-          className="mb-5 flex items-center gap-2 px-4 py-3 border rounded-lg"
+          className="mb-5 flex items-center gap-2 px-4 py-3 border rounded-xl"
           style={{
             backgroundColor: "var(--color-state-error-bg)",
             borderColor: "var(--color-state-error-border)",
@@ -585,18 +591,18 @@ export default function QuestionnairePage() {
             className="text-xs text-center"
             style={{ color: "var(--color-text-disabled)" }}
           >
-            Veuillez remplir tous les champs marqués avec{" "}
+            Remplissez tous les champs marqués{" "}
             <span style={{ color: "var(--color-state-error)" }}>*</span>
           </p>
         )}
         <button
           onClick={handleSubmit}
           disabled={submitting || !isFormValid}
-          className="group relative w-full py-4 font-semibold text-sm rounded-xl overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
+          className="group relative w-full py-3.5 sm:py-4 font-semibold text-sm rounded-xl overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
           style={{ color: "var(--color-bg-base)" }}
         >
           <span
-            className="absolute inset-0 transition-transform duration-300 group-hover:scale-105 group-disabled:scale-100"
+            className="absolute inset-0 transition-all duration-300 group-hover:brightness-110 group-disabled:brightness-100"
             style={{ background: "var(--gradient-brand)" }}
           />
           <span className="relative flex items-center justify-center gap-2">

@@ -6,9 +6,9 @@
  * Orientys Design System - CSS Variables
  *
  * Palette de marque extraite du logo :
- *   --color-brand-primary : #1e1b6e  (bleu indigo profond - corps du bonnet)
- *   --color-brand-accent  : #6b5dd3  (violet-bleu - plans/chevrons du logo)
- *   --color-brand-light   : #8b7fe8  (violet clair - reflets/hover)
+ *   --color-brand-primary : #1e1b6e  (bleu indigo profond)
+ *   --color-brand-accent  : #6b5dd3  (violet-bleu)
+ *   --color-brand-light   : #8b7fe8  (violet clair)
  *
  * Thèmes :
  *   :root / [data-theme="dark"]  → fond charbon, accents indigo/violet
@@ -21,33 +21,28 @@
    * ========================================================================= */
   :root,
   [data-theme="dark"] {
-    /* Fonds */
     --color-bg-page: #0a0a0a;
     --color-bg-base: #0e0e0e;
     --color-bg-surface: #141414;
     --color-bg-overlay: #080808;
     --color-bg-elevated: #1a1a1a;
 
-    /* Bordures */
     --color-border-subtle: #111111;
     --color-border-default: #1a1a1a;
     --color-border-strong: #2a2a2a;
     --color-border-focus: #6b5dd3;
 
-    /* Typographie */
     --color-text-primary: #ffffff;
     --color-text-secondary: #a0a0b4;
     --color-text-muted: #666680;
     --color-text-disabled: #444458;
     --color-text-placeholder: #444458;
 
-    /* Marque */
     --color-brand-primary: #1e1b6e;
     --color-brand-accent: #6b5dd3;
     --color-brand-light: #8b7fe8;
     --color-brand-pale: #b4adee;
 
-    /* Gradients */
     --gradient-brand: linear-gradient(135deg, #1e1b6e, #6b5dd3);
     --gradient-brand-soft: linear-gradient(135deg, #6b5dd3, #8b7fe8);
     --gradient-hero-radial: radial-gradient(
@@ -61,7 +56,6 @@
       transparent 70%
     );
 
-    /* Accent opacités */
     --color-accent-bg: rgba(107, 93, 211, 0.06);
     --color-accent-bg-hover: rgba(107, 93, 211, 0.12);
     --color-accent-bg-active: rgba(107, 93, 211, 0.18);
@@ -69,28 +63,27 @@
     --color-accent-border-md: rgba(107, 93, 211, 0.32);
     --color-accent-border-lg: rgba(107, 93, 211, 0.5);
 
-    /* Inputs */
     --color-input-bg: #141414;
     --color-input-border: #222222;
     --color-input-border-focus: #6b5dd3;
     --color-input-ring: rgba(107, 93, 211, 0.22);
 
-    /* États */
     --color-state-success: #22c55e;
     --color-state-success-bg: rgba(34, 197, 94, 0.05);
     --color-state-success-border: rgba(34, 197, 94, 0.2);
     --color-state-error: #f87171;
     --color-state-error-bg: rgba(239, 68, 68, 0.05);
     --color-state-error-border: rgba(239, 68, 68, 0.2);
+    --color-state-warning: #f59e0b;
+    --color-state-warning-bg: rgba(245, 158, 11, 0.08);
+    --color-state-warning-border: rgba(245, 158, 11, 0.25);
 
-    /* Shadows */
     --shadow-sm:
       0 0.5rem 1.5rem 0 hsl(0 0% 0% / 0.4), 0 1px 2px -1px hsl(0 0% 0% / 0.4);
     --shadow-md:
       0 0.5rem 1.5rem 0 hsl(0 0% 0% / 0.4), 0 2px 4px -1px hsl(0 0% 0% / 0.4);
     --shadow-2xl: 0 0.5rem 1.5rem 0 hsl(0 0% 0% / 1);
 
-    /* shadcn/ui compat */
     --background: 0 0% 4%;
     --foreground: 0 0% 88%;
     --card: 0 0% 7%;
@@ -170,6 +163,9 @@
     --color-state-error: #dc2626;
     --color-state-error-bg: rgba(220, 38, 38, 0.06);
     --color-state-error-border: rgba(220, 38, 38, 0.2);
+    --color-state-warning: #d97706;
+    --color-state-warning-bg: rgba(217, 119, 6, 0.08);
+    --color-state-warning-border: rgba(217, 119, 6, 0.25);
 
     --shadow-sm:
       0 0.25rem 1rem 0 hsl(244 57% 10% / 0.08),
@@ -213,28 +209,107 @@
 }
 
 /* ---------------------------------------------------------------------------
- * Hover utilities CSS-only - utilisables dans les Server Components
- *
- * Principe : on évite tout onMouseEnter/onMouseLeave dans les Server
- * Components. Les transitions de couleur au survol sont gérées ici via CSS
- * natif, en exploitant les variables CSS et la pseudo-classe :hover.
+ * Keyframes
+ * --------------------------------------------------------------------------- */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes progress-bar {
+  from {
+    width: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Hover utilities CSS-only — utilisables dans les Server Components
  * --------------------------------------------------------------------------- */
 
 @layer components {
-  /* Carte de surface - fond + bordure au hover */
   .card-hover {
     background-color: var(--color-bg-base);
     border-color: var(--color-border-default);
     transition:
       background-color 300ms,
-      border-color 300ms;
+      border-color 300ms,
+      box-shadow 300ms,
+      transform 300ms;
   }
   .card-hover:hover {
     background-color: var(--color-bg-surface);
     border-color: var(--color-border-strong);
+    box-shadow: 0 8px 32px rgba(107, 93, 211, 0.08);
+    transform: translateY(-1px);
   }
 
-  /* Carte feature - fond seul */
   .feature-card {
     background-color: var(--color-bg-base);
     transition: background-color 300ms;
@@ -243,7 +318,6 @@
     background-color: var(--color-bg-surface);
   }
 
-  /* Carte université placeholder */
   .uni-card {
     background-color: var(--color-bg-base);
     transition: background-color 300ms;
@@ -252,7 +326,6 @@
     background-color: var(--color-bg-surface);
   }
 
-  /* Lien de navigation texte */
   .nav-link {
     color: var(--color-text-muted);
     transition: color 200ms;
@@ -261,7 +334,6 @@
     color: var(--color-text-primary);
   }
 
-  /* Lien accent (footer, nav secondaire) */
   .nav-link-accent {
     color: var(--color-text-muted);
     transition: color 200ms;
@@ -270,30 +342,36 @@
     color: var(--color-brand-accent);
   }
 
-  /* Icône réseau social */
   .social-icon {
     border-color: var(--color-border-strong);
     color: var(--color-text-muted);
     transition:
       color 300ms,
-      border-color 300ms;
+      border-color 300ms,
+      background-color 300ms;
   }
   .social-icon:hover {
     color: var(--color-brand-accent);
     border-color: var(--color-brand-accent);
+    background-color: var(--color-accent-bg);
   }
 
-  /* Bouton CTA principal avec gradient brand */
   .btn-brand {
     background: var(--gradient-brand);
     color: var(--color-bg-base);
-    transition: filter 200ms;
+    transition:
+      filter 200ms,
+      transform 200ms,
+      box-shadow 200ms;
   }
   .btn-brand:hover {
-    filter: brightness(1.1);
+    filter: brightness(1.08);
+    box-shadow: 0 8px 24px rgba(107, 93, 211, 0.35);
+  }
+  .btn-brand:active {
+    transform: scale(0.98);
   }
 
-  /* Lien secondaire (texte muted → primary) */
   .link-muted {
     color: var(--color-text-muted);
     transition: color 200ms;
@@ -302,13 +380,112 @@
     color: var(--color-text-primary);
   }
 
-  /* Lien accent pur (brand-accent → brand-light) */
   .link-accent {
     color: var(--color-brand-accent);
     transition: color 200ms;
   }
   .link-accent:hover {
     color: var(--color-brand-light);
+  }
+
+  /* Input standard réutilisable */
+  .field-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-input-border);
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    background-color: var(--color-input-bg);
+    color: var(--color-text-primary);
+    transition:
+      border-color 200ms,
+      box-shadow 200ms;
+    outline: none;
+  }
+  .field-input:focus {
+    border-color: var(--color-input-border-focus);
+    box-shadow: 0 0 0 3px var(--color-input-ring);
+  }
+  .field-input::placeholder {
+    color: var(--color-text-placeholder);
+  }
+  .field-input.error {
+    border-color: var(--color-state-error-border);
+  }
+
+  /* Animations utilitaires */
+  .animate-fade-in-up {
+    animation: fade-in-up 0.5s ease forwards;
+  }
+  .animate-fade-in {
+    animation: fade-in 0.4s ease forwards;
+  }
+  .animate-scale-in {
+    animation: scale-in 0.35s ease forwards;
+  }
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+  .animate-glow-pulse {
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+
+  /* Skeleton shimmer */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-bg-elevated) 25%,
+      var(--color-bg-surface) 50%,
+      var(--color-bg-elevated) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  /* Bouton retour standard */
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    transition: color 200ms;
+  }
+  .btn-back:hover {
+    color: var(--color-text-primary);
+  }
+  .btn-back svg {
+    transition: transform 200ms;
+  }
+  .btn-back:hover svg {
+    transform: translateX(-2px);
+  }
+
+  /* Barre de progression */
+  .progress-bar-track {
+    height: 3px;
+    border-radius: 9999px;
+    overflow: hidden;
+    background-color: var(--color-bg-elevated);
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+    background: var(--gradient-brand);
+    transition: width 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Badge de statut */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    border: 1px solid;
   }
 }
 
@@ -368,6 +545,34 @@
   .bg-accent-subtle {
     background-color: var(--color-accent-bg);
   }
+
+  /* Délais d'animation */
+  .delay-75 {
+    animation-delay: 75ms;
+  }
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+  .delay-150 {
+    animation-delay: 150ms;
+  }
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+  .delay-500 {
+    animation-delay: 500ms;
+  }
+  .delay-700 {
+    animation-delay: 700ms;
+  }
+
+  /* États initiaux pour les animations avec délai */
+  .opacity-0-init {
+    opacity: 0;
+  }
 }
 
 /* ---------------------------------------------------------------------------
@@ -378,8 +583,43 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
     letter-spacing: 0em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar custom */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-disabled);
+  }
+
+  /* Focus visible accessible */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Sélection de texte */
+  ::selection {
+    background-color: var(--color-accent-bg-active);
+    color: var(--color-text-primary);
   }
 }

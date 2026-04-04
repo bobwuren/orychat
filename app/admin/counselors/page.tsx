@@ -45,7 +45,6 @@ function IconRefresh() {
     </svg>
   );
 }
-
 function IconPlus() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
@@ -58,7 +57,6 @@ function IconPlus() {
     </svg>
   );
 }
-
 function IconX() {
   return (
     <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
@@ -183,6 +181,7 @@ function CounselorForm({
               onChange={(e) => setName(e.target.value)}
               placeholder="ex: Koffi Mensah"
               disabled={isLoading}
+              required
             />
           </FormField>
         </div>
@@ -193,9 +192,10 @@ function CounselorForm({
             onChange={(e) => setEmail(e.target.value)}
             placeholder="conseiller@example.com"
             disabled={isLoading}
+            required
           />
         </FormField>
-        <FormField label="Téléphone">
+        <FormField label="Téléphone" hint="Optionnel">
           <AdminInput
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
@@ -204,7 +204,10 @@ function CounselorForm({
           />
         </FormField>
         <div className="sm:col-span-2">
-          <FormField label="URL Photo">
+          <FormField
+            label="URL Photo"
+            hint="Lien public vers une image (optionnel)"
+          >
             <AdminInput
               value={photo}
               onChange={(e) => setPhoto(e.target.value)}
@@ -214,7 +217,7 @@ function CounselorForm({
           </FormField>
         </div>
         <div className="sm:col-span-2">
-          <FormField label="Biographie">
+          <FormField label="Biographie" hint="Optionnel">
             <AdminTextarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
@@ -231,7 +234,13 @@ function CounselorForm({
           className="text-xs font-semibold uppercase tracking-[0.1em]"
           style={{ color: "var(--color-text-muted)" }}
         >
-          Spécialités
+          Spécialités{" "}
+          <span
+            className="font-normal normal-case tracking-normal"
+            style={{ color: "var(--color-text-disabled)" }}
+          >
+            (optionnel)
+          </span>
         </p>
         <div className="flex gap-2">
           <AdminInput
@@ -275,7 +284,6 @@ function CounselorForm({
                   onClick={() =>
                     setSpecialties((prev) => prev.filter((x) => x !== s))
                   }
-                  className="transition-colors"
                   style={{ color: "var(--color-text-disabled)" }}
                 >
                   <IconX />
@@ -324,7 +332,6 @@ export default function CounselorsAdminPage() {
   const [selected, setSelected] = useState<Counselor | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-
   const ITEMS_PER_PAGE = 10;
 
   const load = useCallback(async () => {
@@ -343,7 +350,6 @@ export default function CounselorsAdminPage() {
   useEffect(() => {
     load();
   }, [load]);
-
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterActive]);
@@ -376,24 +382,20 @@ export default function CounselorsAdminPage() {
     setSelected(null);
     setActionError(null);
   };
-
   const openCreate = () => {
     setSelected(null);
     setActionError(null);
     setDialogMode("create");
   };
-
   const openEdit = (c: Counselor) => {
     setSelected(c);
     setActionError(null);
     setDialogMode("edit");
   };
-
   const openView = (c: Counselor) => {
     setSelected(c);
     setDialogMode("view");
   };
-
   const openDelete = (c: Counselor) => {
     setSelected(c);
     setActionError(null);
@@ -459,11 +461,8 @@ export default function CounselorsAdminPage() {
 
   const handleToggleActive = async (c: Counselor) => {
     try {
-      if (c.isActive) {
-        await counselorsApi.deactivate(c.id);
-      } else {
-        await counselorsApi.activate(c.id);
-      }
+      if (c.isActive) await counselorsApi.deactivate(c.id);
+      else await counselorsApi.activate(c.id);
       setCounselors((prev) =>
         prev.map((x) => (x.id === c.id ? { ...x, isActive: !x.isActive } : x)),
       );
@@ -543,7 +542,7 @@ export default function CounselorsAdminPage() {
                 if (!v) setSearchTerm("");
               }}
               onSubmit={() => setSearchTerm(searchInput)}
-              placeholder="Nom, email, téléphone…"
+              placeholder="Nom, email…"
             />
           </div>
         }
@@ -585,11 +584,9 @@ export default function CounselorsAdminPage() {
             ) : (
               paginated.map((c) => (
                 <Tr key={c.id} className={!c.isActive ? "opacity-50" : ""}>
-                  {/* Photo */}
                   <Td>
                     <CounselorAvatar counselor={c} />
                   </Td>
-                  {/* Nom */}
                   <Td>
                     <div className="min-w-0">
                       <p
@@ -608,17 +605,15 @@ export default function CounselorsAdminPage() {
                       )}
                     </div>
                   </Td>
-                  {/* Email */}
                   <Td>
                     <a
                       href={`mailto:${c.email}`}
-                      className="text-xs transition-colors"
+                      className="text-xs"
                       style={{ color: "var(--color-text-secondary)" }}
                     >
                       {c.email}
                     </a>
                   </Td>
-                  {/* Téléphone */}
                   <Td>
                     {c.phone ? (
                       <span
@@ -636,7 +631,6 @@ export default function CounselorsAdminPage() {
                       </span>
                     )}
                   </Td>
-                  {/* Spécialités */}
                   <Td>
                     <div className="flex flex-wrap gap-1">
                       {(c.specialties ?? []).length === 0 ? (
@@ -662,7 +656,6 @@ export default function CounselorsAdminPage() {
                       )}
                     </div>
                   </Td>
-                  {/* Statut */}
                   <Td>
                     {c.isActive ? (
                       <AdminBadge color="green">Actif</AdminBadge>
@@ -670,7 +663,6 @@ export default function CounselorsAdminPage() {
                       <AdminBadge color="gray">Inactif</AdminBadge>
                     )}
                   </Td>
-                  {/* Actions */}
                   <Td right>
                     <div className="flex items-center justify-end gap-1 flex-wrap">
                       <Btn
@@ -717,7 +709,6 @@ export default function CounselorsAdminPage() {
         />
       </AdminCard>
 
-      {/* ── Dialog Création ── */}
       <AdminDialog
         open={dialogMode === "create"}
         onClose={closeDialog}
@@ -734,7 +725,6 @@ export default function CounselorsAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
-      {/* ── Dialog Édition ── */}
       <AdminDialog
         open={dialogMode === "edit"}
         onClose={closeDialog}
@@ -752,7 +742,6 @@ export default function CounselorsAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
-      {/* ── Dialog Vue ── */}
       <AdminDialog
         open={dialogMode === "view"}
         onClose={closeDialog}
@@ -799,7 +788,6 @@ export default function CounselorsAdminPage() {
                 )}
               </div>
             </div>
-
             {selected.bio && (
               <div>
                 <p
@@ -816,7 +804,6 @@ export default function CounselorsAdminPage() {
                 </p>
               </div>
             )}
-
             {(selected.specialties ?? []).length > 0 && (
               <div>
                 <p
@@ -849,7 +836,6 @@ export default function CounselorsAdminPage() {
         </DialogActions>
       </AdminDialog>
 
-      {/* ── Dialog Suppression ── */}
       <AdminDialog
         open={dialogMode === "delete"}
         onClose={closeDialog}
@@ -859,7 +845,7 @@ export default function CounselorsAdminPage() {
       >
         {selected && (
           <div
-            className="flex items-center gap-3 p-4 rounded-xl border"
+            className="flex items-center gap-3 p-4 border rounded-xl"
             style={{
               backgroundColor: "var(--color-bg-surface)",
               borderColor: "var(--color-border-default)",
@@ -879,14 +865,6 @@ export default function CounselorsAdminPage() {
               >
                 {selected.email}
               </p>
-              {selected.phone && (
-                <p
-                  className="text-xs"
-                  style={{ color: "var(--color-text-disabled)" }}
-                >
-                  {selected.phone}
-                </p>
-              )}
             </div>
           </div>
         )}

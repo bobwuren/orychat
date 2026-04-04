@@ -81,14 +81,11 @@ const PRIVACY_SECTIONS = [
   },
 ];
 
-/**
- * Composants partagés aux pages légales
- */
 function LegalHero({
   badge,
   title,
   highlight,
-  intro
+  intro,
 }: {
   badge: string;
   title: string;
@@ -96,17 +93,17 @@ function LegalHero({
   intro: string;
 }) {
   return (
-    <section className="relative pt-28 pb-16 overflow-hidden">
+    <section className="relative pt-24 sm:pt-28 pb-12 sm:pb-16 overflow-hidden">
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full blur-3xl pointer-events-none"
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] sm:w-[600px] h-[200px] sm:h-[300px] rounded-full blur-3xl pointer-events-none"
         style={{
           background:
             "radial-gradient(ellipse, var(--color-accent-bg-hover), transparent)",
         }}
       />
-      <div className="relative max-w-3xl mx-auto px-6">
+      <div className="relative max-w-3xl mx-auto px-4 sm:px-6">
         <div
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border mb-6"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border mb-5 sm:mb-6"
           style={{
             borderColor: "var(--color-accent-border)",
             backgroundColor: "var(--color-accent-bg)",
@@ -124,7 +121,7 @@ function LegalHero({
           </span>
         </div>
         <h1
-          className="font-display text-4xl md:text-5xl font-bold leading-tight mb-4"
+          className="font-display text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-3 sm:mb-4"
           style={{ color: "var(--color-text-primary)" }}
         >
           {title}
@@ -137,7 +134,7 @@ function LegalHero({
           </span>
         </h1>
         <p
-          className="text-base leading-relaxed"
+          className="text-sm sm:text-base leading-relaxed"
           style={{ color: "var(--color-text-muted)" }}
         >
           {intro}
@@ -159,9 +156,9 @@ function LegalSection({
   after?: string;
 }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2 sm:space-y-3">
       <h2
-        className="font-display text-xl font-bold"
+        className="font-display text-lg sm:text-xl font-bold"
         style={{ color: "var(--color-text-primary)" }}
       >
         {title}
@@ -217,10 +214,10 @@ export default function PolitiqueConfidentialitePage() {
         intro="La protection de vos données personnelles est une priorité pour Orientys. Ce document décrit comment nous collectons, utilisons et protégeons vos informations."
       />
 
-      <section className="max-w-3xl mx-auto px-6 pb-24">
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
         {/* Résumé */}
         <div
-          className="flex items-start gap-4 p-5 border rounded-2xl mb-12"
+          className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 border rounded-xl sm:rounded-2xl mb-10 sm:mb-12"
           style={{
             backgroundColor: "var(--color-accent-bg)",
             borderColor: "var(--color-accent-border)",
@@ -266,14 +263,14 @@ export default function PolitiqueConfidentialitePage() {
           </div>
         </div>
 
-        <div className="space-y-10">
+        <div className="space-y-8 sm:space-y-10">
           {PRIVACY_SECTIONS.map((s) => (
             <LegalSection key={s.title} {...s} />
           ))}
         </div>
 
         <div
-          className="mt-16 p-6 border rounded-2xl text-center"
+          className="mt-12 sm:mt-16 p-5 sm:p-6 border rounded-xl sm:rounded-2xl text-center"
           style={{
             backgroundColor: "var(--color-bg-base)",
             borderColor: "var(--color-border-default)",
@@ -287,7 +284,7 @@ export default function PolitiqueConfidentialitePage() {
           </p>
           <a
             href="mailto:contactacan.info@gmail.com"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-medium transition-all"
+            className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl border text-sm font-medium transition-all"
             style={{
               backgroundColor: "var(--color-accent-bg)",
               borderColor: "var(--color-accent-border)",

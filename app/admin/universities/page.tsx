@@ -46,7 +46,6 @@ function IconRefresh() {
     </svg>
   );
 }
-
 function IconDownload() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
@@ -60,7 +59,6 @@ function IconDownload() {
     </svg>
   );
 }
-
 function IconPlus() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
@@ -73,20 +71,6 @@ function IconPlus() {
     </svg>
   );
 }
-
-function IconX() {
-  return (
-    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
-      <path
-        d="M2 2l8 8M10 2l-8 8"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 function IconExternal() {
   return (
     <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
@@ -101,15 +85,12 @@ function IconExternal() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Formulaire université — formations sélectionnées depuis la liste des diplômes
-// ---------------------------------------------------------------------------
-
 interface UniversityFormProps {
   initial?: Partial<University>;
   availableDegrees: Degree[];
   onSubmit: (data: {
     name: string;
+    location?: string;
     webSite?: string;
     description?: string;
     isSponsor: boolean;
@@ -129,30 +110,31 @@ function UniversityForm({
   mode,
 }: UniversityFormProps) {
   const [name, setName] = useState(initial?.name ?? "");
+  const [location, setLocation] = useState((initial as any)?.location ?? "");
   const [webSite, setWebSite] = useState(
     initial?.webSite ?? (initial as any)?.website ?? "",
   );
   const [description, setDescription] = useState(initial?.description ?? "");
   const [isSponsor, setIsSponsor] = useState(initial?.isSponsor ?? false);
-
-  // Initialise les IDs depuis les formations déjà associées à l'université
   const [selectedDegreeIds, setSelectedDegreeIds] = useState<string[]>(() =>
     (initial?.degrees ?? []).map((d: any) => String(d.id)),
   );
-
   const [formError, setFormError] = useState<string | null>(null);
 
-  const toggleDegree = (id: string) => {
+  const toggleDegree = (id: string) =>
     setSelectedDegreeIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
     if (!name.trim()) {
       setFormError("Le nom est obligatoire.");
+      return;
+    }
+    if (mode === "create" && !location.trim()) {
+      setFormError("La localisation est obligatoire.");
       return;
     }
     if (mode === "create" && selectedDegreeIds.length === 0) {
@@ -162,6 +144,7 @@ function UniversityForm({
     try {
       await onSubmit({
         name: name.trim(),
+        location: location.trim() || undefined,
         webSite: webSite.trim() || undefined,
         description: description.trim() || undefined,
         isSponsor,
@@ -174,15 +157,28 @@ function UniversityForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <FormField label="Nom" required>
+      <FormField label="Nom" required hint="Nom officiel de l'université">
         <AdminInput
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="ex: Université de Lomé"
           disabled={isLoading}
+          required
         />
       </FormField>
-      <FormField label="Site web">
+      <FormField
+        label="Localisation"
+        required={mode === "create"}
+        hint="Ville / pays"
+      >
+        <AdminInput
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          placeholder="ex: Lomé, Togo"
+          disabled={isLoading}
+        />
+      </FormField>
+      <FormField label="Site web" hint="URL complète (https://…)">
         <AdminInput
           value={webSite}
           onChange={(e) => setWebSite(e.target.value)}
@@ -206,7 +202,6 @@ function UniversityForm({
         disabled={isLoading}
       />
 
-      {/* Sélection des formations depuis le catalogue de diplômes */}
       <div className="space-y-2">
         <p
           className="text-xs font-semibold uppercase tracking-[0.1em]"
@@ -216,8 +211,16 @@ function UniversityForm({
           {mode === "create" && (
             <span style={{ color: "var(--color-brand-accent)" }}>*</span>
           )}
+          {mode === "edit" && (
+            <span
+              className="font-normal normal-case tracking-normal"
+              style={{ color: "var(--color-text-disabled)" }}
+            >
+              {" "}
+              (optionnel)
+            </span>
+          )}
         </p>
-
         {availableDegrees.length === 0 ? (
           <p
             className="text-sm italic py-2"
@@ -254,7 +257,6 @@ function UniversityForm({
                         }
                   }
                 >
-                  {/* Checkbox visuelle */}
                   <span
                     className="w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-all"
                     style={
@@ -263,9 +265,7 @@ function UniversityForm({
                             backgroundColor: "var(--color-brand-accent)",
                             borderColor: "var(--color-brand-accent)",
                           }
-                        : {
-                            borderColor: "var(--color-border-strong)",
-                          }
+                        : { borderColor: "var(--color-border-strong)" }
                     }
                   >
                     {isSelected && (
@@ -309,7 +309,6 @@ function UniversityForm({
             })}
           </div>
         )}
-
         {selectedDegreeIds.length > 0 && (
           <p
             className="text-xs"
@@ -340,10 +339,6 @@ function UniversityForm({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Page principale
-// ---------------------------------------------------------------------------
-
 export default function UniversitiesAdminPage() {
   const {
     universities,
@@ -357,7 +352,6 @@ export default function UniversitiesAdminPage() {
     deleteUniversity,
     exportUniversities,
   } = useUniversities();
-
   const { degrees: availableDegrees, fetchDegrees } = useDegrees();
 
   const [searchInput, setSearchInput] = useState("");
@@ -375,12 +369,10 @@ export default function UniversitiesAdminPage() {
   const load = useCallback(() => {
     fetchUniversities();
   }, [fetchUniversities]);
-
   useEffect(() => {
     load();
     fetchDegrees();
   }, [load, fetchDegrees]);
-
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterSponsor]);
@@ -394,12 +386,10 @@ export default function UniversitiesAdminPage() {
       (filterSponsor === "non-sponsors" && !u.isSponsor);
     return matchSearch && matchSponsor;
   });
-
   const paginated = filtered.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
-
   const sponsorCount = (universities ?? []).filter((u) => u.isSponsor).length;
 
   const closeDialog = () => {
@@ -407,27 +397,23 @@ export default function UniversitiesAdminPage() {
     setSelectedUniversity(null);
     setActionError(null);
   };
-
   const openCreate = () => {
     setSelectedUniversity(null);
     setActionError(null);
     setDialogMode("create");
   };
-
   const openEdit = async (u: University) => {
     setActionError(null);
     setSelectedUniversity(u);
     setDialogMode("edit");
     await fetchUniversityById(u.id);
   };
-
   const openView = async (u: University) => {
     setActionError(null);
     setSelectedUniversity(u);
     setDialogMode("view");
     await fetchUniversityById(u.id);
   };
-
   const openDelete = (u: University) => {
     setActionError(null);
     setSelectedUniversity(u);
@@ -447,7 +433,6 @@ export default function UniversitiesAdminPage() {
       setActionLoading(false);
     }
   };
-
   const handleUpdate = async (data: any) => {
     if (!selectedUniversity) return;
     setActionLoading(true);
@@ -462,7 +447,6 @@ export default function UniversitiesAdminPage() {
       setActionLoading(false);
     }
   };
-
   const handleDelete = async () => {
     if (!selectedUniversity) return;
     setActionLoading(true);
@@ -476,7 +460,6 @@ export default function UniversitiesAdminPage() {
       setActionLoading(false);
     }
   };
-
   const handleExport = async () => {
     setIsExporting(true);
     setActionError(null);
@@ -494,7 +477,6 @@ export default function UniversitiesAdminPage() {
     currentUniversity?.id === selectedUniversity?.id
       ? (currentUniversity ?? selectedUniversity)
       : selectedUniversity;
-
   if (error) return <PageError message={error.message} onRetry={load} />;
 
   return (
@@ -535,7 +517,6 @@ export default function UniversitiesAdminPage() {
 
       <AdminCard
         title="Liste des universités"
-        description="Créez, modifiez ou supprimez des universités."
         toolbar={
           <div className="flex items-center gap-2 flex-wrap">
             <select
@@ -589,7 +570,7 @@ export default function UniversitiesAdminPage() {
                 colSpan={5}
                 label={
                   searchTerm || filterSponsor !== "all"
-                    ? "Aucun résultat pour ces filtres."
+                    ? "Aucun résultat."
                     : "Aucune université."
                 }
                 action={
@@ -635,7 +616,7 @@ export default function UniversitiesAdminPage() {
                           href={site}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-sm transition-colors"
+                          className="inline-flex items-center gap-1 text-sm"
                           style={{ color: "var(--color-brand-accent)" }}
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -697,13 +678,12 @@ export default function UniversitiesAdminPage() {
         />
       </AdminCard>
 
-      {/* ── Dialog Création ── */}
       <AdminDialog
         open={dialogMode === "create"}
         onClose={closeDialog}
         size="md"
         title="Nouvelle université"
-        description="Au moins une formation est requise."
+        description="Nom, localisation et au moins une formation sont obligatoires."
       >
         <UniversityForm
           mode="create"
@@ -715,7 +695,6 @@ export default function UniversitiesAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
-      {/* ── Dialog Édition ── */}
       <AdminDialog
         open={dialogMode === "edit"}
         onClose={closeDialog}
@@ -734,7 +713,6 @@ export default function UniversitiesAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
-      {/* ── Dialog Vue ── */}
       <AdminDialog
         open={dialogMode === "view"}
         onClose={closeDialog}
@@ -813,7 +791,7 @@ export default function UniversitiesAdminPage() {
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm transition-colors"
+                    className="inline-flex items-center gap-1 text-sm"
                     style={{ color: "var(--color-brand-accent)" }}
                   >
                     Visiter <IconExternal />
@@ -847,20 +825,6 @@ export default function UniversitiesAdminPage() {
                         color: "var(--color-text-secondary)",
                       }}
                     >
-                      <svg
-                        className="w-3.5 h-3.5 shrink-0"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        style={{ color: "var(--color-text-disabled)" }}
-                      >
-                        <path
-                          d="M4 10.5v9.75a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V15a.75.75 0 01.75-.75h3a.75.75 0 01.75.75v5.25a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75V10.5M12 3L2.25 10.5M21.75 10.5L12 3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
                       {d.name}
                     </div>
                   ))}
@@ -882,12 +846,11 @@ export default function UniversitiesAdminPage() {
         </DialogActions>
       </AdminDialog>
 
-      {/* ── Dialog Suppression ── */}
       <AdminDialog
         open={dialogMode === "delete"}
         onClose={closeDialog}
         title="Confirmer la suppression"
-        description="Cette action est irréversible. L'université et toutes ses associations seront supprimées."
+        description="Cette action est irréversible."
         size="sm"
       >
         <div
@@ -925,7 +888,6 @@ export default function UniversitiesAdminPage() {
         </DialogActions>
       </AdminDialog>
 
-      {/* ── Dialog Export ── */}
       <AdminDialog
         open={dialogMode === "export"}
         onClose={closeDialog}

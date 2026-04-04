@@ -7,14 +7,13 @@ export const metadata: Metadata = {
 };
 
 /**
- * Page Conditions d'utilisation (CGU) — Server Component.
- * Aucun event handler. Couleurs via variables CSS du design system.
+ * Page CGU — Server Component. Couleurs via CSS variables.
  */
 
 const SECTIONS = [
   {
     title: "1. Objet",
-    content: `Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de la plateforme Orientys (ci-après « la Plateforme »), service en ligne d'orientation universitaire assistée par intelligence artificielle, à destination des lycéens et étudiants de l'espace francophone africain.`,
+    content: `Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de la plateforme Orientys, service en ligne d'orientation universitaire assistée par intelligence artificielle, à destination des lycéens et étudiants de l'espace francophone africain.`,
   },
   {
     title: "2. Acceptation des conditions",
@@ -47,10 +46,10 @@ const SECTIONS = [
   },
   {
     title: "6. Intelligence artificielle et limites",
-    content: `Les recommandations générées par notre système d'IA sont basées sur les données que vous saisissez et les informations disponibles sur les établissements partenaires. Orientys ne garantit pas :`,
+    content: `Les recommandations générées par notre système d'IA sont basées sur les données que vous saisissez. Orientys ne garantit pas :`,
     list: [
       "L'exactitude ou l'exhaustivité des informations sur les universités",
-      "La disponibilité des filières ou les conditions d'admission (susceptibles de changer)",
+      "La disponibilité des filières ou les conditions d'admission",
       "L'adéquation parfaite des recommandations à votre situation personnelle",
       "Un résultat spécifique suite à l'utilisation du service",
     ],
@@ -77,11 +76,11 @@ const SECTIONS = [
   },
   {
     title: "10. Limitation de responsabilité",
-    content: `Dans les limites permises par la loi applicable, Orientys ne saurait être tenu responsable de tout dommage indirect, perte de données, ou préjudice résultant de l'utilisation ou de l'impossibilité d'utiliser le service. La Plateforme est fournie « en l'état », sans garantie d'aucune sorte.`,
+    content: `Dans les limites permises par la loi applicable, Orientys ne saurait être tenu responsable de tout dommage indirect, perte de données, ou préjudice résultant de l'utilisation ou de l'impossibilité d'utiliser le service.`,
   },
   {
     title: "11. Modification des CGU",
-    content: `Orientys se réserve le droit de modifier les présentes CGU à tout moment. Les modifications prennent effet dès leur publication sur la Plateforme. En cas de modification substantielle, vous serez notifié par e-mail. La poursuite de l'utilisation du service vaut acceptation des CGU modifiées.`,
+    content: `Orientys se réserve le droit de modifier les présentes CGU à tout moment. Les modifications prennent effet dès leur publication. En cas de modification substantielle, vous serez notifié par e-mail.`,
   },
   {
     title: "12. Droit applicable",
@@ -156,19 +155,17 @@ export default function ConditionsUtilisationPage() {
       style={{ backgroundColor: "var(--color-bg-page)" }}
     >
       {/* Hero */}
-      <section className="relative pt-28 pb-16 overflow-hidden">
+      <section className="relative pt-24 sm:pt-28 pb-12 sm:pb-16 overflow-hidden">
         <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full blur-3xl pointer-events-none"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] sm:w-[600px] h-[200px] sm:h-[300px] rounded-full blur-3xl pointer-events-none"
           style={{
             background:
               "radial-gradient(ellipse, var(--color-accent-bg-hover), transparent)",
           }}
         />
-
-        <div className="relative max-w-3xl mx-auto px-6">
-          {/* Badge */}
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6">
           <div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border mb-6"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border mb-5 sm:mb-6"
             style={{
               borderColor: "var(--color-accent-border)",
               backgroundColor: "var(--color-accent-bg)",
@@ -185,9 +182,8 @@ export default function ConditionsUtilisationPage() {
               Légal
             </span>
           </div>
-
           <h1
-            className="font-display text-4xl md:text-5xl font-bold leading-tight mb-4"
+            className="font-display text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-3 sm:mb-4"
             style={{ color: "var(--color-text-primary)" }}
           >
             Conditions
@@ -200,24 +196,23 @@ export default function ConditionsUtilisationPage() {
             </span>
           </h1>
           <p
-            className="text-base leading-relaxed"
+            className="text-sm sm:text-base leading-relaxed"
             style={{ color: "var(--color-text-muted)" }}
           >
             Ces conditions régissent votre utilisation d&apos;Orientys. En
-            créant un compte, vous acceptez ces termes. Merci de les lire
-            attentivement.
+            créant un compte, vous acceptez ces termes.
           </p>
         </div>
       </section>
 
       {/* Contenu */}
-      <section className="max-w-3xl mx-auto px-6 pb-24">
-        {/* Résumé en 3 cartes */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
+        {/* Cartes résumé */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-10 sm:mb-12">
           {SUMMARY_CARDS.map(({ icon, title, desc }) => (
             <div
               key={title}
-              className="p-4 border rounded-xl space-y-2"
+              className="p-4 border rounded-xl space-y-2 transition-all duration-200 hover:-translate-y-0.5"
               style={{
                 backgroundColor: "var(--color-bg-base)",
                 borderColor: "var(--color-border-default)",
@@ -248,12 +243,12 @@ export default function ConditionsUtilisationPage() {
           ))}
         </div>
 
-        {/* Sections */}
-        <div className="space-y-10">
+        {/* Sections légales */}
+        <div className="space-y-8 sm:space-y-10">
           {SECTIONS.map((section) => (
-            <div key={section.title} className="space-y-3">
+            <div key={section.title} className="space-y-2 sm:space-y-3">
               <h2
-                className="font-display text-xl font-bold"
+                className="font-display text-lg sm:text-xl font-bold"
                 style={{ color: "var(--color-text-primary)" }}
               >
                 {section.title}
@@ -284,12 +279,12 @@ export default function ConditionsUtilisationPage() {
                   ))}
                 </ul>
               )}
-              {section.after && (
+              {(section as any).after && (
                 <p
                   className="text-sm leading-relaxed italic"
                   style={{ color: "var(--color-text-muted)" }}
                 >
-                  {section.after}
+                  {(section as any).after}
                 </p>
               )}
             </div>
@@ -298,7 +293,7 @@ export default function ConditionsUtilisationPage() {
 
         {/* Contact */}
         <div
-          className="mt-16 p-6 border rounded-2xl text-center"
+          className="mt-12 sm:mt-16 p-5 sm:p-6 border rounded-xl sm:rounded-2xl text-center"
           style={{
             backgroundColor: "var(--color-bg-base)",
             borderColor: "var(--color-border-default)",
@@ -310,10 +305,9 @@ export default function ConditionsUtilisationPage() {
           >
             Des questions sur nos conditions d&apos;utilisation ?
           </p>
-          {/* link-accent gère le hover via CSS */}
           <a
             href="/contact"
-            className="link-accent inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-medium transition-all"
+            className="link-accent inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl border text-sm font-medium transition-all"
             style={{
               backgroundColor: "var(--color-accent-bg)",
               borderColor: "var(--color-accent-border)",

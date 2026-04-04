@@ -73,19 +73,19 @@ export function SignupForm({
   };
 
   const inputClass =
-    "w-full px-4 py-3 border rounded-lg text-sm placeholder:text-[var(--color-text-placeholder)] focus:outline-none transition-all duration-200";
+    "w-full px-4 py-3 border rounded-xl text-sm placeholder:text-[var(--color-text-placeholder)] focus:outline-none transition-all duration-200";
 
   return (
     <div className={cn("w-full", className)} {...props}>
       <div
-        className="grid lg:grid-cols-2 min-h-[580px] border rounded-2xl overflow-hidden"
+        className="grid lg:grid-cols-2 min-h-[560px] sm:min-h-[600px] border rounded-2xl overflow-hidden"
         style={{
           backgroundColor: "var(--color-bg-base)",
           borderColor: "var(--color-border-default)",
           boxShadow: "var(--shadow-2xl)",
         }}
       >
-        {/* Panneau gauche - visuel */}
+        {/* Panneau visuel — à gauche sur desktop, caché sur mobile */}
         <div
           className="hidden lg:flex order-last lg:order-first relative border-r overflow-hidden"
           style={{
@@ -106,8 +106,7 @@ export function SignupForm({
           />
 
           <div className="relative z-10 flex flex-col items-center justify-center p-12 text-center gap-8 w-full">
-            <OrientysLogo height={72} />
-
+            <OrientysLogo height={68} className="animate-float" />
             <div>
               <p
                 className="font-display text-2xl font-bold mb-3"
@@ -130,7 +129,6 @@ export function SignupForm({
                 recommandation en moins de 5 minutes.
               </p>
             </div>
-
             <div
               className="flex flex-col gap-3 w-full pt-4 border-t"
               style={{ borderColor: "var(--color-border-default)" }}
@@ -163,14 +161,14 @@ export function SignupForm({
           </div>
         </div>
 
-        {/* Panneau droit - formulaire */}
-        <div className="flex flex-col justify-center px-8 py-12 lg:px-12">
+        {/* Formulaire */}
+        <div className="flex flex-col justify-center px-6 py-10 sm:px-8 sm:py-12 lg:px-12">
           <Link
             href="/"
-            className="inline-flex items-center gap-2.5 mb-10 group w-fit"
+            className="inline-flex items-center gap-2.5 mb-8 sm:mb-10 group w-fit"
           >
             <OrientysLogo
-              height={30}
+              height={28}
               className="transition-transform duration-500 group-hover:scale-105"
             />
             <span
@@ -181,15 +179,15 @@ export function SignupForm({
             </span>
           </Link>
 
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <h1
-              className="font-display text-3xl font-bold mb-2"
+              className="font-display text-2xl sm:text-3xl font-bold mb-2"
               style={{ color: "var(--color-text-primary)" }}
             >
               Créer un compte
             </h1>
             <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-              Gratuit - aucune carte bancaire requise
+              Gratuit — aucune carte bancaire requise
             </p>
           </div>
 
@@ -208,7 +206,7 @@ export function SignupForm({
                 autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Utilisateur"
+                placeholder="Votre nom"
                 className={inputClass}
                 style={inputStyle}
                 onFocus={onFocus}
@@ -303,7 +301,7 @@ export function SignupForm({
                 </button>
               </div>
               {password.length > 0 && (
-                <div className="flex gap-1 mt-1">
+                <div className="flex items-center gap-1 mt-1">
                   {[1, 2, 3, 4].map((level) => (
                     <div
                       key={level}
@@ -359,7 +357,7 @@ export function SignupForm({
 
             {error && (
               <div
-                className="flex items-center gap-2 px-4 py-3 border rounded-lg"
+                className="flex items-center gap-2 px-4 py-3 border rounded-xl"
                 style={{
                   backgroundColor: "var(--color-state-error-bg)",
                   borderColor: "var(--color-state-error-border)",
@@ -390,11 +388,11 @@ export function SignupForm({
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full py-3.5 font-semibold text-sm rounded-lg overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed mt-1"
+              className="group relative w-full py-3 sm:py-3.5 font-semibold text-sm rounded-xl overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed mt-1"
               style={{ color: "var(--color-bg-base)" }}
             >
               <span
-                className="absolute inset-0 transition-transform duration-300 group-hover:scale-105 group-disabled:scale-100"
+                className="absolute inset-0 transition-all duration-300 group-hover:brightness-110 group-disabled:brightness-100"
                 style={{ background: "var(--gradient-brand)" }}
               />
               <span className="relative flex items-center justify-center gap-2">
@@ -429,7 +427,7 @@ export function SignupForm({
           </form>
 
           <p
-            className="mt-6 text-center text-sm"
+            className="mt-5 sm:mt-6 text-center text-sm"
             style={{ color: "var(--color-text-disabled)" }}
           >
             Déjà un compte ?{" "}

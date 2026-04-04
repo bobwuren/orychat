@@ -32,24 +32,13 @@ import type {
   UpdateDegreeRequest,
 } from "@/lib/types";
 
-// Icônes communes
+type DegreeDialogMode = "create" | "edit" | "view" | "delete" | "export" | null;
+
 function IconRefresh() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
       <path
         d="M2 8a6 6 0 0110.472-4M14 8a6 6 0 01-10.472 4M2 8h2m10 0h-2"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-function IconPlus() {
-  return (
-    <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
-      <path
-        d="M6 2v8M2 6h8"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
@@ -70,8 +59,18 @@ function IconDownload() {
     </svg>
   );
 }
-
-type DegreeDialogMode = "create" | "edit" | "view" | "delete" | "export" | null;
+function IconPlus() {
+  return (
+    <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
+      <path
+        d="M6 2v8M2 6h8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 function DegreeForm({
   initial,
@@ -109,15 +108,16 @@ function DegreeForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <FormField label="Nom" required>
+      <FormField label="Nom" required hint="Intitulé complet du diplôme">
         <AdminInput
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="ex: Licence Informatique"
           disabled={isLoading}
+          required
         />
       </FormField>
-      <FormField label="Description">
+      <FormField label="Description" hint="Optionnel">
         <AdminTextarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -298,6 +298,7 @@ export default function DegreesAdminPage() {
           </>
         }
       />
+
       <AdminCard
         title="Liste des diplômes"
         toolbar={
@@ -397,6 +398,7 @@ export default function DegreesAdminPage() {
         open={dialogMode === "create"}
         onClose={closeDialog}
         title="Nouveau diplôme"
+        description="Le nom est obligatoire."
       >
         <DegreeForm
           mode="create"
@@ -406,6 +408,7 @@ export default function DegreesAdminPage() {
         />
         <InlineError message={actionError} />
       </AdminDialog>
+
       <AdminDialog
         open={dialogMode === "edit"}
         onClose={closeDialog}
@@ -421,6 +424,7 @@ export default function DegreesAdminPage() {
         />
         <InlineError message={actionError} />
       </AdminDialog>
+
       <AdminDialog
         open={dialogMode === "view"}
         onClose={closeDialog}
@@ -467,6 +471,7 @@ export default function DegreesAdminPage() {
           </Btn>
         </DialogActions>
       </AdminDialog>
+
       <AdminDialog
         open={dialogMode === "delete"}
         onClose={closeDialog}
@@ -504,6 +509,7 @@ export default function DegreesAdminPage() {
           </Btn>
         </DialogActions>
       </AdminDialog>
+
       <AdminDialog
         open={dialogMode === "export"}
         onClose={closeDialog}

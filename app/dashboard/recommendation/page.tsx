@@ -80,12 +80,10 @@ export default function RecommendationPage() {
     generate();
   }, [user, authLoading, router]);
 
-  /* -------------------------------------------------------------------------
-   * État chargement
-   * ------------------------------------------------------------------------- */
+  /* État chargement */
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto px-6 py-24 flex flex-col items-center gap-6 text-center">
+      <div className="fixed inset-0 flex flex-col items-center justify-center gap-6 text-center">
         <div className="relative w-16 h-16">
           <div
             className="absolute inset-0 rounded-full border-2"
@@ -100,7 +98,7 @@ export default function RecommendationPage() {
             style={{ backgroundColor: "var(--color-accent-bg)" }}
           >
             <svg
-              className="w-5 h-5"
+              className="w-5 h-5 animate-glow-pulse"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -117,7 +115,7 @@ export default function RecommendationPage() {
         </div>
         <div>
           <p
-            className="font-display text-xl font-bold mb-2"
+            className="font-display text-lg sm:text-xl font-bold mb-2"
             style={{ color: "var(--color-text-primary)" }}
           >
             Analyse en cours…
@@ -142,14 +140,12 @@ export default function RecommendationPage() {
     );
   }
 
-  /* -------------------------------------------------------------------------
-   * État erreur
-   * ------------------------------------------------------------------------- */
+  /* État erreur */
   if (error) {
     return (
-      <div className="max-w-2xl mx-auto px-6 py-24 flex flex-col items-center gap-6 text-center">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 sm:py-24 flex flex-col items-center gap-6 text-center">
         <div
-          className="w-14 h-14 rounded-full border flex items-center justify-center"
+          className="w-14 h-14 rounded-2xl border flex items-center justify-center"
           style={{
             backgroundColor: "var(--color-state-error-bg)",
             borderColor: "var(--color-state-error-border)",
@@ -172,7 +168,7 @@ export default function RecommendationPage() {
         </div>
         <div>
           <p
-            className="font-display text-xl font-bold mb-2"
+            className="font-display text-lg sm:text-xl font-bold mb-2"
             style={{ color: "var(--color-text-primary)" }}
           >
             Une erreur est survenue
@@ -181,10 +177,7 @@ export default function RecommendationPage() {
             {error}
           </p>
         </div>
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="flex items-center gap-2 text-sm transition-colors link-accent"
-        >
+        <button onClick={() => router.push("/dashboard")} className="btn-back">
           <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
             <path
               d="M13 8H3M7 4l-4 4 4 4"
@@ -200,29 +193,13 @@ export default function RecommendationPage() {
     );
   }
 
-  /* -------------------------------------------------------------------------
-   * Résultat
-   * ------------------------------------------------------------------------- */
+  /* Résultat */
   return (
-    <div className="max-w-3xl mx-auto px-6 py-12">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       {/* Navigation */}
-      <div className="flex items-center justify-between mb-10">
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="flex items-center gap-2 text-sm group transition-colors duration-200"
-          style={{ color: "var(--color-text-muted)" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "var(--color-text-primary)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "var(--color-text-muted)";
-          }}
-        >
-          <svg
-            className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"
-            viewBox="0 0 16 16"
-            fill="none"
-          >
+      <div className="flex items-center justify-between mb-8 sm:mb-10 gap-4">
+        <button onClick={() => router.push("/dashboard")} className="btn-back">
+          <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
             <path
               d="M13 8H3M7 4l-4 4 4 4"
               stroke="currentColor"
@@ -235,7 +212,7 @@ export default function RecommendationPage() {
         </button>
         <Link
           href="/dashboard/history"
-          className="flex items-center gap-1.5 text-sm transition-colors nav-link"
+          className="nav-link flex items-center gap-1.5 text-sm"
         >
           <svg
             className="w-4 h-4"
@@ -255,20 +232,23 @@ export default function RecommendationPage() {
       </div>
 
       {/* En-tête */}
-      <div className="mb-10">
+      <div className="mb-6 sm:mb-8">
         <p
-          className="text-xs uppercase tracking-[0.15em] font-semibold mb-3"
+          className="text-xs uppercase tracking-[0.15em] font-semibold mb-2 sm:mb-3"
           style={{ color: "var(--color-brand-accent)" }}
         >
-          Étape 4 sur 4 - Terminé
+          Étape 4 sur 4 — Terminé
         </p>
         <h1
-          className="font-display text-3xl lg:text-4xl font-bold mb-2"
+          className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold mb-2"
           style={{ color: "var(--color-text-primary)" }}
         >
           Votre recommandation
         </h1>
-        <p style={{ color: "var(--color-text-muted)" }}>
+        <p
+          className="text-sm sm:text-base"
+          style={{ color: "var(--color-text-muted)" }}
+        >
           Basée sur vos notes en série{" "}
           <span
             className="font-semibold"
@@ -286,14 +266,16 @@ export default function RecommendationPage() {
       />
 
       {/* Orientations */}
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4 sm:gap-5">
         {recommendation?.orientations.map((orientation, idx) => (
           <div
             key={idx}
-            className="group border rounded-2xl overflow-hidden transition-all duration-300"
+            className="group border rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300 animate-fade-in-up"
             style={{
               backgroundColor: "var(--color-bg-base)",
               borderColor: "var(--color-border-default)",
+              animationDelay: `${idx * 100}ms`,
+              animationFillMode: "both",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = "var(--color-border-strong)";
@@ -304,12 +286,12 @@ export default function RecommendationPage() {
           >
             {/* En-tête orientation */}
             <div
-              className="px-6 pt-6 pb-5 border-b"
+              className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4 sm:pb-5 border-b"
               style={{ borderColor: "var(--color-border-subtle)" }}
             >
               <div className="flex items-start gap-3">
                 <div
-                  className="w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 mt-0.5"
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border flex items-center justify-center shrink-0 mt-0.5"
                   style={{
                     backgroundColor: "var(--color-accent-bg)",
                     borderColor: "var(--color-accent-border)",
@@ -324,7 +306,7 @@ export default function RecommendationPage() {
                 </div>
                 <div>
                   <h2
-                    className="font-display text-lg font-bold mb-1.5"
+                    className="font-display text-base sm:text-lg font-bold mb-1 sm:mb-1.5"
                     style={{ color: "var(--color-text-primary)" }}
                   >
                     {orientation.name}
@@ -340,21 +322,21 @@ export default function RecommendationPage() {
             </div>
 
             {/* Corps */}
-            <div className="px-6 py-5 flex flex-col gap-5">
+            <div className="px-4 sm:px-6 py-4 sm:py-5 flex flex-col gap-4 sm:gap-5">
               {/* Diplômes */}
               {orientation.degrees.length > 0 && (
                 <div>
                   <p
-                    className="text-[10px] uppercase tracking-[0.15em] font-semibold mb-3"
+                    className="text-[10px] uppercase tracking-[0.15em] font-semibold mb-2 sm:mb-3"
                     style={{ color: "var(--color-text-disabled)" }}
                   >
                     Diplômes accessibles
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {orientation.degrees.map((d, i) => (
                       <span
                         key={i}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-lg"
+                        className="inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs font-medium border rounded-lg"
                         style={{
                           backgroundColor: "var(--color-bg-surface)",
                           borderColor: "var(--color-border-default)",
@@ -372,35 +354,52 @@ export default function RecommendationPage() {
               {orientation.universities.length > 0 && (
                 <div>
                   <p
-                    className="text-[10px] uppercase tracking-[0.15em] font-semibold mb-3"
+                    className="text-[10px] uppercase tracking-[0.15em] font-semibold mb-2 sm:mb-3"
                     style={{ color: "var(--color-text-disabled)" }}
                   >
                     Universités partenaires
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
                     {orientation.universities.map((u, i) => {
                       const url = u.site ?? u.website;
-                      const Component = url ? 'a' : 'div';
+                      const Component = url ? "a" : "div";
                       return (
                         <Component
                           key={i}
                           href={url}
                           target={url ? "_blank" : undefined}
                           rel={url ? "noopener noreferrer" : undefined}
-                          className="flex items-center gap-3 px-4 py-3 border rounded-xl transition-all duration-200 cursor-pointer hover:border-current"
+                          className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 border rounded-xl transition-all duration-200"
                           style={{
                             backgroundColor: "var(--color-bg-surface)",
                             borderColor: "var(--color-border-default)",
+                            cursor: url ? "pointer" : "default",
                           }}
+                          onMouseEnter={
+                            url
+                              ? (e: any) => {
+                                  e.currentTarget.style.borderColor =
+                                    "var(--color-border-strong)";
+                                }
+                              : undefined
+                          }
+                          onMouseLeave={
+                            url
+                              ? (e: any) => {
+                                  e.currentTarget.style.borderColor =
+                                    "var(--color-border-default)";
+                                }
+                              : undefined
+                          }
                         >
                           <div
-                            className="w-7 h-7 rounded flex items-center justify-center shrink-0"
+                            className="w-6 h-6 sm:w-7 sm:h-7 rounded flex items-center justify-center shrink-0"
                             style={{
                               backgroundColor: "var(--color-bg-elevated)",
                             }}
                           >
                             <svg
-                              className="w-3.5 h-3.5"
+                              className="w-3 h-3 sm:w-3.5 sm:h-3.5"
                               viewBox="0 0 24 24"
                               fill="none"
                               stroke="currentColor"
@@ -415,14 +414,14 @@ export default function RecommendationPage() {
                             </svg>
                           </div>
                           <span
-                            className="text-sm font-medium truncate flex-1"
+                            className="text-xs sm:text-sm font-medium truncate flex-1"
                             style={{ color: "var(--color-text-secondary)" }}
                           >
                             {u.name}
                           </span>
                           {url && (
                             <svg
-                              className="w-3.5 h-3.5 shrink-0"
+                              className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 opacity-50"
                               viewBox="0 0 12 12"
                               fill="none"
                             >
@@ -448,13 +447,13 @@ export default function RecommendationPage() {
 
       {/* Bannière consultation */}
       <div
-        className="mt-8 border rounded-2xl p-6"
+        className="mt-6 sm:mt-8 border rounded-xl sm:rounded-2xl p-4 sm:p-6"
         style={{
           backgroundColor: "var(--color-bg-base)",
           borderColor: "var(--color-border-default)",
         }}
       >
-        <div className="flex items-start gap-4">
+        <div className="flex flex-col sm:flex-row items-start gap-4">
           <div
             className="w-10 h-10 rounded-xl border flex items-center justify-center shrink-0"
             style={{
@@ -489,23 +488,20 @@ export default function RecommendationPage() {
               style={{ color: "var(--color-text-muted)" }}
             >
               Un conseiller d&apos;orientation professionnel peut vous guider
-              dans votre choix de filière lors d&apos;un entretien individuel.
+              dans votre choix lors d&apos;un entretien individuel.
             </p>
           </div>
-          {/* TODO: À convertir en <Link href="/dashboard/consultation"> une fois la fonctionnalité complétée
-              Passer en paramètre recommendationId = recommendation.id dans les query params ou sessionStorage
-              pour que la page de consultation puisse recharger les recommandations */}
           <button
             disabled
-            className="shrink-0 group relative px-4 py-2.5 rounded-xl text-xs font-semibold overflow-hidden opacity-50 cursor-not-allowed"
+            className="shrink-0 relative px-4 py-2.5 rounded-xl text-xs font-semibold overflow-hidden opacity-50 cursor-not-allowed w-full sm:w-auto"
             style={{ color: "var(--color-bg-base)" }}
             title="Fonction en cours de développement"
           >
             <span
-              className="absolute inset-0 transition-transform duration-300"
+              className="absolute inset-0"
               style={{ background: "var(--gradient-brand)" }}
             />
-            <span className="relative flex items-center gap-1.5">
+            <span className="relative flex items-center justify-center gap-1.5">
               Consulter un conseiller
               <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
                 <path
@@ -531,41 +527,40 @@ export default function RecommendationPage() {
       </div>
 
       {/* Actions */}
-      <div className="mt-4 flex gap-3">
+      <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-3">
         <Link
           href="/dashboard/history"
-          className="flex-1 py-3.5 border text-sm font-medium rounded-xl transition-all duration-200 text-center"
+          className="flex-1 py-3 sm:py-3.5 border text-sm font-medium rounded-xl transition-all duration-200 text-center"
           style={{
             borderColor: "var(--color-border-strong)",
             color: "var(--color-text-muted)",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.color = "var(--color-text-primary)";
-            e.currentTarget.style.borderColor = "var(--color-border-strong)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.color = "var(--color-text-muted)";
-            e.currentTarget.style.borderColor = "var(--color-border-strong)";
           }}
         >
           Voir l&apos;historique
         </Link>
         <button
           onClick={() => router.push("/dashboard")}
-          className="flex-1 py-3.5 relative overflow-hidden rounded-xl group"
+          className="flex-1 py-3 sm:py-3.5 relative overflow-hidden rounded-xl group"
           style={{ color: "var(--color-bg-base)" }}
         >
           <span
-            className="absolute inset-0 transition-transform duration-300 group-hover:scale-105"
+            className="absolute inset-0 transition-all duration-300 group-hover:brightness-110"
             style={{ background: "var(--gradient-brand)" }}
           />
           <span className="relative flex items-center justify-center gap-2 text-sm font-semibold">
-            <svg
-              className="w-4 h-4"
-              viewBox="0 0 16 16"
-              fill="none"
-            >
-              <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M8 2v12M2 8h12"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
             </svg>
             Nouvelle analyse
           </span>
