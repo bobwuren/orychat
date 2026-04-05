@@ -177,6 +177,7 @@ export default function AdminLayout({
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -370,59 +371,116 @@ export default function AdminLayout({
             style={{ backgroundColor: "var(--color-border-default)" }}
           />
 
-          <div className="flex items-center gap-2">
-            <div
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center text-[11px] sm:text-xs font-bold shrink-0 select-none"
-              style={{
-                backgroundColor: "var(--color-accent-bg)",
-                borderColor: "var(--color-accent-border)",
-                color: "var(--color-brand-accent)",
-              }}
-            >
-              {user?.name?.[0]?.toUpperCase() ??
-                user?.email?.[0]?.toUpperCase() ??
-                "A"}
-            </div>
-
-            <div className="hidden md:block leading-none">
-              <p
-                className="text-xs font-semibold truncate max-w-[100px]"
-                style={{ color: "var(--color-text-primary)" }}
-              >
-                {user?.name ?? user?.email?.split("@")[0] ?? "Admin"}
-              </p>
-              <p
-                className="text-[10px]"
-                style={{ color: "var(--color-brand-accent)" }}
-              >
-                Administrateur
-              </p>
-            </div>
-
+          <div className="flex items-center gap-2 relative">
             <button
-              onClick={logout}
-              title="Déconnexion"
-              className="w-7 h-7 flex items-center justify-center rounded-lg transition-all"
-              style={{ color: "var(--color-text-disabled)" }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#f87171";
-                e.currentTarget.style.backgroundColor = "rgba(239,68,68,0.08)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "var(--color-text-disabled)";
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
+              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+              className="flex items-center gap-2 px-2 py-1 rounded-lg transition-all duration-200 hover:bg-white/5"
+              title="Menu profil"
             >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M10.5 3.5H13a1 1 0 011 1v7a1 1 0 01-1 1h-2.5M7 5.5L10.5 8 7 10.5M10.5 8H2"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <div
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center text-[11px] sm:text-xs font-bold shrink-0 select-none"
+                style={{
+                  backgroundColor: "var(--color-accent-bg)",
+                  borderColor: "var(--color-accent-border)",
+                  color: "var(--color-brand-accent)",
+                }}
+              >
+                {user?.name?.[0]?.toUpperCase() ??
+                  user?.email?.[0]?.toUpperCase() ??
+                  "A"}
+              </div>
+
+              <div className="hidden md:block leading-none">
+                <p
+                  className="text-xs font-semibold truncate max-w-[100px]"
+                  style={{ color: "var(--color-text-primary)" }}
+                >
+                  {user?.name ?? user?.email?.split("@")[0] ?? "Admin"}
+                </p>
+                <p
+                  className="text-[10px]"
+                  style={{ color: "var(--color-brand-accent)" }}
+                >
+                  Administrateur
+                </p>
+              </div>
             </button>
+
+            {/* Dropdown Menu */}
+            {profileMenuOpen && (
+              <div
+                className="absolute top-full right-0 mt-2 w-48 rounded-lg border shadow-lg overflow-hidden z-50"
+                style={{
+                  backgroundColor: "var(--color-bg-base)",
+                  borderColor: "var(--color-border-default)",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+                }}
+              >
+                {/* Email display */}
+                <div
+                  className="px-4 py-3 border-b text-xs"
+                  style={{
+                    borderColor: "var(--color-border-default)",
+                    color: "var(--color-text-muted)",
+                  }}
+                >
+                  {user?.email}
+                </div>
+
+                {/* Dashboard link */}
+                <button
+                  onClick={() => {
+                    window.open("/dashboard", "_blank");
+                    setProfileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left transition-all duration-200 hover:bg-blue-500/10 border-b"
+                  style={{
+                    color: "var(--color-brand-accent)",
+                    borderColor: "var(--color-border-default)",
+                  }}
+                >
+                  <svg
+                    className="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path
+                      d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  Dashboard
+                </button>
+
+                {/* Logout */}
+                <button
+                  onClick={() => {
+                    setProfileMenuOpen(false);
+                    logout();
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left transition-all duration-200 hover:bg-red-500/10"
+                  style={{ color: "var(--color-state-error)" }}
+                >
+                  <svg
+                    className="w-4 h-4"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path
+                      d="M10.5 3.5H13a1 1 0 011 1v7a1 1 0 01-1 1h-2.5M7 5.5L10.5 8 7 10.5M10.5 8H2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  Déconnexion
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
