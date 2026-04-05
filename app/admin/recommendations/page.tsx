@@ -85,10 +85,8 @@ export default function RecommendationsAdminPage() {
     exportRecommendations,
   } = useRecommendations();
 
-  // Cartes de référence pour résoudre les IDs en libellés
   const [usersMap, setUsersMap] = useState<Record<string, AuthUser>>({});
   const [seriesMap, setSeriesMap] = useState<Record<string, Serie>>({});
-
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -106,7 +104,6 @@ export default function RecommendationsAdminPage() {
 
   useEffect(() => {
     load();
-    // Charger les utilisateurs et les séries pour résoudre les IDs
     getUsers()
       .then((res) => {
         const map: Record<string, AuthUser> = {};
@@ -116,7 +113,6 @@ export default function RecommendationsAdminPage() {
         setUsersMap(map);
       })
       .catch(() => {});
-
     seriesApi
       .getAll()
       .then((res) => {
@@ -133,7 +129,6 @@ export default function RecommendationsAdminPage() {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  // Résolution des labels depuis les maps de référence
   const resolveUserLabel = (userId: string): string => {
     const u = usersMap[String(userId)];
     if (!u) return String(userId).slice(0, 10) + "…";
@@ -151,10 +146,11 @@ export default function RecommendationsAdminPage() {
 
   const filtered = (recommendations ?? []).filter((r) => {
     if (!searchTerm) return true;
-    const userLabel = resolveUserLabel(r.userId).toLowerCase();
-    const serieLabel = resolveSerieLabel(r).toLowerCase();
     const term = searchTerm.toLowerCase();
-    return userLabel.includes(term) || serieLabel.includes(term);
+    return (
+      resolveUserLabel(r.userId).toLowerCase().includes(term) ||
+      resolveSerieLabel(r).toLowerCase().includes(term)
+    );
   });
 
   const paginated = filtered.slice(
@@ -198,7 +194,6 @@ export default function RecommendationsAdminPage() {
     currentRecommendation?.id === selectedReco?.id
       ? (currentRecommendation ?? selectedReco)
       : selectedReco;
-
   if (error) return <PageError message={error.message} onRetry={load} />;
 
   return (
@@ -228,6 +223,7 @@ export default function RecommendationsAdminPage() {
           </>
         }
       />
+
       <AdminCard
         title="Liste des recommandations"
         toolbar={
@@ -324,7 +320,7 @@ export default function RecommendationsAdminPage() {
         />
       </AdminCard>
 
-      {/* ── Dialog Vue ── */}
+      {/* Dialog Vue */}
       <AdminDialog
         open={dialogMode === "view"}
         onClose={closeDialog}
@@ -343,7 +339,8 @@ export default function RecommendationsAdminPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            {/* Métadonnées */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p
                   className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-1"
@@ -399,6 +396,7 @@ export default function RecommendationsAdminPage() {
               </div>
             </div>
 
+            {/* Orientations */}
             <div>
               <p
                 className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-3"
@@ -463,32 +461,31 @@ export default function RecommendationsAdminPage() {
                               Diplômes
                             </p>
                             <div className="flex flex-wrap gap-1.5">
-                              {o.degrees.map((d: any, j: number) => (
-                                <span key={j}>
-                                  {d.articleLink ? (
-                                    <a
-                                      href={d.articleLink}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium border rounded transition-colors"
-                                      style={{
-                                        backgroundColor:
-                                          "var(--color-bg-surface)",
-                                        borderColor:
-                                          "var(--color-border-default)",
-                                        color: "var(--color-brand-accent)",
-                                      }}
-                                    >
-                                      {d.name}
-                                      <IconExternal />
-                                    </a>
-                                  ) : (
-                                    <AdminBadge color="gray">
-                                      {d.name}
-                                    </AdminBadge>
-                                  )}
-                                </span>
-                              ))}
+                              {o.degrees.map((d: any, j: number) =>
+                                d.articleLink ? (
+                                  <a
+                                    key={j}
+                                    href={d.articleLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium border rounded transition-colors"
+                                    style={{
+                                      backgroundColor:
+                                        "var(--color-bg-surface)",
+                                      borderColor:
+                                        "var(--color-border-default)",
+                                      color: "var(--color-brand-accent)",
+                                    }}
+                                  >
+                                    {d.name}
+                                    <IconExternal />
+                                  </a>
+                                ) : (
+                                  <AdminBadge key={j} color="gray">
+                                    {d.name}
+                                  </AdminBadge>
+                                ),
+                              )}
                             </div>
                           </div>
                         )}
@@ -546,7 +543,7 @@ export default function RecommendationsAdminPage() {
         </DialogActions>
       </AdminDialog>
 
-      {/* ── Dialog Export ── */}
+      {/* Dialog Export */}
       <AdminDialog
         open={dialogMode === "export"}
         onClose={closeDialog}

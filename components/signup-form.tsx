@@ -187,7 +187,7 @@ export function SignupForm({
               Créer un compte
             </h1>
             <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-              Gratuit — aucune carte bancaire requise
+              Gratuit - aucune carte bancaire requise
             </p>
           </div>
 

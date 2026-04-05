@@ -93,6 +93,7 @@ export default function ConsultationsAdminPage() {
     assignCounselor,
     updateStatus,
   } = useConsultations();
+
   const [activeCounselors, setActiveCounselors] = useState<Counselor[]>([]);
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -122,19 +123,20 @@ export default function ConsultationsAdminPage() {
       .then((res) => setActiveCounselors(res.counselors ?? []))
       .catch(() => {});
   }, [load]);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterStatus]);
 
-  const filtered = (consultations ?? []).filter((c) => {
-    return (
+  const filtered = (consultations ?? []).filter(
+    (c) =>
       !searchTerm ||
       c.id?.toString().includes(searchTerm) ||
       c.studentId?.toString().includes(searchTerm) ||
       c.studentPhone?.includes(searchTerm) ||
-      (c.studentEmail ?? "").toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  });
+      (c.studentEmail ?? "").toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const paginated = filtered.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -163,12 +165,14 @@ export default function ConsultationsAdminPage() {
       setViewLoading(false);
     }
   };
+
   const openAssign = (c: Consultation) => {
     setSelected(c);
     setSelectedCounselorId(c.counselorId ?? "");
     setActionError(null);
     setDialogMode("assign");
   };
+
   const openStatus = (c: Consultation) => {
     setSelected(c);
     setNewStatus(c.status);
@@ -227,6 +231,7 @@ export default function ConsultationsAdminPage() {
         }
       />
 
+      {/* Cartes stats cliquables */}
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {(
@@ -482,6 +487,7 @@ export default function ConsultationsAdminPage() {
           </div>
         ) : (
           <div className="space-y-5">
+            {/* Statut + notifs */}
             <div className="flex items-center justify-between flex-wrap gap-3">
               <StatusBadge
                 status={(detailedConsultation ?? selected)?.status ?? "pending"}
@@ -513,6 +519,7 @@ export default function ConsultationsAdminPage() {
               </div>
             </div>
 
+            {/* Étudiant */}
             <div
               className="p-4 rounded-xl border space-y-3"
               style={{
@@ -562,6 +569,7 @@ export default function ConsultationsAdminPage() {
               </div>
             </div>
 
+            {/* Série */}
             {detailedConsultation?.serie && (
               <div
                 className="p-4 rounded-xl border space-y-2"
@@ -590,6 +598,7 @@ export default function ConsultationsAdminPage() {
               </div>
             )}
 
+            {/* Notes */}
             {(detailedConsultation?.notes ?? []).length > 0 && (
               <div
                 className="p-4 rounded-xl border space-y-3"
@@ -637,6 +646,7 @@ export default function ConsultationsAdminPage() {
               </div>
             )}
 
+            {/* Conseiller */}
             {detailedConsultation?.counselor && (
               <div
                 className="p-4 rounded-xl border space-y-3"
@@ -680,6 +690,7 @@ export default function ConsultationsAdminPage() {
               </div>
             )}
 
+            {/* Commentaire */}
             {selected?.additionalComment && (
               <div
                 className="p-4 rounded-xl border"
@@ -756,7 +767,7 @@ export default function ConsultationsAdminPage() {
         open={dialogMode === "assign"}
         onClose={closeDialog}
         title="Assigner un conseiller"
-        description="Un email sera envoyé automatiquement."
+        description="Un email sera envoyé automatiquement au conseiller sélectionné."
         size="sm"
       >
         <div className="space-y-4">
@@ -769,6 +780,16 @@ export default function ConsultationsAdminPage() {
                 backgroundColor: "var(--color-input-bg)",
                 border: "1px solid var(--color-input-border)",
                 color: "var(--color-text-primary)",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor =
+                  "var(--color-input-border-focus)";
+                e.currentTarget.style.boxShadow =
+                  "0 0 0 3px var(--color-input-ring)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-input-border)";
+                e.currentTarget.style.boxShadow = "none";
               }}
             >
               <option value="">Sélectionner un conseiller…</option>
@@ -785,6 +806,8 @@ export default function ConsultationsAdminPage() {
               )}
             </select>
           </FormField>
+
+          {/* Aperçu conseiller sélectionné */}
           {selectedCounselorId &&
             selectedCounselorId !== "_none" &&
             (() => {
@@ -858,7 +881,7 @@ export default function ConsultationsAdminPage() {
               key={s}
               type="button"
               onClick={() => setNewStatus(s)}
-              className="w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm text-left transition-all"
+              className="w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm text-left transition-all duration-200"
               style={
                 newStatus === s
                   ? {

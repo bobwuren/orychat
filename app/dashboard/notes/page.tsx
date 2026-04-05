@@ -188,7 +188,7 @@ export default function NotesPage() {
           {serie?.description && (
             <span style={{ color: "var(--color-text-disabled)" }}>
               {" "}
-              — {serie.description}
+              - {serie.description}
             </span>
           )}
         </p>

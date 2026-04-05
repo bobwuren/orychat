@@ -29,8 +29,7 @@ import { useAuth } from "@/lib/hooks";
 import type { AuthUser, UserRole } from "@/lib/types/auth.types";
 
 const ITEMS_PER_PAGE = 10;
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api";
-type DialogMode = "view" | "edit" | "delete" | "create-admin" | null;
+type DialogMode = "view" | "edit" | "delete" | null;
 
 function IconRefresh() {
   return (
@@ -131,7 +130,11 @@ function EditUserForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <FormField label="Email" required>
+      <FormField
+        label="Email"
+        required
+        hint="Modifier uniquement si nécessaire"
+      >
         <AdminInput
           type="email"
           value={email}
@@ -344,6 +347,7 @@ export default function UsersAdminPage() {
         }
       />
 
+      {/* Cartes stats cliquables */}
       <div className="grid grid-cols-3 gap-3">
         {statCards.map(({ key, label, value }) => {
           const isActive = filterRole === key;
@@ -429,8 +433,16 @@ export default function UsersAdminPage() {
                           className="text-sm font-medium truncate max-w-[140px] sm:max-w-none"
                           style={{ color: "var(--color-text-primary)" }}
                         >
-                          {u.email}
+                          {u.name || u.email}
                         </p>
+                        {u.name && (
+                          <p
+                            className="text-xs truncate"
+                            style={{ color: "var(--color-text-muted)" }}
+                          >
+                            {u.email}
+                          </p>
+                        )}
                         {u.id === currentUser?.id && (
                           <p
                             className="text-[10px]"
@@ -485,6 +497,7 @@ export default function UsersAdminPage() {
         />
       </AdminCard>
 
+      {/* Dialog Vue */}
       <AdminDialog
         open={dialogMode === "view"}
         onClose={closeDialog}
@@ -505,8 +518,16 @@ export default function UsersAdminPage() {
                 className="font-semibold"
                 style={{ color: "var(--color-text-primary)" }}
               >
-                {selected?.email}
+                {selected?.name || selected?.email}
               </p>
+              {selected?.name && (
+                <p
+                  className="text-xs"
+                  style={{ color: "var(--color-text-muted)" }}
+                >
+                  {selected.email}
+                </p>
+              )}
               <div className="mt-1.5">
                 {selected && <RoleBadge role={selected.permissions} />}
               </div>
@@ -557,6 +578,7 @@ export default function UsersAdminPage() {
         </DialogActions>
       </AdminDialog>
 
+      {/* Dialog Edit */}
       <AdminDialog
         open={dialogMode === "edit"}
         onClose={closeDialog}
@@ -575,6 +597,7 @@ export default function UsersAdminPage() {
         <InlineError message={actionError} />
       </AdminDialog>
 
+      {/* Dialog Delete */}
       <AdminDialog
         open={dialogMode === "delete"}
         onClose={closeDialog}
@@ -596,9 +619,19 @@ export default function UsersAdminPage() {
                 className="text-sm font-semibold"
                 style={{ color: "var(--color-text-primary)" }}
               >
-                {selected.email}
+                {selected.name || selected.email}
               </p>
-              <RoleBadge role={selected.permissions} />
+              {selected.name && (
+                <p
+                  className="text-xs"
+                  style={{ color: "var(--color-text-muted)" }}
+                >
+                  {selected.email}
+                </p>
+              )}
+              <div className="mt-1">
+                <RoleBadge role={selected.permissions} />
+              </div>
             </div>
           </div>
         )}

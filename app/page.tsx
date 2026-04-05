@@ -42,7 +42,7 @@ const features = [
     number: "02",
     title: "Recommandations personnalisées par IA",
     description:
-      "Chaque recommandation est générée spécifiquement pour votre profil. Pas de liste générique — une orientation pensée pour vous.",
+      "Chaque recommandation est générée spécifiquement pour votre profil. Pas de liste générique - une orientation pensée pour vous.",
     icon: (
       <svg
         className="w-5 h-5"
@@ -684,7 +684,7 @@ export default function HomePage() {
                 style={{ color: "var(--color-text-muted)" }}
               >
                 Le processus est conçu pour être rapide et sans friction. Pas de
-                création de dossier complexe — juste vos notes et votre série.
+                création de dossier complexe - juste vos notes et votre série.
               </p>
             </div>
 
